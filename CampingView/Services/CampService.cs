@@ -102,6 +102,8 @@ namespace CampingView.Services
                     var list = model.response.body.items.item.Where(w => w.facltDivNm == "지자체").ToList();
                     model.response.body.items.item = list;
                 }
+
+
             }
             else
             {

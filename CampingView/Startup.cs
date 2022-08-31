@@ -49,6 +49,8 @@ namespace CampingView
                 app.UseHsts();
             }
 
+
+
             //app.UseHttpsRedirection();
 
             app.UseStaticFiles();
