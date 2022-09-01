@@ -60,7 +60,7 @@ namespace CampingView.Services
         {
             var model = new CampResModel();
 
-            var path = _hostingEnvironment.WebRootPath + "\\" + _configuration.GetSection("CampData:CAMP_LIST_JSON").Value;
+            var path = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CampData:CAMP_LIST_JSON").Value;
 
 
             if (IsCampFIleCheck(path) == false)
@@ -122,8 +122,8 @@ namespace CampingView.Services
 
             // 이미지 경로를 조회
             //var root = _hostingEnvironment.WebRootPath;
-            var pathOrigin = _hostingEnvironment.WebRootPath + "\\" + _configuration.GetSection("CampData:CAMP_IMAGE_BASE_PATH").Value + "\\" + req.contentId;
-            var pathThum = pathOrigin + "\\" + _configuration.GetSection("CampData:CAMP_IMAGE_THUM").Value;
+            var pathOrigin = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CampData:CAMP_IMAGE_BASE_PATH").Value + "/" + req.contentId;
+            var pathThum = pathOrigin + "/" + _configuration.GetSection("CampData:CAMP_IMAGE_THUM").Value;
             var imgUrl = "/" + _configuration.GetSection("CampData:CAMP_IMAGE_BASE_PATH").Value + "/" + req.contentId + "/" +_configuration.GetSection("CampData:CAMP_IMAGE_THUM").Value;
             
             if (this.ExistImageFile(pathThum) == false)
@@ -159,7 +159,7 @@ namespace CampingView.Services
                         foreach(var f in model.response.body.items.item)
                         {
                             var name = f.imageUrl.Split('/').LastOrDefault();
-                            var targetFile = pathOrigin + "\\" + name;
+                            var targetFile = pathOrigin + "/" + name;
 
                             this.ImageDownload(f.imageUrl, targetFile);
                         }
@@ -238,7 +238,7 @@ namespace CampingView.Services
                 using var image = Image.Load(file.OpenRead());
                 image.Mutate(x => x.Resize(600, 400));
 
-                image.Save(pathThum + "\\thum_" + file.Name);
+                image.Save(pathThum + "/thum_" + file.Name);
 
             }
 
