@@ -9,6 +9,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using CampingView.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 
 namespace CampingView
 {
@@ -27,6 +29,29 @@ namespace CampingView
             services.AddControllersWithViews();
 
             services.AddScoped<ICampService, CampService>();
+            services.AddScoped<INaverService, NaverService>();
+            services.AddScoped<IUserService, UserService>();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultSignOutScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            }).AddCookie(
+                CookieAuthenticationDefaults.AuthenticationScheme, (options) =>
+                {
+                    options.LoginPath = "/Account/Login";
+                    options.LogoutPath = "/Account/Logout";
+                });
+
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
+
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,15 +74,20 @@ namespace CampingView
                 app.UseHsts();
             }
 
-
-
             //app.UseHttpsRedirection();
 
             app.UseStaticFiles();
 
             app.UseRouting();
 
+            app.UseCookiePolicy();
+
+            app.UseAuthentication();
+
+            app.UseRouting();
+
             app.UseAuthorization();
+
 
             app.UseEndpoints(endpoints =>
             {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - CampingView</title>
+    <title>@ViewData["Title"] 캠장에 대한 모든것</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
@@ -18,9 +18,6 @@
 
     @RenderSection("Scripts", required: false)
 
-
-    
-
 </head>
 <body>
     <header>
@@ -32,7 +29,9 @@
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                
+                -->
+                   
+                <!--
                 <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
@@ -43,8 +42,11 @@
                         </li>
                     </ul>
                 </div>
-                    -->
+                 -->
 
+                @if (User.Identity.IsAuthenticated)
+                {
+                   
                <div class="panel-heading">
                    <!-- <h2><span class="label label-success">지자체 </span></h2> -->
                    <!--
@@ -53,9 +55,22 @@
                    <span class="label label-default" style="font-size:14px;">경상도</span>
                    <span class="label label-default" style="font-size:14px;">전라도</span>
                    <span class="label label-default" style="font-size:14px;">제주도</span>-->
-                </div>
 
-                
+                   @if (User.Claims.Any( x=> x.Type == "name"))
+                   {
+                    <div>@User.Claims.FirstOrDefault( x=> x.Type == "name").Value </div>
+                   }
+
+                   <a href="/Account/Logout">로그아웃</a>
+                </div>
+                }
+                else
+                {
+                 <div class="panel-heading">
+                  
+                   <a href="/Account/Login">로그인</a>
+                </div>
+                }
             </div>
         </nav>
     </header>

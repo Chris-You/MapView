@@ -17,14 +17,18 @@ namespace CampingView.Controllers
         private readonly ILogger<HomeController> _logger;
 
         private ICampService _campService;
+        private INaverService _naverService;
+        private IUserService _userService;
 
-        
-
-        public HomeController(ILogger<HomeController> logger, ICampService campService, IConfiguration config)
+        public HomeController(ILogger<HomeController> logger, IConfiguration config, 
+                              ICampService campService, INaverService naverService,
+                              IUserService userService)
         {
             _logger = logger;
-            _campService = campService;
             _configuration = config;
+            _campService = campService;
+            _naverService = naverService;
+            _userService = userService;
         }
 
         public IActionResult Index()
@@ -37,10 +41,20 @@ namespace CampingView.Controllers
             return View();
         }
 
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+
+        public IActionResult Main()
+        {
+            
+            //ViewBag.Name =  _userService.GetUser(this.User, "name");
+
+            return View();
         }
 
 
@@ -49,8 +63,8 @@ namespace CampingView.Controllers
         {
             CampReqModel req = new CampReqModel
             {
-                serviceKey = _configuration.GetSection("AppSettings:API_KEY").Value,
-                searchurl = _configuration.GetSection("AppSettings:API_BASE_URL").Value,
+                serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value,
+                searchurl = _configuration.GetSection("OPENAPI:PUBLIC_API_BASE_URL").Value,
                 pageNo = 1,
                 numOfRows = 1000,
                 MobileOS = "ETC",
@@ -68,8 +82,8 @@ namespace CampingView.Controllers
         {
             CampReqModel model = new CampReqModel
             {
-                serviceKey = _configuration.GetSection("AppSettings:API_KEY").Value,
-                searchurl = _configuration.GetSection("AppSettings:API_LOCATION_URL").Value,
+                serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value,
+                searchurl = _configuration.GetSection("OPENAPI:PUBLIC_API_LOCATION_URL").Value,
                 pageNo = 1,
                 numOfRows = 300,
                 MobileOS = "ETC",
@@ -90,8 +104,8 @@ namespace CampingView.Controllers
         {
             CampReqModel model = new CampReqModel
             {
-                serviceKey = _configuration.GetSection("AppSettings:API_KEY").Value,
-                searchurl = _configuration.GetSection("AppSettings:API_IMAGE_URL").Value,
+                serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value,
+                searchurl = _configuration.GetSection("OPENAPI:PUBLIC_API_IMAGE_URL").Value,
                 MobileOS = "ETC",
                 MobileApp = "CampView",
                 contentId = req.contentId
@@ -103,9 +117,15 @@ namespace CampingView.Controllers
         }
 
 
-        public IActionResult Main()
+        [HttpPost]
+        public IActionResult Blogs(string query)
         {
-            return View();
+            var response = _naverService.GetBlogList(query);
+
+            return new JsonResult(response);
         }
+
+
+        
     }
 }

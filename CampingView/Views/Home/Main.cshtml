@@ -190,7 +190,7 @@
             
             //console.log(seq);
 
-            SetCampDetail(seq);
+            setCampDetail(seq);
 
             var imgHtml = "";
             $("#divImage").show();
@@ -202,7 +202,7 @@
                 data: "contentId=" + dataList.response.body.items.item[seq].contentId,
                 success: function (data) {
 
-                    $("#divImage").empty();
+                    //$("#divImage").empty();
 
                     if (data.response != null) {
                         if (data.response.body.items != null) {
@@ -222,6 +222,9 @@
                             }
                             else {
                                 imgHtml = "<img src='/img/no_image.png' />";
+
+                                $("#divImage").hide();
+
 							}
 
                             $("#divImage").html(imgHtml);
@@ -229,19 +232,26 @@
                         }
                         else {
                             $("#divImage").html("<img src='/img/no_image.png' />");
+                            $("#divImage").hide();
                         }
 
                     }
                     else {
                         $("#divImage").html("<img src='/img/no_image.png' />");
+                        $("#divImage").hide();
 					}
                     
                 },
                 error: function (data) {
                     //alert("error: " + data.responseText);
                     $("#divImage").html("<img src='/img/no_image.png' />");
+                    $("#divImage").hide();
                 }
             });
+
+
+            getBlogs(seq);
+            
         }
     }
 
@@ -251,12 +261,19 @@
          //direction: 'vertical',
              slidesPerView: 1,
              loop: false,
-             spaceBetween: 20,
+             spaceBetween: 30,
 
-              // pagination 기본은 bullet
-             pagination: {
-                el: ".swiper-pagination"
-             },
+             
+          
+         });
+
+         const swiper_blog = new Swiper('.swiper-blog', {
+         // Optional parameters
+         //direction: 'vertical',
+
+                    slidesPerView: 1,
+             loop: false,
+             spaceBetween: 30,
           
         });
 	}
@@ -268,9 +285,9 @@
 
 
 
-    function SetCampDetail(seq) {
+    function setCampDetail(seq) {
 
-        console.log(dataList.response.body.items.item[seq]);
+        //console.log(dataList.response.body.items.item[seq]);
 
 
         var title = ""
@@ -366,7 +383,60 @@
         $("#divInfo").html(info);
 
 	}
-  
+
+    function getBlogs(seq) {
+
+        var name = dataList.response.body.items.item[seq].facltNm;
+        var blog = ''
+        
+
+        $.ajax({
+                type: "post",
+                url: "/home/Blogs",
+                data: "query=" + encodeURIComponent(name),
+                success: function (data) {
+                    //script = data.replace(/<script>(.*)<\/script>/, "$1"); // Remove tags
+                    //eval(script); // Execute javascript
+
+                    console.log(data);
+
+
+                    if (data.items != null && data.items.length > 0) {
+
+                        blog += '<p>■ <b>이용 후기(블로그)</b></p>';
+                        blog += '<div class="swiper-blog">';
+                        blog += '<div class="swiper-wrapper">';
+
+                        for (var i = 0; i < data.items.length; i++) {
+                            
+                            blog += ' <div class="swiper-slide">';
+                            blog += '   <div style="margin-bottom:5px;"><b>' + data.items[i].title + '</b></div>';
+                            blog += '   <a href="' + data.items[i].link + '" target="_blank");">';
+                            blog += '     <div>'+ data.items[i].description +'</div>';                           
+                            blog += '   </a>';
+
+
+                            var ymd = data.items[i].postdate.substr(0, 4) + '-' +
+                                data.items[i].postdate.substr(4, 2) + '-' +
+                                data.items[i].postdate.substr(6, 2);
+
+
+                            blog += '   <div style="text-align:right;">'+ ymd +'</div>';
+                            blog += ' </div>';
+                        }
+                        blog += '</div>';
+                        blog += '</div>';
+
+                        $("#divBlogs").html(blog);
+                        swipe();
+					}
+
+                },
+                error: function (data) {
+                    //alert("error: " + data.responseText);
+                }
+            });
+	}
 
 </script>
     <div id="divMap" style="width:100%;height:250px;"></div>
@@ -386,6 +456,11 @@
     
 
     <div id="divInfo" style="width:100%;margin-top:15px;"></div>
+
+    <hr style="height:5px;"/>
+    <div id="divBlogs" style="width:100%;margin-top:15px;"></div>
+
+
 
 
 

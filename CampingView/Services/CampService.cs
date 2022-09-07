@@ -12,9 +12,6 @@ using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json.Linq;
 using System.Text;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 using SixLabors.ImageSharp.Processing;
 
 namespace CampingView.Services
@@ -39,7 +36,7 @@ namespace CampingView.Services
 
 
 
-        private bool IsCampFIleCheck(string path)
+        private bool IsCampFileCheck(string path)
         {
             // 하루에 한번 파일을 갱신한다.
 
@@ -60,10 +57,10 @@ namespace CampingView.Services
         {
             var model = new CampResModel();
 
-            var path = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CampData:CAMP_LIST_JSON").Value;
+            var path = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CAMP:CAMP_LIST_JSON").Value;
 
 
-            if (IsCampFIleCheck(path) == false)
+            if (IsCampFileCheck(path) == false)
             {
                 string url = req.searchurl; // URL
                 url += "?ServiceKey=" + req.serviceKey; // Service Key
@@ -100,21 +97,59 @@ namespace CampingView.Services
 
                     model = JsonConvert.DeserializeObject<CampResModel>(results);
                     var list = model.response.body.items.item.Where(w => w.facltDivNm == "지자체").ToList();
+
+                    this.ManageCamp(model.response.body.items, list);
+
                     model.response.body.items.item = list;
                 }
-
-
             }
             else
             {
                 var jsonStr = File.ReadAllText(path);
                 model = JsonConvert.DeserializeObject<CampResModel>(jsonStr);
                 var list = model.response.body.items.item.Where(w => w.facltDivNm == "지자체").ToList();
+
+                this.ManageCamp(model.response.body.items, list);
+
                 model.response.body.items.item = list;
             }
 
             return model;
         }
+
+        public void ManageCamp(CampItems items, List<CampItem> list)
+        {
+            var allowCamp = _configuration.GetSection("CAMP:ALLOW_CAMP").Value;
+            var denyCamp = _configuration.GetSection("CAMP:DENY_CAMP").Value;
+
+            
+            if(string.IsNullOrEmpty(allowCamp) == false)
+            {
+                var allow = allowCamp.Split(',');
+
+                foreach(var i in allow)
+                {
+                    var data = items.item.Where(w => w.contentId == i.Trim()).FirstOrDefault();
+
+                    if(data != null) list.Add(data);
+                }
+            }
+
+            if (string.IsNullOrEmpty(denyCamp) == false)
+            {
+                var deny = denyCamp.Split(',');
+
+
+                list.RemoveAll(x => deny.Contains(x.contentId));
+                /*
+                foreach (var i in deny)
+                {
+                    var bl = list.Remove(new CampItem() { contentId = i });
+                }
+                */
+            }
+        }
+
 
         public CampImgResModel GetCampImgList(CampReqModel req)
         {
@@ -122,9 +157,9 @@ namespace CampingView.Services
 
             // 이미지 경로를 조회
             //var root = _hostingEnvironment.WebRootPath;
-            var pathOrigin = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CampData:CAMP_IMAGE_BASE_PATH").Value + "/" + req.contentId;
-            var pathThum = pathOrigin + "/" + _configuration.GetSection("CampData:CAMP_IMAGE_THUM").Value;
-            var imgUrl = "/" + _configuration.GetSection("CampData:CAMP_IMAGE_BASE_PATH").Value + "/" + req.contentId + "/" +_configuration.GetSection("CampData:CAMP_IMAGE_THUM").Value;
+            var pathOrigin = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_BASE_PATH").Value + "/" + req.contentId;
+            var pathThum = pathOrigin + "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_THUM").Value;
+            var imgUrl = "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_BASE_PATH").Value + "/" + req.contentId + "/" +_configuration.GetSection("CAMP:CAMP_IMAGE_THUM").Value;
             
             if (this.ExistImageFile(pathThum) == false)
             {
@@ -193,7 +228,7 @@ namespace CampingView.Services
                 var item = new CampImgItem();
                 item.contentId = req.contentId;
                 item.imageUrl = imgUrl + "/" + file.Name;
-                item.imageUrlOri = "/" + _configuration.GetSection("CampData:CAMP_IMAGE_BASE_PATH").Value + "/" + req.contentId + "/" + file.Name.Replace("thum_", "");
+                item.imageUrlOri = "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_BASE_PATH").Value + "/" + req.contentId + "/" + file.Name.Replace("thum_", "");
                 item.serialnum = Convert.ToString(i++);
 
                 model.response.body.items.item.Add(item);
