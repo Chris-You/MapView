@@ -21,15 +21,18 @@ namespace CampingView.Services
     {
         CampResModel GetCampList(CampReqModel req);
         CampImgResModel GetCampImgList(CampReqModel req);
+
+        CampResModel GetCampSearch(string search);
     }
 
     public class CampService : ICampService
     {
-        
+
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _hostingEnvironment;
 
-        public CampService(IConfiguration configuration, IWebHostEnvironment hostingEnvironment) {
+        public CampService(IConfiguration configuration, IWebHostEnvironment hostingEnvironment)
+        {
             _configuration = configuration;
             _hostingEnvironment = hostingEnvironment;
         }
@@ -38,7 +41,7 @@ namespace CampingView.Services
 
         private bool IsCampFileCheck(string path)
         {
-            // 하루에 한번 파일을 갱신한다.
+            //todo 한달마다 파일을 갱신한다.
 
             // 캠프 리스트카 파일에 존재하는지 체크
             if (!File.Exists(path))
@@ -53,58 +56,113 @@ namespace CampingView.Services
             }
         }
 
-        public CampResModel GetCampList(CampReqModel req )
+
+        public CampResModel CampList(CampReqModel req)
+        {
+            var path = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CAMP:CAMP_LIST_JSON").Value;
+            path = path.Replace("{}", req.pageNo.ToString());
+
+            //var model = new CampResModel();
+
+            string url = req.searchurl; // URL
+            url += "?ServiceKey=" + req.serviceKey; // Service Key
+            url += "&pageNo=" + req.pageNo;
+            url += "&numOfRows=" + req.numOfRows;
+            url += "&MobileOS=" + req.MobileOS;
+            url += "&MobileApp=" + req.MobileApp;
+            url += "&_type=json";
+
+            if (req.radius > 0)
+            {
+                url += "&mapX=" + req.mapX;
+                url += "&mapY=" + req.mapY;
+                url += "&radius=" + req.radius;
+            }
+
+
+            var request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "GET";
+
+            string results = string.Empty;
+            HttpWebResponse response;
+            using (response = request.GetResponse() as HttpWebResponse)
+            {
+                StreamReader reader = new StreamReader(response.GetResponseStream());
+                results = reader.ReadToEnd();
+
+                // 응답데이터를 json 파일로 생성
+
+                using (FileStream fs = File.Create(path))
+                {
+                    Byte[] json = new UTF8Encoding(true).GetBytes(results);
+                    fs.Write(json, 0, json.Length);
+                }
+
+                return JsonConvert.DeserializeObject<CampResModel>(results);
+                /*
+                var list = model.response.body.items.item.Where(w => w.facltDivNm == "지자체").ToList();
+
+                this.ManageCamp(model.response.body.items, list);
+
+                model.response.body.items.item = list;
+                */
+
+                
+            }
+        }
+
+        public CampResModel GetCampList(CampReqModel req)
         {
             var model = new CampResModel();
+            List<List<CampItem>> arr = new List<List<CampItem>>();
 
             var path = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CAMP:CAMP_LIST_JSON").Value;
-
+            path = path.Replace("{}", req.pageNo.ToString());
 
             if (IsCampFileCheck(path) == false)
             {
-                string url = req.searchurl; // URL
-                url += "?ServiceKey=" + req.serviceKey; // Service Key
-                url += "&pageNo=" + req.pageNo;
-                url += "&numOfRows=" + req.numOfRows;
-                url += "&MobileOS=" + req.MobileOS;
-                url += "&MobileApp=" + req.MobileApp;
-                url += "&_type=json";
+                var res = this.CampList(req);
 
-                if (req.radius > 0)
+                var cnt = res.response.body.totalCount / res.response.body.numOfRows;
+                var mod = (res.response.body.totalCount % res.response.body.numOfRows > 0) ? cnt++ : cnt;
+                for (var i=1; i<= cnt; i++)
                 {
-                    url += "&mapX=" + req.mapX;
-                    url += "&mapY=" + req.mapY;
-                    url += "&radius=" + req.radius;
-                }
-
-
-                var request = (HttpWebRequest)WebRequest.Create(url);
-                request.Method = "GET";
-
-                string results = string.Empty;
-                HttpWebResponse response;
-                using (response = request.GetResponse() as HttpWebResponse)
-                {
-                    StreamReader reader = new StreamReader(response.GetResponseStream());
-                    results = reader.ReadToEnd();
-
-                    // 응답데이터를 json 파일로 생성
-                    using (FileStream fs = File.Create(path))
-                    {
-                        Byte[] json = new UTF8Encoding(true).GetBytes(results);
-                        fs.Write(json, 0, json.Length);
-                    }
-
-                    model = JsonConvert.DeserializeObject<CampResModel>(results);
-                    var list = model.response.body.items.item.Where(w => w.facltDivNm == "지자체").ToList();
-
-                    this.ManageCamp(model.response.body.items, list);
-
-                    model.response.body.items.item = list;
+                    req.pageNo++;
+                    var res2 = this.CampList(req);
                 }
             }
             else
             {
+                var dir = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CAMP:CAMP_LIST_DIR").Value;
+
+                var di = new DirectoryInfo(dir);
+                foreach(var file in di.GetFiles())
+                {
+                    var str = File.ReadAllText(file.FullName);
+                    var resp = JsonConvert.DeserializeObject<CampResModel>(str);
+                    
+                    if (resp.response.body.items != null && resp.response.body.items.item.Count() > 0)
+                    {
+                        arr.Add(resp.response.body.items.item.Where(w => w.facltDivNm == "지자체").ToList());
+                    }
+
+                }
+                var item = new List<CampItem>();
+                foreach (var li in arr)
+                {
+                    item = item.Union(li).ToList();
+                }
+
+                
+                model.response.header.resultCode = "00";
+                model.response.header.resultMsg = "OK";
+                model.response.body.items.item = item;
+                model.response.body.numOfRows = item.Count();
+                model.response.body.totalCount = item.Count();
+                model.response.body.pageNo = 1;
+
+
+                /*
                 var jsonStr = File.ReadAllText(path);
                 model = JsonConvert.DeserializeObject<CampResModel>(jsonStr);
                 var list = model.response.body.items.item.Where(w => w.facltDivNm == "지자체").ToList();
@@ -112,6 +170,7 @@ namespace CampingView.Services
                 this.ManageCamp(model.response.body.items, list);
 
                 model.response.body.items.item = list;
+                */
             }
 
             return model;
@@ -122,16 +181,16 @@ namespace CampingView.Services
             var allowCamp = _configuration.GetSection("CAMP:ALLOW_CAMP").Value;
             var denyCamp = _configuration.GetSection("CAMP:DENY_CAMP").Value;
 
-            
-            if(string.IsNullOrEmpty(allowCamp) == false)
+
+            if (string.IsNullOrEmpty(allowCamp) == false)
             {
                 var allow = allowCamp.Split(',');
 
-                foreach(var i in allow)
+                foreach (var i in allow)
                 {
                     var data = items.item.Where(w => w.contentId == i.Trim()).FirstOrDefault();
 
-                    if(data != null) list.Add(data);
+                    if (data != null) list.Add(data);
                 }
             }
 
@@ -159,8 +218,8 @@ namespace CampingView.Services
             //var root = _hostingEnvironment.WebRootPath;
             var pathOrigin = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_BASE_PATH").Value + "/" + req.contentId;
             var pathThum = pathOrigin + "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_THUM").Value;
-            var imgUrl = "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_BASE_PATH").Value + "/" + req.contentId + "/" +_configuration.GetSection("CAMP:CAMP_IMAGE_THUM").Value;
-            
+            var imgUrl = "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_BASE_PATH").Value + "/" + req.contentId + "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_THUM").Value;
+
             if (this.ExistImageFile(pathThum) == false)
             {
                 // 이미지 폴더가 없거나, 이미지가 없으면 썸네일 파일 생성
@@ -186,12 +245,12 @@ namespace CampingView.Services
                     model = JsonConvert.DeserializeObject<CampImgResModel>(results);
                 }
 
-                if(model.response.body.items != null)
+                if (model.response.body.items != null)
                 {
                     if (model.response.body.items.item.Count() > 0)
                     {
                         // 파일 다운로드
-                        foreach(var f in model.response.body.items.item)
+                        foreach (var f in model.response.body.items.item)
                         {
                             var name = f.imageUrl.Split('/').LastOrDefault();
                             var targetFile = pathOrigin + "/" + name;
@@ -268,7 +327,7 @@ namespace CampingView.Services
             var files = di.EnumerateFiles();
 
 
-            foreach(var file in files)
+            foreach (var file in files)
             {
                 using var image = Image.Load(file.OpenRead());
                 image.Mutate(x => x.Resize(600, 400));
@@ -277,8 +336,44 @@ namespace CampingView.Services
 
             }
 
-            
+
         }
 
+
+        public CampResModel GetCampSearch(string search)
+        {
+            var model = new CampResModel();
+
+            List<List<CampItem>> arr = new List<List<CampItem>>();
+
+            var dir = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CAMP:CAMP_LIST_DIR").Value;
+
+            var di = new DirectoryInfo(dir);
+            foreach (var file in di.GetFiles())
+            {
+                var str = File.ReadAllText(file.FullName);
+                var resp = JsonConvert.DeserializeObject<CampResModel>(str);
+
+                if (resp.response.body.items != null && resp.response.body.items.item.Count() > 0)
+                {
+                    arr.Add(resp.response.body.items.item.Where(w => w.facltNm.IndexOf(search) >= 0).ToList());
+                }
+            }
+
+            var item = new List<CampItem>();
+            foreach (var li in arr)
+            {
+                item = item.Union(li).ToList();
+            }
+
+            model.response.header.resultCode = "00";
+            model.response.header.resultMsg = "OK";
+            model.response.body.items.item = item;
+            model.response.body.numOfRows = item.Count();
+            model.response.body.totalCount = item.Count();
+            model.response.body.pageNo = 1;
+
+            return model;
+        }
     }
 }

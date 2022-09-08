@@ -31,12 +31,24 @@ namespace CampingView.Models
     public class CampResModel
     {
         public CampResponse response { get; set; }
+
+        public CampResModel()
+        {
+            response = new CampResponse();
+        }
     }
 
     public class CampResponse
     {
         public CampHeader header { get; set; }
         public CampBody body { get; set; }
+
+        public CampResponse()
+        {
+            header = new CampHeader();
+            body = new CampBody();
+        }
+
     }
 
     public class CampHeader
@@ -51,11 +63,21 @@ namespace CampingView.Models
         public int numOfRows { get; set; }
         public int pageNo { get; set; }
         public int totalCount { get; set; }
+
+        public CampBody()
+        {
+            items = new CampItems();
+        }
     }
 
     public class CampItems
     {
         public List<CampItem> item { get; set; }
+
+        public CampItems()
+        {
+            item = new List<CampItem>();
+        }
     }
 
     public class CampItem
@@ -173,11 +195,22 @@ namespace CampingView.Models
         public int numOfRows { get; set; }
         public int pageNo { get; set; }
         public int totalCount { get; set; }
+
+        public CampImgBody()
+        {
+            items = new CampImgItems();
+        }
     }
 
     public class CampImgItems
     {
         public List<CampImgItem> item { get; set; }
+
+        public CampImgItems()
+        {
+            item = new List<CampImgItem>();
+        }
+
     }
 
     public class CampImgItem
@@ -192,7 +225,5 @@ namespace CampingView.Models
     }
 
     #endregion
-
-
     
 }

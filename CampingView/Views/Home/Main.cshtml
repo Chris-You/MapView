@@ -4,92 +4,158 @@
 @{
 }
 
+<style type="text/css">
+
+	.non-visiable {
+		display: none;
+	}
+
+	.alert {
+		margin-bottom:10px;
+		border-radius:0px;
+	}
+
+</style>
    
-<script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=ak5szsi1xk&callback=mapInit"></script>
+<script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=ak5szsi1xk&callback=mapSet"></script>
 
 <script>
 
     var map;
     var markers=[];
     var infoWindows = [];
-
     var dataList = [];
 
-    
 
     function mapInit() {
+
+        map = null;
+        markers=[];
+        infoWindows = [];
+        dataList = [];
+
+        navigator.geolocation.getCurrentPosition(function (position) {
+                setMap(position.coords.latitude, position.coords.longitude);
+            }
+            , function (error) {
+                console.log(error);
+            });
+	}
+
+
+    function mapSet() {
 
         if(!navigator.geolocation) {
             alert('Geolocation is not supported by your browser');
         }
         else
         {
-            
-            //status.textContent = 'Locating…';
-            navigator.geolocation.getCurrentPosition(function (position) {
-                    setMap(position.coords.latitude, position.coords.longitude);
-                }
-                , function (error) {
-                    console.log(error);
-                });
-            
+            mapInit();
+
+            var data = "";
+            if ($("#search").val() != "") {
+                data="search=" + $("#search").val()
+			}
+
+            //$("#divCampList").empty();
+            var list = "";
+
             $.ajax({
                 type: "post",
-                url: "/home/SearchBase",
-                data: "",
+                url: "/home/Search",
+                data: data,
                 success: function (data) {
                     //script = data.replace(/<script>(.*)<\/script>/, "$1"); // Remove tags
                     //eval(script); // Execute javascript
                     if (data.response.body.items.item.length > 0) {
 
                         dataList = data;
+                        var cnt = (data.response.body.items.item.length < 20 ? data.response.body.items.item.length : 20);
+                        if ($("#search").val() != "") {
+                            cnt = data.response.body.items.item.length;
+                        }
 
                         for (var i = 0; i < data.response.body.items.item.length; i++) {
 
                             var lng = data.response.body.items.item[i].mapX;
                             var lat = data.response.body.items.item[i].mapY;
 
-                            setMarker(lat, lng, data.response.body.items.item[i].facltNm);
+                            setMarker(lat, lng, data.response.body.items.item[i].facltNm, i);
+
+                            if (i < cnt) {
+
+                                var visiable = ""
+                                if (i >= 5) {
+                                    visiable = "non-visiable"
+								}
+
+                                var imgUrl = data.response.body.items.item[i].firstImageUrl == "" ? "/img/no_image.png" : data.response.body.items.item[i].firstImageUrl;
+
+                                list += '<div class="alert alert-info '+ visiable +'" >';
+                                list += '    <div class="media">';
+                                list += '        <div class="media-left">';
+                                list += '        <a href="#">';
+                                list += '            <img class="media-object" src="'+ imgUrl +'" style="width: 80px; height: 60px;">';
+                                list += '        </a>';
+                                list += '        </div>';
+                                list += '        <div class="media-body">';
+                                list += '        <h4 class="media-heading">' + data.response.body.items.item[i].facltNm + '</h4>';
+
+                                var tel = "";
+                                if (data.response.body.items.item[i].tel != "") {
+                                    //tel =    ' [Tel:' + data.response.body.items.item[i].tel + ']'
+                                }
+
+                                list += '        ' + data.response.body.items.item[i].addr1 + tel ;
+                                list += '        </div>';
+                                list += '    </div>';
+                                list += '</div>';
+
+
+                            }
                         }
 
                         for (var i = 0; i < markers.length; i++)
                         {
                             markers[i].setMap(map);
                             naver.maps.Event.addListener(markers[i], 'click', getClickHandler(i));
-		                }
-				    }
+                        }
+
+                        // 검색은 첫번째 데이터로 이동
+                        if ($("#search").val() != "") {
+                            var center = new naver.maps.LatLng(data.response.body.items.item[0].mapY, data.response.body.items.item[0].mapX);
+                            
+                            map.setCenter(center);
+                        }
+
+
+                        if (cnt > 5) {
+                            // 더보기 버튼
+                            list += '<div id="more">';
+                            list += '  <button type="button" class="btn btn-default btn-lg btn-block" onclick="viewMore();">더보기(More)</button>';
+                            list += '</div>';
+
+						}
+
+                    }
+
+
+                    if (list != "") {
+
+                        $("#divCampList").html(list);
+                    }
+
+
                 },
                 error: function (data) {
                     //alert("error: " + data.responseText);
                 }
             });
+
+
         }
     }
 
-    /*
-    function GeoSuccess(position) {
-        var initLat = position.coords.latitude;
-        var initLng = position.coords.longitude;
-
-        console.log(position);
-        console.log(initLat + "," + initLng);
-
-        setMap(initLat, initLng);
-
-        setMarker(initLat, initLng);
-        //setMarker(initLat + 0.1, initLng + 0.1);
-        //setMarker(initLat + 0.1, initLng + 0.2);
-        //setMarker(initLat + 0.3, initLng + 0.3);
-        
-        console.log(markers);
-        for (var i = 0; i < markers.length; i++)
-        {
-            marker = markers[i];
-            marker.setMap(map);
-            naver.maps.Event.addListener(markers[i], 'click', getClickHandler(i));
-		}
-    }
-    */
 
     function setMap(lat, lng) {
         var mapOptions = {
@@ -150,7 +216,7 @@
 
 
 
-    function setMarker(lat, lng, facltNm) {
+    function setMarker(lat, lng, facltNm, seq) {
         var marker = new naver.maps.Marker({
             position: new naver.maps.LatLng(lat, lng),
             map: map,
@@ -167,12 +233,16 @@
 
 
         var infoWindow = new naver.maps.InfoWindow({
-            content: '<div style="width:150px;text-align:center;padding:10px;"> <b>'+ facltNm +'</b>.</div>'
+            content: '<div style="width:150px;text-align:center;padding:10px;" onclick="closeInfo('+ seq +')"> <b>'+ facltNm +'</b></div>'
         });
 
         infoWindows.push(infoWindow);
 
     }
+
+    function closeInfo(seq) {
+        infoWindows[seq].close();
+	}
 
 
     // 해당 마커의 인덱스를 seq라는 클로저 변수로 저장하는 이벤트 핸들러를 반환합니다.
@@ -219,6 +289,8 @@
                                 imgHtml += '</div>';
                                 //imgHtml += '<div class="swiper-pagination"></div>';
                                 imgHtml += '</div>';
+
+                                imgHtml += '<hr style="height:5px;"/>';
                             }
                             else {
                                 imgHtml = "<img src='/img/no_image.png' />";
@@ -282,8 +354,6 @@
         window.open(url);
         //console.log(url);
     }
-
-
 
     function setCampDetail(seq) {
 
@@ -378,7 +448,7 @@
         */
         info += '</div>'
         
-
+        info += '<hr style="height:5px;"/>';
 
         $("#divInfo").html(info);
 
@@ -436,33 +506,58 @@
                     //alert("error: " + data.responseText);
                 }
             });
+    }
+
+    function viewMore() {
+        var tot = $("#divCampList > .non-visiable").length;
+        
+        if (tot > 0) {
+            $("#divCampList > .non-visiable").each(function (index, item) {
+                if (index < 5) {
+                    $(this).removeClass("non-visiable");
+                }
+            });
+        }
+
+        var tot2 = $("#divCampList > .non-visiable").length;
+        
+        if (tot2 == 0) $("#more").hide();
 	}
+    
 
 </script>
-    <div id="divMap" style="width:100%;height:250px;"></div>
 
-    <div id="divTitle" style="width:100%;margin-top:15px;"></div>
-    <div id="divReserve" style="width:100%;margin-top:15px;"></div>
-    
-    <div>
-        <div id="divImage" style="width:100%;height:300px;margin-top:5px;"></div>
-        <!--<div style="text-align:right;font-size:11px;">[클릭시 큰 이미지로 보실 수 있습니다.]</div>-->
+    <div id="divSearch" style="margin:0 0 8px 0;text-align:left;">
+        <form class="form-inline">
+          <div class="form-group">
+            <div class="input-group">
+              <input type="text" class="form-control" id="search" placeholder="">              
+                 <span class="input-group-btn">
+                <button class="btn btn-primary" type="button" onclick="javascript:mapSet();">검색</button>
+              </span>
+            </div>
+          </div>
+        </form>
     </div>
 
-    <hr style="height:5px;"/>
+    <div id="divMap" style="width:100%;height:250px;"></div>
 
-    <div id="divDesc" style="width:100%;margin-top:15px;display:none;"></div>
+
     
+    <div id="divCampList" style="margin-top: 25px;"></div>
+
+    <div style="margin-left:10px;">
+        <div id="divTitle" style="width:100%;margin-top:15px;"></div>
+
+        <div id="divReserve" style="width:100%;margin-top:15px;"></div>
     
+        <div id="divImage" style="width:100%;margin-top:5px;"></div>
 
-    <div id="divInfo" style="width:100%;margin-top:15px;"></div>
-
-    <hr style="height:5px;"/>
-    <div id="divBlogs" style="width:100%;margin-top:15px;"></div>
-
-
-
-
-
-    <div id="divBottom" style="width:100%;height:150px;"></div>
+        <div id="divDesc" style="width:100%;margin-top:15px;display:none;"></div>
     
+        <div id="divInfo" style="width:100%;margin-top:15px;"></div>
+    
+        <div id="divBlogs" style="width:100%;margin-top:15px;"></div>
+
+        <div id="divBottom" style="width:100%;height:100px;"></div>
+    </div>

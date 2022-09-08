@@ -59,22 +59,33 @@ namespace CampingView.Controllers
 
 
         [HttpPost]
-        public IActionResult SearchBase()
+        public IActionResult Search(string search)
         {
-            CampReqModel req = new CampReqModel
+            var response = new CampResModel();
+            if (string.IsNullOrEmpty(search))
             {
-                serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value,
-                searchurl = _configuration.GetSection("OPENAPI:PUBLIC_API_BASE_URL").Value,
-                pageNo = 1,
-                numOfRows = 1000,
-                MobileOS = "ETC",
-                MobileApp = "CampView"
-            };
+                CampReqModel req = new CampReqModel
+                {
+                    serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value,
+                    searchurl = _configuration.GetSection("OPENAPI:PUBLIC_API_BASE_URL").Value,
+                    pageNo = 1,
+                    numOfRows = 1000,
+                    MobileOS = "ETC",
+                    MobileApp = "CampView"
+                };
 
-            var response = _campService.GetCampList(req);
+                response = _campService.GetCampList(req);
+            }
+            else
+            {
+                response = _campService.GetCampSearch(search);
+            }
 
             return new JsonResult(response);
         }
+
+
+
 
 
         [HttpPost]
@@ -126,6 +137,5 @@ namespace CampingView.Controllers
         }
 
 
-        
     }
 }
