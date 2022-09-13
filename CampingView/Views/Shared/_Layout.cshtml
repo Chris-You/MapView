@@ -3,74 +3,60 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] 캠장에 대한 모든것</title>
+
+    <meta name ="google-signin-client_id" content="1061916295015-dcb9sn0767gmk7md8i0hsss0lplbgd4k.apps.googleusercontent.com">
+
+    <title>@ViewData["Title"] 캠핑장 찾기</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
-
-
-
+    <link rel="stylesheet" href="~/css/site.css">
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/site.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1971674194330083"
+     crossorigin="anonymous"></script>
 
     @RenderSection("Scripts", required: false)
 
+
+    <script>
+
+
+
+    </script>
+
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+    <header class="header">
+        <nav class="">
             <div class="container">
-                <!--
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CampingView</a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                -->
-                   
-                <!--
-                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+               
+                <div class="panel-heading" style="float:left;">
+                    <h4><a href="/">CampView</a></h4>
                 </div>
-                 -->
 
+                <div class="panel-heading" style="float:right;">
                 @if (User.Identity.IsAuthenticated)
-                {
-                   
-               <div class="panel-heading">
-                   <!-- <h2><span class="label label-success">지자체 </span></h2> -->
-                   <!--
-                   <span class="label label-default" style="font-size:14px;">강원도</span>
-                   <span class="label label-default" style="font-size:14px;">충청도</span>
-                   <span class="label label-default" style="font-size:14px;">경상도</span>
-                   <span class="label label-default" style="font-size:14px;">전라도</span>
-                   <span class="label label-default" style="font-size:14px;">제주도</span>-->
+				{
+                    
+                   @if (User.Claims.Any(x => x.Type == "name"))
+				   {
+                       <span style="font-size:12px;">
+                        @string.Format("{0}님", User.Claims.FirstOrDefault(x => x.Type == "name").Value)
+                       </span>
+				   }
+                   <span style="font-size:16px;"><a href="/Account/Logout"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span></a></span>
+				}
+				else
+				{
+                   <span style="font-size:16px;"><a href="/Account/Login"><span class="glyphicon glyphicon-log-in" aria-hidden="true"></span></a></span>
+				}
 
-                   @if (User.Claims.Any( x=> x.Type == "name"))
-                   {
-                    <div>@User.Claims.FirstOrDefault( x=> x.Type == "name").Value </div>
-                   }
-
-                   <a href="/Account/Logout">로그아웃</a>
                 </div>
-                }
-                else
-                {
-                 <div class="panel-heading">
-                  
-                   <a href="/Account/Login">로그인</a>
-                </div>
-                }
             </div>
         </nav>
     </header>
@@ -85,39 +71,13 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2022 - CampingView - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2022 - CampView. All Rights Reserved.
         </div>
     </footer>
+
+    
 
 
 </body>
 </html>
 
-
-
-
-                <!-- Slider main container -
-                <div class="swiper">
-                  
-                  <div class="swiper-wrapper">
-                    
-                    <div class="swiper-slide">수도권</div>
-                    <div class="swiper-slide">강원도</div>
-                    <div class="swiper-slide">충청도</div>
-                    <div class="swiper-slide">경상도</div>
-                    <div class="swiper-slide">전라도</div>
-                    <div class="swiper-slide">제주도</div>
-                  </div> 
-                    -->
-                  <!-- If we need pagination 
-                  <div class="swiper-pagination"></div>-->
-
-                  <!-- If we need navigation buttons
-                  <div class="swiper-button-prev"></div>
-                  <div class="swiper-button-next"></div>-->
-                    
-                  <!-- If we need scrollbar 
-                  <div class="swiper-scrollbar"></div>
-                      
-                </div>
-                      -->

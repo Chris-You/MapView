@@ -29,7 +29,7 @@ namespace CampingView
             services.AddControllersWithViews();
 
             services.AddScoped<ICampService, CampService>();
-            services.AddScoped<INaverService, NaverService>();
+            services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IUserService, UserService>();
 
             services.AddAuthentication(options =>

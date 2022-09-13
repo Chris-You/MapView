@@ -5,9 +5,59 @@
 
 }
 
+@section Scripts
+{
+<script src="https://apis.google.com/js/platform.js" async defer></script>
+
+<script type="text/javascript">
+
+    function onSignIn(googleUser) {
+		var profile = googleUser.getBasicProfile();
+		console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+		console.log('Name: ' + profile.getName());
+		console.log('Image URL: ' + profile.getImageUrl());
+		console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
 
 
-<div style="margin:50px 0 120px 0;text-align:center;">
-    <a href="/Account/NaverLogin"><img src="~/img/btn_naver_login.png"/> </a>
+
+		$.ajax({
+			type: "post",
+			url: '/Account/GoogleLogin',
+			data: "id="+ profile.getId() + "&name="+ profile.getName() + "&email=" + profile.getEmail(),
+			success: function (data) {
+			},
+		});
+		
+
+	}
+
+	function signOut() {
+		var auth2 = gapi.auth2.getAuthInstance();
+		auth2.signOut().then(function () {
+		  console.log('User signed out.');
+		});
+	  }
+
+
+	function onSignInFailure(t){		
+		console.log(t);
+	}
+
+</script>
+
+}
+
+
+<div style="margin:50px 0 10px 0;text-align:center;">
+    <a href="/Account/NaverLogin"><img src="~/img/btn_naver_login.png" style="width:120px;height:30px;"/> </a>
+	
+	
+    <!--
+	<div class="g-signin2" data-onsuccess="onSignIn"></div>
+	<a href="#" onclick="signOut();">Sign out</a>
+	-->
+</div>
+<div style="margin:0 0 120px 0;text-align:center;">
+    <a href="/Account/KakaoLogin"><img src="~/img/kakao_login_medium_narrow.png" style="width:120px;height:30px;"/> </a>
 </div>
 

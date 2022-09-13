@@ -152,11 +152,13 @@ namespace CampingView.Services
                 {
                     item = item.Union(li).ToList();
                 }
+                Random rand = new Random();
+                var shuffled = item.OrderBy(_ => rand.Next()).ToList();
 
-                
+
                 model.response.header.resultCode = "00";
                 model.response.header.resultMsg = "OK";
-                model.response.body.items.item = item;
+                model.response.body.items.item = shuffled;
                 model.response.body.numOfRows = item.Count();
                 model.response.body.totalCount = item.Count();
                 model.response.body.pageNo = 1;

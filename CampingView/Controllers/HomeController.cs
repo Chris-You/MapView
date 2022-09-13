@@ -17,17 +17,17 @@ namespace CampingView.Controllers
         private readonly ILogger<HomeController> _logger;
 
         private ICampService _campService;
-        private INaverService _naverService;
+        private IAccountService _accountService;
         private IUserService _userService;
 
         public HomeController(ILogger<HomeController> logger, IConfiguration config, 
-                              ICampService campService, INaverService naverService,
+                              ICampService campService, IAccountService accountService,
                               IUserService userService)
         {
             _logger = logger;
             _configuration = config;
             _campService = campService;
-            _naverService = naverService;
+            _accountService = accountService;
             _userService = userService;
         }
 
@@ -131,7 +131,7 @@ namespace CampingView.Controllers
         [HttpPost]
         public IActionResult Blogs(string query)
         {
-            var response = _naverService.GetBlogList(query);
+            var response = _accountService.GetBlogList(query);
 
             return new JsonResult(response);
         }

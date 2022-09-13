@@ -93,10 +93,11 @@
 
                                 list += '<div class="alert alert-info '+ visiable +'" >';
                                 list += '    <div class="media">';
+                                list += '        <a href="javascript:setCampDetail(\''+ i +'\');">';
                                 list += '        <div class="media-left">';
-                                list += '        <a href="#">';
+                                
                                 list += '            <img class="media-object" src="'+ imgUrl +'" style="width: 80px; height: 60px;">';
-                                list += '        </a>';
+                                
                                 list += '        </div>';
                                 list += '        <div class="media-body">';
                                 list += '        <h4 class="media-heading">' + data.response.body.items.item[i].facltNm + '</h4>';
@@ -108,10 +109,9 @@
 
                                 list += '        ' + data.response.body.items.item[i].addr1 + tel ;
                                 list += '        </div>';
+                                list += '        </a>';
                                 list += '    </div>';
                                 list += '</div>';
-
-
                             }
                         }
 
@@ -128,24 +128,19 @@
                             map.setCenter(center);
                         }
 
-
                         if (cnt > 5) {
                             // 더보기 버튼
                             list += '<div id="more">';
                             list += '  <button type="button" class="btn btn-default btn-lg btn-block" onclick="viewMore();">더보기(More)</button>';
                             list += '</div>';
-
-						}
-
+                        }
                     }
-
 
                     if (list != "") {
-
                         $("#divCampList").html(list);
+                        $("#divCampList").show();
+                        $("#divCampDtl").hide();
                     }
-
-
                 },
                 error: function (data) {
                     //alert("error: " + data.responseText);
@@ -231,13 +226,11 @@
 
         markers.push(marker);
 
-
         var infoWindow = new naver.maps.InfoWindow({
             content: '<div style="width:150px;text-align:center;padding:10px;" onclick="closeInfo('+ seq +')"> <b>'+ facltNm +'</b></div>'
         });
 
         infoWindows.push(infoWindow);
-
     }
 
     function closeInfo(seq) {
@@ -258,15 +251,25 @@
                 infoWindow.open(map, marker);
             }
             
-            //console.log(seq);
+            console.log(seq);
+            
+            //$("#divCampList").hide();   // 상세 선택시 리스트 비노출
+            $("#divCampDtl").show();
 
             setCampDetail(seq);
 
-            var imgHtml = "";
+            
+            
+        }
+    }
+
+    function getImages(seq) {
+
+        var imgHtml = "";
             $("#divImage").show();
             $("#divImage").html("<div style='text-align:center;'><img src='/img/loading.gif'/></div>");
 
-            $.ajax({
+        $.ajax({
                 type: "post",
                 url: "/home/SearchImage",
                 data: "contentId=" + dataList.response.body.items.item[seq].contentId,
@@ -320,12 +323,7 @@
                     $("#divImage").hide();
                 }
             });
-
-
-            getBlogs(seq);
-            
-        }
-    }
+	}
 
     function swipe() {
          const swiper = new Swiper('.swiper-img', {
@@ -357,8 +355,11 @@
 
     function setCampDetail(seq) {
 
-        //console.log(dataList.response.body.items.item[seq]);
+        console.log(dataList.response.body.items.item[seq]);
 
+        //$("#divCampList").hide();   // 상세 선택시 리스트 비노출
+        $("#divCampDtl").show();
+        showDiv("light");
 
         var title = ""
         title += "<p>■ <b>" + dataList.response.body.items.item[seq].facltNm + "</b></p>"
@@ -452,6 +453,13 @@
 
         $("#divInfo").html(info);
 
+
+
+        getImages(seq);
+
+        getBlogs(seq);
+
+
 	}
 
     function getBlogs(seq) {
@@ -531,7 +539,7 @@
         <form class="form-inline">
           <div class="form-group">
             <div class="input-group">
-              <input type="text" class="form-control" id="search" placeholder="">              
+              <input type="text" class="form-control" id="search" placeholder="캠핑장 이름">              
                  <span class="input-group-btn">
                 <button class="btn btn-primary" type="button" onclick="javascript:mapSet();">검색</button>
               </span>
@@ -546,18 +554,93 @@
     
     <div id="divCampList" style="margin-top: 25px;"></div>
 
-    <div style="margin-left:10px;">
-        <div id="divTitle" style="width:100%;margin-top:15px;"></div>
-
-        <div id="divReserve" style="width:100%;margin-top:15px;"></div>
     
-        <div id="divImage" style="width:100%;margin-top:5px;"></div>
 
-        <div id="divDesc" style="width:100%;margin-top:15px;display:none;"></div>
-    
-        <div id="divInfo" style="width:100%;margin-top:15px;"></div>
-    
-        <div id="divBlogs" style="width:100%;margin-top:15px;"></div>
+    <div id="divBottom" style="width:100%;height:100px;"></div>
 
-        <div id="divBottom" style="width:100%;height:100px;"></div>
+
+
+
+    <div id="fade" class="black_overlay" style="display:none;"></div>
+    <div id="light" class="white_content" style="width:100%;">
+		<div>
+			<div style="text-align:right; vertical-align:text-top;">
+				<a href="javascript:void(0)" onclick="clolseDiv('light');">
+					<img src="/img/close_square.png" style="width:18px;height:18px;" />
+				</a>
+			</div>
+
+			<div style="color:blue;margin-left:45px;"></div>
+
+
+			<div id="divCampDtl" style="margin-left:10px;">
+
+				<div id="divTitle" style="width:100%;margin-top:15px;"></div>
+
+				<div id="divReserve" style="width:100%;margin-top:15px;"></div>
+
+				<div id="divImage" style="width:100%;margin-top:5px;"></div>
+
+				<div id="divDesc" style="width:100%;margin-top:15px;display:none;"></div>
+
+				<div id="divInfo" style="width:100%;margin-top:15px;"></div>
+
+				<div id="divBlogs" style="width:100%;margin-top:15px;"></div>
+
+			</div>
+		</div>
     </div>
+
+
+    <script type="text/javascript">
+
+
+        $(document).ready(function () {
+        
+
+		    $("#fade").on("click", function () {
+			    clolseDiv("light");
+		    });
+
+		    // esc 키가 눌러지면 레이어를 닫는다.
+		    $(document).keydown(function (event) {
+			    if (event.keyCode == 27 || event.which == 27) {
+				    clolseDiv("light");
+			    }
+            });
+
+
+        });
+
+
+
+        function wrapWindowByMask() {
+		    //화면의 높이와 너비를 구한다.
+		    var maskHeight = $(document).height();
+		    var maskWidth = $(window).width();
+
+		    //마스크의 높이와 너비를 화면 것으로 만들어 전체 화면을 채운다.
+		    $('#fade').css({ 'width': maskWidth, 'height': maskHeight });
+	    }
+
+	    /// 화면의 중앙에 레이어띄움
+	    function showDiv(objId) {
+		    wrapWindowByMask();
+
+		    $("#" +objId).css("position", "absolute");
+		    $("#" +objId).css("top", "80px");
+		    $("#" +objId).css("left", Math.max(0, (($(window).width() - $("#light").outerWidth()) / 2) + $(window).scrollLeft())  + "px");
+
+		    $('#fade').show();
+		    $("#" +objId).show();
+	    }
+
+	    function clolseDiv(objId) {
+		    $('#fade').hide();
+		    $("#" +objId).hide();
+	    }
+
+
+    </script>
+
+    

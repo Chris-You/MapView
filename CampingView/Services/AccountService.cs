@@ -14,15 +14,18 @@ using System.Text;
 
 namespace CampingView.Services
 {
-    public interface INaverService
+    public interface IAccountService
     {
         SearchResModel GetBlogList(string query);
         Task<NaverAccessToken> GetAccessToken(string code, string state);
         NaverUserProfile GetUserProfile(string token);
-        
+
+
+        Task<KakaoAccessToken> GetKakaoAccessToken(string code, string state, string redirectUrl);
+        KakaoUserProfile GetKakaoUserProfile(string token);
     }
 
-    public class NaverService : INaverService
+    public class AccountService : IAccountService
     {
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _hostingEnvironment;
@@ -32,7 +35,7 @@ namespace CampingView.Services
         private string _searechBlogUrl = string.Empty;
 
 
-        public NaverService(IConfiguration configuration, IWebHostEnvironment hostingEnvironment)
+        public AccountService(IConfiguration configuration, IWebHostEnvironment hostingEnvironment)
         {
             _configuration = configuration;
             _hostingEnvironment = hostingEnvironment;
@@ -102,7 +105,6 @@ namespace CampingView.Services
             }
         }
 
-
         public NaverUserProfile GetUserProfile(string token)
         {
             string header = "Bearer " + token; // Bearer 다음에 공백 추가
@@ -131,5 +133,60 @@ namespace CampingView.Services
                 return null;
             }
         }
+
+
+        public async Task<KakaoAccessToken> GetKakaoAccessToken(string code, string state, string redirectUrl)
+        {
+            using (var client = new HttpClient())
+            {
+                
+                //string redirectURI = "YOUR-CALLBACK-URL";
+                string apiURL = "https://kauth.kakao.com/oauth/token";
+
+                var parameters = new Dictionary<string, string>();
+                parameters.Add("grant_type", "authorization_code");
+                parameters.Add("client_id", _configuration.GetSection("OPENAPI:KAKAO_REST_KEY").Value);
+                parameters.Add("redirect_uri", redirectUrl);
+                parameters.Add("code", code);
+                var encodedContent = new FormUrlEncodedContent(parameters);
+
+                var res = await client.PostAsync(apiURL, encodedContent);
+                var responseString = await res.Content.ReadAsStringAsync();
+                //Console.WriteLine("res.StatusCode = " + res.StatusCode);
+                //return "res.StatusCode=" + res.StatusCode + "::: responseString" + responseString.ToString();
+
+                var response = JsonConvert.DeserializeObject<KakaoAccessToken>(responseString);
+
+                return response;
+            }
+        }
+
+        public KakaoUserProfile GetKakaoUserProfile(string token)
+        {
+            string header = "Bearer " + token; // Bearer 다음에 공백 추가
+            string apiURL = "https://kapi.kakao.com/v2/user/me";
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiURL);
+            request.Headers.Add("Authorization", header);
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            string status = response.StatusCode.ToString();
+            if (status == "OK")
+            {
+                Stream stream = response.GetResponseStream();
+                StreamReader reader = new StreamReader(stream, Encoding.UTF8);
+                string text = reader.ReadToEnd();
+                //Console.WriteLine(text);
+
+                var profile = JsonConvert.DeserializeObject<KakaoUserProfile>(text);
+
+                return profile;
+            }
+            else
+            {
+                Console.WriteLine("Error 발생=" + status);
+
+                return null;
+            }
+        }
+
     }
 }
