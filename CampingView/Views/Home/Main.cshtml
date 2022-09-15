@@ -4,6 +4,11 @@
 @{
 }
 
+@section Scripts
+{
+<script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=ak5szsi1xk&callback=mapSet"></script>
+}
+
 <style type="text/css">
 
 	.non-visiable {
@@ -15,15 +20,15 @@
 		border-radius:0px;
 	}
 
+    label{
+        margin-left:3px;
+        margin-right:10px;
+    }
+
 </style>
    
-<script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=ak5szsi1xk&callback=mapSet"></script>
 
 <script type="text/javascript">
-
-
-    
-
 
     var map;
     var markers=[];
@@ -90,20 +95,10 @@
 
         //console.log(map.getCenter());
         //search();
-        if (val == 0) {
-
-        }
-        else {
-            
-
-        
-        }
-
         center.x = map.getCenter().x;
         center.y = map.getCenter().y;
 
         search(val, center);
-
     }
 
 
@@ -608,7 +603,21 @@
         
         if (tot2 == 0) $("#more").hide();
 	}
-    
+
+
+    function showOption() {
+        
+        console.log($("#options").css("display"))
+        if ($("#options").css("display") == "none") {
+            //$("#options").show();
+            showDiv("options");
+
+            $("#options").css("top", "0px");
+        }
+        else {
+            closeDiv("options");
+		}
+	}
 
 </script>
 
@@ -618,8 +627,9 @@
             <div class="input-group">
               <input type="text" class="form-control" id="search" placeholder="캠핑장 이름" style="border-radius:0px;">              
                  <span class="input-group-btn">
-                    <button class="btn btn-info" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:searchMap(0);">키워드 검색</button> 
-                    <button class="btn btn-info" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:searchMap(1);">지도 검색</button>
+                    <button class="btn btn-default" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:showOption();">상세조건 +</button> 
+                    <button class="btn btn-success" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:searchMap(0);">키워드 검색</button> 
+                    <button class="btn btn-success" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:searchMap(1);">지도 검색</button>
                 </span> 
             </div>
           </div>
@@ -636,7 +646,7 @@
     <div id="light" class="white_content" style="width:100%;">
 		<div>
 			<div style="text-align:right; vertical-align:text-top;">
-				<a href="javascript:void(0)" onclick="clolseDiv('light');">
+				<a href="javascript:void(0)" onclick="closeDiv('light');">
 					<img src="/img/close_square.png" style="width:18px;height:18px;" />
 				</a>
 			</div>
@@ -663,20 +673,63 @@
     </div>
 
 
+    <div id="options" style="width: 95%;height:600px;
+		display: none;
+		background: #eee;
+		top: 0;
+		left: 0;
+		margin:111px 20px 0 15px;
+		position: absolute;
+        z-index:9999;
+">
+        <div style="margin: 10px 10px 10px 10px;">
+            <div class="panel panel-info">
+              <div class="panel-heading">운영형태</div>
+              <div class="panel-body">
+                  <input type="checkbox" name="facltDivNm" id="facltDivNm1" value="지자체"/><label for="facltDivNm1">지자체 </label>
+                  <input type="checkbox" name="facltDivNm" id="facltDivNm2" value="국립공원"/><label for="facltDivNm2"> 국립공원 </label>
+                  <input type="checkbox" name="facltDivNm" id="facltDivNm3" value="자연휴양림"/><label for="facltDivNm3"> 자연휴양림 </label>
+                  <input type="checkbox" name="facltDivNm" id="facltDivNm4" value="국민여가"/><label for="facltDivNm4"> 국민여가 </label>
+                  <input type="checkbox" name="facltDivNm" id="facltDivNm5" value="민간"/><label for="facltDivNm5"> 민간 </label>
+              </div>
+            </div>
+            
+            <div class="panel panel-info">
+              <div class="panel-heading">주요시설</div>
+              <div class="panel-body">
+                  <input type="checkbox" name="induty" id="induty1"  value="일반야영장"/><label for="induty1"> 일반야영장 </label>
+                  <input type="checkbox" name="induty" id="induty2"  value="자동차야영장"/><label for="induty"> 자동차야영장 </label>
+                  <input type="checkbox" name="induty" id="induty3"  value="카라반"/><label for="induty3"> 카라반 </label>
+                  <input type="checkbox" name="induty" id="induty4"  value="글램핑"/><label for="induty4"> 글램핑 </label>
+              </div>
+            </div>
+        </div>
+
+         <div class="form-group" style="margin: 50px 10px 10px 10px;">
+            <div class="input-group">
+                 <span class="input-group-btn">
+                    <button class="btn btn-default btn-block" type="button" onclick="javascript:showOption();">닫기</button> 
+                    <button class="btn btn-success btn-block" type="button" onclick="javascript:searchMap(0);">검색하기</button>
+                </span> 
+            </div>
+          </div>
+
+    </div>
+
+
     <script type="text/javascript">
 
-
         $(document).ready(function () {
-        
-
 		    $("#fade").on("click", function () {
-			    clolseDiv("light");
+                closeDiv("light");
+                closeDiv("options");
 		    });
 
 		    // esc 키가 눌러지면 레이어를 닫는다.
 		    $(document).keydown(function (event) {
 			    if (event.keyCode == 27 || event.which == 27) {
-				    clolseDiv("light");
+                    closeDiv("light");
+                    closeDiv("options");
 			    }
             });
         });
@@ -703,7 +756,7 @@
 		    $("#" +objId).show();
 	    }
 
-	    function clolseDiv(objId) {
+	    function closeDiv(objId) {
 		    $('#fade').hide();
 		    $("#" +objId).hide();
 	    }

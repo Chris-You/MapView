@@ -263,13 +263,23 @@ namespace CampingView.Services
                 {
                     if (model.response.body.items.item.Count() > 0)
                     {
+                        var iCnt = 0;
                         // 파일 다운로드
                         foreach (var f in model.response.body.items.item)
                         {
-                            var name = f.imageUrl.Split('/').LastOrDefault();
-                            var targetFile = pathOrigin + "/" + name;
+                            if (iCnt < 10)
+                            {
+                                var name = f.imageUrl.Split('/').LastOrDefault();
+                                var targetFile = pathOrigin + "/" + name;
 
-                            this.ImageDownload(f.imageUrl, targetFile);
+                                this.ImageDownload(f.imageUrl, targetFile);
+
+                                iCnt++;
+                            }
+                            else
+                            {
+                                break;
+                            }
                         }
 
                         this.ImageResize(pathOrigin, pathThum);

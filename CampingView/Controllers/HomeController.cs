@@ -74,17 +74,50 @@ namespace CampingView.Controllers
                     MobileApp = "CampView"
                 };
 
-                response = _campService.GetCampList(req);
+
+                response = this.CampList(req);
             }
             else
             {
-                response = _campService.GetCampSearch(search);
+                CampReqModel req = new CampReqModel { 
+                    keyword = search
+                };
+
+                response = this.CampList(req);
             }
 
             return new JsonResult(response);
         }
 
 
+        private CampResModel CampList(CampReqModel req)
+        {
+            var response = new CampResModel();
+
+            
+            if (string.IsNullOrEmpty(req.keyword) == false)
+            {
+                response = _campService.GetCampSearch(req.keyword);
+            }
+            else
+            {
+                if(string.IsNullOrEmpty(req.mapX))
+                {
+                    response = _campService.GetCampList(req);
+                }
+                else
+                {
+                    response = _campService.GetCampLocationList(req);
+                }
+            }
+
+            response.response.body.items.item = response.response.body.items.item.Where(w => w.facltDivNm != "민간").ToList();
+
+
+            // todo 검색 조건에 때래서 필터링
+
+            return response;
+        }
 
 
 
@@ -104,7 +137,7 @@ namespace CampingView.Controllers
                 radius = 20000
             };
 
-            var response = _campService.GetCampLocationList(model);
+            var response = this.CampList(model);
 
             return new JsonResult(response);
         }
