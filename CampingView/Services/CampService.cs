@@ -23,6 +23,7 @@ namespace CampingView.Services
         CampImgResModel GetCampImgList(CampReqModel req);
 
         CampResModel GetCampSearch(string search);
+        CampResModel GetCampLocationList(CampReqModel req);
     }
 
     public class CampService : ICampService
@@ -30,11 +31,13 @@ namespace CampingView.Services
 
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _hostingEnvironment;
+        private readonly IHttpClientFactory _clientFactory;
 
-        public CampService(IConfiguration configuration, IWebHostEnvironment hostingEnvironment)
+        public CampService(IConfiguration configuration, IWebHostEnvironment hostingEnvironment, IHttpClientFactory clientFactory)
         {
             _configuration = configuration;
             _hostingEnvironment = hostingEnvironment;
+            _clientFactory = clientFactory;
         }
 
 
@@ -143,7 +146,7 @@ namespace CampingView.Services
                     
                     if (resp.response.body.items != null && resp.response.body.items.item.Count() > 0)
                     {
-                        arr.Add(resp.response.body.items.item.Where(w => w.facltDivNm == "지자체").ToList());
+                        arr.Add(resp.response.body.items.item.Where(w => w.facltDivNm != "민간" ).ToList());
                     }
 
                 }
@@ -153,7 +156,7 @@ namespace CampingView.Services
                     item = item.Union(li).ToList();
                 }
                 Random rand = new Random();
-                var shuffled = item.OrderBy(_ => rand.Next()).ToList();
+                var shuffled = item.OrderBy( o => rand.Next()).ToList();
 
 
                 model.response.header.resultCode = "00";
@@ -177,6 +180,15 @@ namespace CampingView.Services
 
             return model;
         }
+
+
+        public CampResModel GetCampLocationList(CampReqModel req)
+        {
+            var model = this.CampList(req);
+
+            return model;
+        }
+
 
         public void ManageCamp(CampItems items, List<CampItem> list)
         {

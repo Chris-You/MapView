@@ -101,10 +101,10 @@ namespace CampingView.Controllers
                 MobileApp = "CampView",
                 mapX = req.mapX,
                 mapY = req.mapY,
-                radius = 2000
+                radius = 20000
             };
 
-            var response = _campService.GetCampList(model);
+            var response = _campService.GetCampLocationList(model);
 
             return new JsonResult(response);
         }
