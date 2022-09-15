@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
+using CampingView.Util;
 
 namespace CampingView.Services
 {
@@ -22,8 +23,6 @@ namespace CampingView.Services
         CampResModel GetCampList(CampReqModel req);
         CampImgResModel GetCampImgList(CampReqModel req);
 
-        CampResModel GetCampSearch(string search);
-        CampResModel GetCampLocationList(CampReqModel req);
     }
 
     public class CampService : ICampService
@@ -60,7 +59,7 @@ namespace CampingView.Services
         }
 
 
-        public CampResModel CampList(CampReqModel req)
+        public CampResModel CampMakeFileByAPI(CampReqModel req)
         {
             var path = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CAMP:CAMP_LIST_JSON").Value;
             path = path.Replace("{}", req.pageNo.ToString());
@@ -102,15 +101,6 @@ namespace CampingView.Services
                 }
 
                 return JsonConvert.DeserializeObject<CampResModel>(results);
-                /*
-                var list = model.response.body.items.item.Where(w => w.facltDivNm == "지자체").ToList();
-
-                this.ManageCamp(model.response.body.items, list);
-
-                model.response.body.items.item = list;
-                */
-
-                
             }
         }
 
@@ -124,67 +114,76 @@ namespace CampingView.Services
 
             if (IsCampFileCheck(path) == false)
             {
-                var res = this.CampList(req);
+                var res = this.CampMakeFileByAPI(req);
 
                 var cnt = res.response.body.totalCount / res.response.body.numOfRows;
                 var mod = (res.response.body.totalCount % res.response.body.numOfRows > 0) ? cnt++ : cnt;
                 for (var i=1; i<= cnt; i++)
                 {
                     req.pageNo++;
-                    var res2 = this.CampList(req);
+                    var res2 = this.CampMakeFileByAPI(req);
                 }
+            }
+
+
+            var dir = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CAMP:CAMP_LIST_DIR").Value;
+
+            var di = new DirectoryInfo(dir);
+            foreach (var file in di.GetFiles())
+            {
+                var str = File.ReadAllText(file.FullName);
+                var resp = JsonConvert.DeserializeObject<CampResModel>(str);
+
+                if (resp.response.body.items != null && resp.response.body.items.item.Count() > 0)
+                {
+                    if(string.IsNullOrEmpty(req.keyword) == false)
+                    {
+                        arr.Add(resp.response.body.items.item.Where(w => w.facltNm.IndexOf(req.keyword) >= 0).ToList());
+                    }
+                    else
+                    {
+                        arr.Add(resp.response.body.items.item);
+                    }
+                }
+            }
+
+            var item = new List<CampItem>();
+            foreach (var li in arr)
+            {
+                item = item.Union(li).Where(w=> string.IsNullOrEmpty(w.facltDivNm)== false).ToList();
+            }
+
+            var item2 = new List<CampItem>();
+            if (string.IsNullOrEmpty(req.keyword) == false)
+            {
+                item2 = item;
             }
             else
             {
-                var dir = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CAMP:CAMP_LIST_DIR").Value;
-
-                var di = new DirectoryInfo(dir);
-                foreach(var file in di.GetFiles())
+                // 거리 계산
+                foreach (var i in item)
                 {
-                    var str = File.ReadAllText(file.FullName);
-                    var resp = JsonConvert.DeserializeObject<CampResModel>(str);
-                    
-                    if (resp.response.body.items != null && resp.response.body.items.item.Count() > 0)
+                    var distance = CommonUtils.DistanceTo(Convert.ToDouble(req.mapY),
+                                            Convert.ToDouble(req.mapX),
+                                            Convert.ToDouble(i.mapY),
+                                            Convert.ToDouble(i.mapX));
+                    if (distance < 20)
                     {
-                        arr.Add(resp.response.body.items.item.Where(w => w.facltDivNm != "민간" ).ToList());
+                        item2.Add(i);
                     }
-
                 }
-                var item = new List<CampItem>();
-                foreach (var li in arr)
-                {
-                    item = item.Union(li).ToList();
-                }
-                Random rand = new Random();
-                var shuffled = item.OrderBy( o => rand.Next()).ToList();
-
-
-                model.response.header.resultCode = "00";
-                model.response.header.resultMsg = "OK";
-                model.response.body.items.item = shuffled;
-                model.response.body.numOfRows = item.Count();
-                model.response.body.totalCount = item.Count();
-                model.response.body.pageNo = 1;
-
-
-                /*
-                var jsonStr = File.ReadAllText(path);
-                model = JsonConvert.DeserializeObject<CampResModel>(jsonStr);
-                var list = model.response.body.items.item.Where(w => w.facltDivNm == "지자체").ToList();
-
-                this.ManageCamp(model.response.body.items, list);
-
-                model.response.body.items.item = list;
-                */
             }
+            
 
-            return model;
-        }
+            Random rand = new Random();
+            var shuffled = item2.OrderBy(o => rand.Next()).ToList();
 
-
-        public CampResModel GetCampLocationList(CampReqModel req)
-        {
-            var model = this.CampList(req);
+            model.response.header.resultCode = "00";
+            model.response.header.resultMsg = "OK";
+            model.response.body.items.item = shuffled;
+            model.response.body.numOfRows = item.Count();
+            model.response.body.totalCount = item.Count();
+            model.response.body.pageNo = 1;
 
             return model;
         }
@@ -305,6 +304,8 @@ namespace CampingView.Services
             model.response.body.totalCount = files.Count();
             model.response.body.numOfRows = files.Count();
 
+            
+
             var i = 1;
             foreach (var file in files)
             {
@@ -361,43 +362,6 @@ namespace CampingView.Services
             }
 
 
-        }
-
-
-        public CampResModel GetCampSearch(string search)
-        {
-            var model = new CampResModel();
-
-            List<List<CampItem>> arr = new List<List<CampItem>>();
-
-            var dir = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CAMP:CAMP_LIST_DIR").Value;
-
-            var di = new DirectoryInfo(dir);
-            foreach (var file in di.GetFiles())
-            {
-                var str = File.ReadAllText(file.FullName);
-                var resp = JsonConvert.DeserializeObject<CampResModel>(str);
-
-                if (resp.response.body.items != null && resp.response.body.items.item.Count() > 0)
-                {
-                    arr.Add(resp.response.body.items.item.Where(w => w.facltNm.IndexOf(search) >= 0).ToList());
-                }
-            }
-
-            var item = new List<CampItem>();
-            foreach (var li in arr)
-            {
-                item = item.Union(li).ToList();
-            }
-
-            model.response.header.resultCode = "00";
-            model.response.header.resultMsg = "OK";
-            model.response.body.items.item = item;
-            model.response.body.numOfRows = item.Count();
-            model.response.body.totalCount = item.Count();
-            model.response.body.pageNo = 1;
-
-            return model;
         }
     }
 }

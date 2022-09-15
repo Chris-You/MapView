@@ -59,85 +59,17 @@ namespace CampingView.Controllers
 
 
         [HttpPost]
-        public IActionResult Search(string search)
+        public IActionResult Search(CampReqModel req)
         {
-            var response = new CampResModel();
-            if (string.IsNullOrEmpty(search))
-            {
-                CampReqModel req = new CampReqModel
-                {
-                    serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value,
-                    searchurl = _configuration.GetSection("OPENAPI:PUBLIC_API_BASE_URL").Value,
-                    pageNo = 1,
-                    numOfRows = 1000,
-                    MobileOS = "ETC",
-                    MobileApp = "CampView"
-                };
+            req.serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value;
+            req.searchurl = _configuration.GetSection("OPENAPI:PUBLIC_API_BASE_URL").Value;
+            req.pageNo = 1;
+            req.radius = 20000;
+            req.numOfRows = 1000;
+            req.MobileOS = "ETC";
+            req.MobileApp = "CampView";
 
-
-                response = this.CampList(req);
-            }
-            else
-            {
-                CampReqModel req = new CampReqModel { 
-                    keyword = search
-                };
-
-                response = this.CampList(req);
-            }
-
-            return new JsonResult(response);
-        }
-
-
-        private CampResModel CampList(CampReqModel req)
-        {
-            var response = new CampResModel();
-
-            
-            if (string.IsNullOrEmpty(req.keyword) == false)
-            {
-                response = _campService.GetCampSearch(req.keyword);
-            }
-            else
-            {
-                if(string.IsNullOrEmpty(req.mapX))
-                {
-                    response = _campService.GetCampList(req);
-                }
-                else
-                {
-                    response = _campService.GetCampLocationList(req);
-                }
-            }
-
-            response.response.body.items.item = response.response.body.items.item.Where(w => w.facltDivNm != "민간").ToList();
-
-
-            // todo 검색 조건에 때래서 필터링
-
-            return response;
-        }
-
-
-
-        [HttpPost]
-        public IActionResult SearchLocation(CampReqModel req)
-        {
-            CampReqModel model = new CampReqModel
-            {
-                serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value,
-                searchurl = _configuration.GetSection("OPENAPI:PUBLIC_API_LOCATION_URL").Value,
-                pageNo = 1,
-                numOfRows = 300,
-                MobileOS = "ETC",
-                MobileApp = "CampView",
-                mapX = req.mapX,
-                mapY = req.mapY,
-                radius = 20000
-            };
-
-            var response = this.CampList(model);
+            var response = _campService.GetCampList(req);
 
             return new JsonResult(response);
         }

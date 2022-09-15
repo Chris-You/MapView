@@ -122,14 +122,10 @@
 
         var data = "";
         var url = "";
-        if ($("#search").val() != "" && val == 0) {
-            data = "search=" + $("#search").val()
-            url = "/home/Search";
-        }
-        else {
-            data = "mapX=" + centerPos.x + "&mapY=" + centerPos.y;
-            url = "/home/SearchLocation"
-		}
+
+        data = "mapX=" + centerPos.x + "&mapY=" + centerPos.y + "&keyword=" + $("#search").val()
+        url = "/home/Search"
+
 
         //$("#divCampList").empty();
         var list = "";
