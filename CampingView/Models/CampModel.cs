@@ -23,8 +23,11 @@ namespace CampingView.Models
         public int radius { get; set; }
 
         public string keyword { get; set; }     // urlencode
-
         public string contentId { get; set; }
+
+        public string[] facltDivNm { get; set; }
+        public string[] induty { get; set; }
+
     }
 
 

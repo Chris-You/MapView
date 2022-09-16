@@ -71,6 +71,11 @@ namespace CampingView.Controllers
 
             var response = _campService.GetCampList(req);
 
+
+            //todo  filter
+            response = _campService.CampFilter(req, response);
+
+
             return new JsonResult(response);
         }
 

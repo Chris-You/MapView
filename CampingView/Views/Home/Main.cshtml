@@ -120,12 +120,31 @@
 
         hideMarker();
 
-        var data = "";
-        var url = "";
+        let facltDivNm = [];
+        let induty = [];
+        $("input:checkbox[name='facltDivNm']:checked").each(function () {
+            facltDivNm.push($(this).val());
+        });
+        $("input:checkbox[name='induty']:checked").each(function () {
+            induty.push($(this).val());
+        });
 
-        data = "mapX=" + centerPos.x + "&mapY=" + centerPos.y + "&keyword=" + $("#search").val()
-        url = "/home/Search"
-
+        //data = "mapX=" + centerPos.x + "&mapY=" + centerPos.y + "&keyword=" + $("#keyword").val()
+        var url = "/home/Search";
+        /*
+        data["mapX"] = centerPos.x;
+        data["mapY"] = centerPos.y;
+        data["keyword"] = $("#keyword").val();
+        data["facltDivNm"] = facltDivNm;
+        */
+        var data = {
+            "mapX": centerPos.x,
+            "mapY": centerPos.y,
+            "keyword": $("#keyword").val(),
+            "facltDivNm": facltDivNm,
+            "induty": induty,
+            
+        };
 
         //$("#divCampList").empty();
         var list = "";
@@ -158,17 +177,17 @@
                             var visiable = ""
                             if (i >= 5) {
                                 visiable = "non-visiable"
-							}
+                            }
 
                             var imgUrl = data.response.body.items.item[i].firstImageUrl == "" ? "/img/no_image.png" : data.response.body.items.item[i].firstImageUrl;
 
-                            list += '<div class="alert alert-info '+ visiable +'" >';
+                            list += '<div class="alert alert-info ' + visiable + '" >';
                             list += '    <div class="media">';
-                            list += '        <a href="javascript:getClickListItem('+ i +');">';
+                            list += '        <a href="javascript:getClickListItem(' + i + ');">';
                             list += '        <div class="media-left">';
-                                
-                            list += '            <img class="media-object" src="'+ imgUrl +'" style="width: 80px; height: 60px;">';
-                                
+
+                            list += '            <img class="media-object" src="' + imgUrl + '" style="width: 80px; height: 60px;">';
+
                             list += '        </div>';
                             list += '        <div class="media-body">';
                             list += '        <h4 class="media-heading">' + data.response.body.items.item[i].facltNm + '</h4>';
@@ -178,7 +197,7 @@
                                 //tel =    ' [Tel:' + data.response.body.items.item[i].tel + ']'
                             }
 
-                            list += '        ' + data.response.body.items.item[i].addr1 + tel ;
+                            list += '        ' + data.response.body.items.item[i].addr1 + tel;
                             list += '        </div>';
                             list += '        </a>';
                             list += '    </div>';
@@ -197,7 +216,7 @@
                     // 검색은 첫번째 데이터로 이동
                     if ($("#search").val() != "") {
                         var center = new naver.maps.LatLng(data.response.body.items.item[0].mapY, data.response.body.items.item[0].mapX);
-                            
+
                         map.setCenter(center);
                     }
 
@@ -208,6 +227,11 @@
                         list += '</div>';
                     }
                 }
+                else {
+                    // 검색내역이 없습니다.
+                    list += '<div style="text-align:center;">검색내역이 없습니다.</div>';
+
+				}
 
                 if (list != "") {
                     $("#divCampList").html(list);
@@ -222,6 +246,8 @@
 
 
         //console.log(markers.length);
+
+        closeDiv("options");
 	}
 
     function setMap(lat, lng) {
@@ -621,7 +647,7 @@
         <form class="form-inline">
           <div class="form-group">
             <div class="input-group">
-              <input type="text" class="form-control" id="search" placeholder="캠핑장 이름" style="border-radius:0px;">              
+              <input type="text" class="form-control" id="keyword" placeholder="캠핑장 이름" style="border-radius:0px;">              
                  <span class="input-group-btn">
                     <button class="btn btn-default" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:showOption();">상세조건 +</button> 
                     <button class="btn btn-success" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:searchMap(0);">키워드 검색</button> 
@@ -694,7 +720,7 @@
               <div class="panel-heading">주요시설</div>
               <div class="panel-body">
                   <input type="checkbox" name="induty" id="induty1"  value="일반야영장"/><label for="induty1"> 일반야영장 </label>
-                  <input type="checkbox" name="induty" id="induty2"  value="자동차야영장"/><label for="induty"> 자동차야영장 </label>
+                  <input type="checkbox" name="induty" id="induty2"  value="자동차야영장"/><label for="induty2"> 자동차야영장 </label>
                   <input type="checkbox" name="induty" id="induty3"  value="카라반"/><label for="induty3"> 카라반 </label>
                   <input type="checkbox" name="induty" id="induty4"  value="글램핑"/><label for="induty4"> 글램핑 </label>
               </div>
