@@ -67,7 +67,7 @@
             //console.log("position");
             //console.log(center);
 
-            search(1, center);
+            search(center);
 
             }
             , function (error) {
@@ -91,14 +91,14 @@
         }
     }
 
-    function searchMap(val) {
+    function searchMap() {
 
         //console.log(map.getCenter());
         //search();
         center.x = map.getCenter().x;
         center.y = map.getCenter().y;
 
-        search(val, center);
+        search( center);
     }
 
 
@@ -113,7 +113,7 @@
         infoWindows = [];
 	}
 
-    function search(val, centerPos) {
+    function search(centerPos) {
 
         //console.log("search");
         //console.log(centerPos);
@@ -122,12 +122,18 @@
 
         let facltDivNm = [];
         let induty = [];
+        let sbrsCl = [];
+
         $("input:checkbox[name='facltDivNm']:checked").each(function () {
             facltDivNm.push($(this).val());
         });
         $("input:checkbox[name='induty']:checked").each(function () {
             induty.push($(this).val());
         });
+        $("input:checkbox[name='sbrsCl']:checked").each(function () {
+            sbrsCl.push($(this).val());
+        });
+        
 
         //data = "mapX=" + centerPos.x + "&mapY=" + centerPos.y + "&keyword=" + $("#keyword").val()
         var url = "/home/Search";
@@ -143,6 +149,8 @@
             "keyword": $("#keyword").val(),
             "facltDivNm": facltDivNm,
             "induty": induty,
+            "sbrsCl": sbrsCl,
+            
             
         };
 
@@ -198,8 +206,20 @@
                             }
 
                             list += '        ' + data.response.body.items.item[i].addr1 + tel;
+
                             list += '        </div>';
                             list += '        </a>';
+                            list += '        <div style="margin-left:100px;">';
+
+                            if (data.response.body.items.item[i].facility != null && data.response.body.items.item[i].facility.length > 0) {
+
+                                for (var j = 0; j < data.response.body.items.item[i].facility.length; j++) {
+                                    list += '        <img src="/' + data.response.body.items.item[i].facility[j].url + '" alt=""  style="wisth:25px;height:25px;margin-right:5px;"/>'
+								}
+
+							}
+
+                            list += '        </div>';
                             list += '    </div>';
                             list += '</div>';
                         }
@@ -650,8 +670,8 @@
               <input type="text" class="form-control" id="keyword" placeholder="캠핑장 이름" style="border-radius:0px;">              
                  <span class="input-group-btn">
                     <button class="btn btn-default" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:showOption();">상세조건 +</button> 
-                    <button class="btn btn-success" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:searchMap(0);">키워드 검색</button> 
-                    <button class="btn btn-success" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:searchMap(1);">지도 검색</button>
+                    <button class="btn btn-success" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:searchMap();">검색하기</button> 
+                    
                 </span> 
             </div>
           </div>
@@ -725,13 +745,30 @@
                   <input type="checkbox" name="induty" id="induty4"  value="글램핑"/><label for="induty4"> 글램핑 </label>
               </div>
             </div>
+
+            <div class="panel panel-info">
+              <div class="panel-heading">부대시설</div>
+              <div class="panel-body">
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl1"  value="전기"/><label for="sbrsCl1"> 전기 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl2"  value="무선인터넷"/><label for="sbrsCl2"> 와이파이 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl3"  value="트렘폴린"/><label for="sbrsCl3"> 트렘폴린 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl4"  value="물놀이장"/><label for="sbrsCl4"> 물놀이장 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl5"  value="놀이터"/><label for="sbrsCl5"> 놀이터 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl6"  value="산책로"/><label for="sbrsCl6"> 산책로 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl7"  value="운동장"/><label for="sbrsCl7"> 운동장 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl8"  value="운동시설"/><label for="sbrsCl8"> 운동시설 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl9"  value="마트.편의점"/><label for="sbrsCl9"> 마트.편의점 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl10"  value="온수"/><label for="sbrsCl10"> 온수 </label>
+              </div>
+            </div>
+
         </div>
 
          <div class="form-group" style="margin: 50px 10px 10px 10px;">
             <div class="input-group">
                  <span class="input-group-btn">
+                     <button class="btn btn-success btn-block" type="button" onclick="javascript:searchMap();">검색하기</button>
                     <button class="btn btn-default btn-block" type="button" onclick="javascript:showOption();">닫기</button> 
-                    <button class="btn btn-success btn-block" type="button" onclick="javascript:searchMap(0);">검색하기</button>
                 </span> 
             </div>
           </div>

@@ -327,6 +327,26 @@ namespace CampingView.Services
                 }
 
 
+                if (req.sbrsCl != null && req.sbrsCl.Length > 0)
+                {
+                    isFilter = true;
+                    arr = new List<string>();
+                    foreach (var f in req.sbrsCl)
+                    {
+                        var num = from itm in res.response.body.items.item
+                                  where itm.sbrsCl.Contains(f) || itm.posblFcltyCl.Contains(f)
+                                  select itm.contentId;
+                        arr = arr.Union(num).ToList();
+                    }
+
+                    filter = from di in arr.Distinct()
+                             join itm in res.response.body.items.item on di equals itm.contentId
+                             select itm;
+
+                    res.response.body.items.item = filter.ToList();
+                }
+
+
                 /*
                 Parallel.Invoke(
                         () => {
@@ -379,11 +399,148 @@ namespace CampingView.Services
                 res.response.body.numOfRows = filter.Count();
                 res.response.body.totalCount = filter.Count();
             }
+
             
-            
+            if(res.response.body.items.item.Count() > 0)
+            {
+                foreach(var itm in res.response.body.items.item)
+                {
+                    var sbrS = new List<Facility>();
+                    foreach (var sbr in itm.sbrsCl.Split(","))
+                    {
+                        var faci = new Facility();
+
+                        if (string.IsNullOrEmpty(sbr) == false)
+                        {
+                            faci.name = sbr;
+
+                            if (sbr == "전기") faci.url = "img/icon/icons8-elec.png";
+                            else if (sbr == "트렘폴린") faci.url = "img/icon/icons8-trampoline.png";
+                            else if (sbr == "물놀이장") faci.url = "img/icon/icons8-pool.png";
+                            else if (sbr == "놀이터") faci.url = "img/icon/icons8-ground.png";
+                            else if (sbr == "무선인터넷") faci.url = "img/icon/icons8-wifi.png";
+                            //else if (sbr == "운동장") faci.url = "img/icon/icons8-ground.png";
+                            else if (sbr == "마트.편의점") faci.url = "img/icon/icons8-mart.png";
+
+                            if (string.IsNullOrEmpty(faci.url)== false)
+                            {
+                                sbrS.Add(faci);
+                            }
+                        }
+                    }
+
+                    itm.facility = sbrS;
+                }
+            }
+
 
             return res;
 
+        }
+
+
+        public void GetImagesAPI(int start, int end)
+        {
+           
+            //var imgUrl = "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_BASE_PATH").Value + "/" + req.contentId + "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_THUM").Value;
+
+            // 캠핑장 리스트 조회
+            var dir = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CAMP:CAMP_LIST_DIR").Value;
+            List<List<CampItem>> arr = new List<List<CampItem>>();
+
+            var di = new DirectoryInfo(dir);
+            Parallel.ForEach(di.GetFiles(), file => {
+
+                var str = File.ReadAllText(file.FullName);
+                var resp = JsonConvert.DeserializeObject<CampResModel>(str);
+
+                if (resp.response.body.items != null && resp.response.body.items.item.Count() > 0)
+                {
+                    arr.Add(resp.response.body.items.item);
+                }
+            });
+
+            
+
+            var item = new List<CampItem>();
+            foreach (var li in arr)
+            {
+                item = item.Union(li).Where(w => string.IsNullOrEmpty(w.facltDivNm) == false).ToList();
+            }
+
+            var newItm = item.Where(w => Convert.ToInt32(w.contentId) >= start && Convert.ToInt32(w.contentId) < end).ToList();
+
+            
+
+
+            foreach(var camp in newItm)
+            {
+                var pathOrigin = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_BASE_PATH").Value + "/" + camp.contentId;
+                var pathThum = pathOrigin + "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_THUM").Value;
+
+                if (this.ExistDirectoryFile(pathThum) == false)
+                {
+                    // 이미지 폴더가 없거나, 이미지가 없으면 썸네일 파일 생성
+                    DirectoryInfo di2 = Directory.CreateDirectory(pathThum);
+
+                    string url = _configuration.GetSection("OPENAPI:PUBLIC_API_IMAGE_URL").Value; // URL
+                    url += "?ServiceKey=" + _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value; // Service Key
+                    url += "&MobileOS=ETC";
+                    url += "&MobileApp=CampView";
+                    url += "&contentId=" + camp.contentId;
+                    url += "&_type=json";
+
+                    var request = (HttpWebRequest)WebRequest.Create(url);
+                    request.Method = "GET";
+
+                    string results = string.Empty;
+                    HttpWebResponse response;
+
+
+                    var model = new CampImgResModel();
+                    using (response = request.GetResponse() as HttpWebResponse)
+                    {
+                        StreamReader reader = new StreamReader(response.GetResponseStream());
+                        results = reader.ReadToEnd();
+
+                        model = JsonConvert.DeserializeObject<CampImgResModel>(results);
+                    }
+
+                    if (model.response.body.items != null)
+                    {
+                        if (model.response.body.items.item.Count() > 0)
+                        {
+                            var iCnt = 0;
+                            // 파일 다운로드
+
+                            Parallel.ForEach(model.response.body.items.item, f => {
+                                
+                                var name = f.imageUrl.Split('/').LastOrDefault();
+                                var targetFile = pathOrigin + "/" + name;
+
+                                this.ImageDownload(f.imageUrl, targetFile);
+                            });
+
+                            
+                            this.ImageResize(pathOrigin, pathThum);
+
+                            this.ImageResize(pathOrigin, pathOrigin, 800, 600);
+                        }
+                    }
+                }
+            }
+
+          
+
+
+
+
+
+
+
+
+
+            // 다운로드 이미지 삭제
         }
 
 
@@ -492,12 +649,25 @@ namespace CampingView.Services
             Parallel.ForEach(files, file => {
                 using var image = Image.Load(file.OpenRead());
                 image.Mutate(x => x.Resize(600, 400));
-
                 image.Save(pathThum + "/thum_" + file.Name);
             });
+        }
 
+        private void ImageResize(string pathOrigin, string targetPath, int w, int h)
+        {
 
+            DirectoryInfo di = new DirectoryInfo(pathOrigin);
 
+            var files = di.EnumerateFiles();
+
+            Parallel.ForEach(files, file => {
+                using var image = Image.Load(file.OpenRead());
+                image.Mutate(x => x.Resize(w, h));
+
+                var fullPath = targetPath + "/resize_" + file.Name;
+
+                image.Save(fullPath);
+            });
         }
 
         private void ManageCamp(CampItems items, List<CampItem> list)

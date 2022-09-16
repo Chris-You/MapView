@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace CampingView.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         private readonly IConfiguration _configuration;
         private readonly ILogger<HomeController> _logger;
@@ -74,6 +74,8 @@ namespace CampingView.Controllers
 
             //todo  filter
             response = _campService.CampFilter(req, response);
+
+
 
 
             return new JsonResult(response);

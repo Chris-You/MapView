@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>4f5a2ed4-164a-4af0-b754-93630deca694</UserSecretsId>
-    <RootNamespace>CampgView</RootNamespace>
+    <RootNamespace>CampingView</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

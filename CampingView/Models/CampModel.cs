@@ -27,6 +27,8 @@ namespace CampingView.Models
 
         public string[] facltDivNm { get; set; }
         public string[] induty { get; set; }
+        public string[] sbrsCl { get; set; }
+        
 
     }
 
@@ -85,7 +87,7 @@ namespace CampingView.Models
 
     public class CampItem
     {
-
+        
         public string contentId { get; set; }
         public string facltNm { get; set; }
         public string lineIntro { get; set; }
@@ -167,6 +169,14 @@ namespace CampingView.Models
         public string firstImageUrl { get; set; }
         public string createdtime { get; set; }
         public string modifiedtime { get; set; }
+
+        public List<Facility> facility { get; set; }
+    }
+
+    public class Facility
+    {
+        public string name { get; set; }
+        public string url { get; set; }
     }
 
     #endregion
