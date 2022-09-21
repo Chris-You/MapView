@@ -57,7 +57,9 @@ namespace CampingView.Controllers
 
                 if ("00" == profile.resultcode && string.IsNullOrEmpty(profile.response.id) == false)
                 {
-                    CookieUserModel user = new CookieUserModel { 
+                    CookieUserModel user = new CookieUserModel {
+                        Sns = "naver",
+                        Id = profile.response.id,
                         Name = profile.response.name,
                         Email = profile.response.email
                     };
@@ -78,6 +80,8 @@ namespace CampingView.Controllers
 
             CookieUserModel user = new CookieUserModel
             {
+                Sns = "google",
+                Id = id,
                 Name = name,
                 Email = email
             };
@@ -116,6 +120,8 @@ namespace CampingView.Controllers
                 {
                     CookieUserModel user = new CookieUserModel
                     {
+                        Sns = "kakao",
+                        Id = profile.id,
                         Name = profile.kakao_account.name != null ? profile.kakao_account.name : profile.kakao_account.profile.nickname,
                         Email = profile.kakao_account.email_needs_agreement ? profile.kakao_account.email : ""
                     };

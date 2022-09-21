@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Http;
 using CampingView.Models;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
+using StackExchange.Redis;
+
+
 namespace CampingView.Services
 {
     public interface IUserService
@@ -15,8 +18,8 @@ namespace CampingView.Services
         Task SignIn(HttpContext httpContext, CookieUserModel user, bool isPersistent = false);
         Task SignOut(HttpContext httpContext);
 
-        string GetUser(ClaimsPrincipal principal, string claim);
-        Dictionary<string, string> GetUser(ClaimsPrincipal principal);
+        //string GetUser(ClaimsPrincipal principal, string claim);
+        //Dictionary<string, string> GetUser(ClaimsPrincipal principal);
         
     }
 
@@ -31,7 +34,7 @@ namespace CampingView.Services
             _configuration = configuration;
         }
 
-
+        /*
         public Dictionary<string, string> GetUser(ClaimsPrincipal principal)
         {
             return principal.Claims.ToDictionary(x => x.Type, x => x.Value);
@@ -47,7 +50,7 @@ namespace CampingView.Services
             else
                 return string.Empty;
         }
-
+        */
 
         public async Task SignIn(HttpContext httpContext, CookieUserModel user, bool isPersistent = false)
         {
@@ -87,6 +90,35 @@ namespace CampingView.Services
 
             await httpContext.SignInAsync(authenticationScheme, claimsPrincipal, authProperties);
 
+            this.SignUpRedis(user);
+        }
+
+
+        private void SignUpRedis(CookieUserModel user)
+        {
+            var userKey = _configuration.GetSection("REDIS:USER_KEY").Value.ToString() + ":" + user.Sns + ":" + user.Id;
+
+            var redis = new RedisService();
+
+            redis.Connect(_configuration.GetSection("REDIS:SERVER").Value.ToString(),
+                            _configuration.GetSection("REDIS:PORT").Value.ToString(),
+                            _configuration.GetSection("REDIS:PASSWORD").Value.ToString());
+
+            if(!redis.KeyExists(userKey))
+            {
+                HashEntry[] hash =
+                {
+                    new HashEntry("sns", user.Sns),
+                    new HashEntry("id", user.Id),
+                    new HashEntry("name", user.Name),
+                    new HashEntry("email", user.Email)
+                };
+
+                redis.HashSet(userKey, hash);
+
+                //var name = redis.HashGet(userKey, "name");
+                //var email = redis.HashGet(userKey, "email");
+            }
         }
 
         public async Task SignOut(HttpContext httpContext)

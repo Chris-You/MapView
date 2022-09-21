@@ -45,8 +45,7 @@ namespace CampingView.Services
             _clientId = _configuration.GetSection("OPENAPI:NAVER_CLIENT_ID").Value;
             _clientSecret = _configuration.GetSection("OPENAPI:NAVER_CLIENT_SECRET").Value;
             _searechBlogUrl = _configuration.GetSection("OPENAPI:NAVER_SEARCH_BLOG_URL").Value;
-    }
-
+        }
 
         public SearchResModel GetBlogList(string query)
         {

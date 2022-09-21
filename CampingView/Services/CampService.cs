@@ -14,6 +14,7 @@ using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using CampingView.Util;
+using StackExchange.Redis;
 
 namespace CampingView.Services
 {
@@ -24,6 +25,8 @@ namespace CampingView.Services
         CampImgResModel GetCampImgList(CampReqModel req);
 
         CampResModel CampFilter(CampReqModel req, CampResModel res);
+
+        void SetRedis();
 
     }
 
@@ -40,11 +43,60 @@ namespace CampingView.Services
             _clientFactory = clientFactory;
         }
 
+        public void SetRedis()
+        {
+
+            var redis = new RedisService();
+
+            redis.Connect(_configuration.GetSection("REDIS:SERVER").Value.ToString(),
+                            _configuration.GetSection("REDIS:PORT").Value.ToString(),
+                            _configuration.GetSection("REDIS:PASSWORD").Value.ToString());
+
+
+            CampReqModel req = new CampReqModel();
+            req.serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value;
+            req.searchurl = _configuration.GetSection("OPENAPI:PUBLIC_API_BASE_URL").Value;
+            req.pageNo = 1;
+            //req.radius = 20000;
+            req.numOfRows = 1000;
+            req.MobileOS = "ETC";
+            req.MobileApp = "CampView";
+
+            var model = new CampResModel();
+            List<List<CampItem>> arr = new List<List<CampItem>>();
+
+            var res = this.CampMakeFileByAPI(req);
+
+            foreach (var c in res.response.body.items.item.Where(w => string.IsNullOrEmpty(w.facltDivNm) == false))
+            {
+                redis.StringSet("CAMP:" + c.contentId, JsonConvert.SerializeObject(c));
+            }
+
+
+            var cnt = res.response.body.totalCount / res.response.body.numOfRows;
+            var mod = (res.response.body.totalCount % res.response.body.numOfRows > 0) ? cnt++ : cnt;
+            for (var i = 1; i <= cnt; i++)
+            {
+                req.pageNo++;
+                var res2 = this.CampMakeFileByAPI(req);
+
+                foreach (var c in res2.response.body.items.item.Where(w => string.IsNullOrEmpty(w.facltDivNm) == false))
+                {
+                    redis.StringSet("CAMP:" + c.contentId, JsonConvert.SerializeObject(c));
+                }
+            }
+
+
+            // to json  형식으로 Redis 에 저장
+        }
+
+
         public CampResModel GetCampList(CampReqModel req)
         {
             var model = new CampResModel();
             List<List<CampItem>> arr = new List<List<CampItem>>();
 
+            
             var path = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CAMP:CAMP_LIST_JSON").Value;
             path = path.Replace("{}", req.pageNo.ToString());
 
@@ -83,28 +135,9 @@ namespace CampingView.Services
                     }
                 }
             });
-
-            /*
-            foreach (var file in di.GetFiles())
-            {
-                var str = File.ReadAllText(file.FullName);
-                var resp = JsonConvert.DeserializeObject<CampResModel>(str);
-
-                if (resp.response.body.items != null && resp.response.body.items.item.Count() > 0)
-                {
-                    if(string.IsNullOrEmpty(req.keyword) == false)
-                    {
-                        arr.Add(resp.response.body.items.item.Where(w => w.facltNm.IndexOf(req.keyword) >= 0).ToList());
-                    }
-                    else
-                    {
-                        arr.Add(resp.response.body.items.item);
-                    }
-                }
-            }
-            */
-
+            
             var item = new List<CampItem>();
+            
             foreach (var li in arr)
             {
                 item = item.Union(li).Where(w=> string.IsNullOrEmpty(w.facltDivNm)== false).ToList();
@@ -130,20 +163,6 @@ namespace CampingView.Services
                         item2.Add(i);
                     }
                 });
-                
-                /*
-                foreach (var i in item)
-                {
-                    var distance = CommonUtils.DistanceTo(Convert.ToDouble(req.mapY),
-                                            Convert.ToDouble(req.mapX),
-                                            Convert.ToDouble(i.mapY),
-                                            Convert.ToDouble(i.mapX));
-                    if (distance < 20)
-                    {
-                        item2.Add(i);
-                    }
-                }
-                */
             }
             
 
@@ -510,7 +529,7 @@ namespace CampingView.Services
                     {
                         if (model.response.body.items.item.Count() > 0)
                         {
-                            var iCnt = 0;
+                            //var iCnt = 0;
                             // 파일 다운로드
 
                             Parallel.ForEach(model.response.body.items.item, f => {
@@ -529,17 +548,6 @@ namespace CampingView.Services
                     }
                 }
             }
-
-          
-
-
-
-
-
-
-
-
-
             // 다운로드 이미지 삭제
         }
 

@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using CampingView.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+//using StackExchange.Redis;
 
 namespace CampingView
 {
@@ -50,8 +51,22 @@ namespace CampingView
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            /*
+            var redisConfigurationOptions = ConfigurationOptions.Parse(
+                string.Format("{0}:{1},password={2}", 
+                    Configuration.GetSection("REDIS:SERVER").Value.ToString(),
+                    Configuration.GetSection("REDIS:PORT").Value.ToString(),
+                    Configuration.GetSection("REDIS:PASSWORD").Value.ToString())
+                );
 
-
+            services.AddStackExchangeRedisCache(redisCacheConfig =>
+            {
+                redisCacheConfig.ConfigurationOptions = redisConfigurationOptions;
+            }).AddSession(options => {
+                options.Cookie.Name = "campview_session";
+                options.IdleTimeout = TimeSpan.FromMinutes(20);
+            });
+            */
             services.AddHttpClient();
 
 
@@ -78,6 +93,7 @@ namespace CampingView
             }
 
             //app.UseHttpsRedirection();
+            //app.UseSession();
 
             app.UseStaticFiles();
 

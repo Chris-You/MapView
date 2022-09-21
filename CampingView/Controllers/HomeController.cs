@@ -51,9 +51,6 @@ namespace CampingView.Controllers
 
         public IActionResult Main()
         {
-            
-            //ViewBag.Name =  _userService.GetUser(this.User, "name");
-
             return View();
         }
 
@@ -108,6 +105,20 @@ namespace CampingView.Controllers
             return new JsonResult(response);
         }
 
+
+        [HttpGet]
+        public IActionResult SetCampRedis()
+        {
+            _campService.SetRedis();
+
+            return new JsonResult("ok");
+        }
+
+
+        public IActionResult Redis(string action, string key, string value )
+        {
+            return View();
+        }
 
     }
 }
