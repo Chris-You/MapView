@@ -26,8 +26,9 @@ namespace CampingView.Services
 
         CampResModel CampFilter(CampReqModel req, CampResModel res);
 
-        void SetRedis();
-
+        
+        Dictionary<string, string> GetkeywordList(string userid);
+        bool KeywordDel(string word, string userid);
     }
 
     public class CampService : ICampService
@@ -36,58 +37,45 @@ namespace CampingView.Services
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly IHttpClientFactory _clientFactory;
 
+        private readonly RedisService _redis;
+
         public CampService(IConfiguration configuration, IWebHostEnvironment hostingEnvironment, IHttpClientFactory clientFactory)
         {
             _configuration = configuration;
             _hostingEnvironment = hostingEnvironment;
             _clientFactory = clientFactory;
-        }
 
-        public void SetRedis()
-        {
-
-            var redis = new RedisService();
-
-            redis.Connect(_configuration.GetSection("REDIS:SERVER").Value.ToString(),
+            _redis = new RedisService(
+                            _configuration.GetSection("REDIS:SERVER").Value.ToString(),
                             _configuration.GetSection("REDIS:PORT").Value.ToString(),
                             _configuration.GetSection("REDIS:PASSWORD").Value.ToString());
+        }
 
 
-            CampReqModel req = new CampReqModel();
-            req.serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value;
-            req.searchurl = _configuration.GetSection("OPENAPI:PUBLIC_API_BASE_URL").Value;
-            req.pageNo = 1;
-            //req.radius = 20000;
-            req.numOfRows = 1000;
-            req.MobileOS = "ETC";
-            req.MobileApp = "CampView";
 
-            var model = new CampResModel();
-            List<List<CampItem>> arr = new List<List<CampItem>>();
+        public Dictionary<string,string> GetkeywordList(string userid)
+        {
 
-            var res = this.CampMakeFileByAPI(req);
+            var redisKey = _configuration.GetSection("REDIS:SEARCH_KEY").Value.ToString() + userid;
 
-            foreach (var c in res.response.body.items.item.Where(w => string.IsNullOrEmpty(w.facltDivNm) == false))
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            //_redis.redisDatabase.SortedSetRangeByRankWithScores(redisKey, 0, -1, order: Order.Descending);
+            foreach (var k in _redis.redisDatabase.SortedSetRangeByRankWithScores(redisKey, 0, -1, order: Order.Descending))
             {
-                redis.StringSet("CAMP:" + c.contentId, JsonConvert.SerializeObject(c));
+                var key = k.ToString().Split(":")[0];
+                var date = k.ToString().Split(":")[1];
+                
+                dic.Add(key, string.Format("{0}.{1}", date.Substring(5, 2), date.Substring(7, 2)));
             }
 
+            return dic;
+        }
 
-            var cnt = res.response.body.totalCount / res.response.body.numOfRows;
-            var mod = (res.response.body.totalCount % res.response.body.numOfRows > 0) ? cnt++ : cnt;
-            for (var i = 1; i <= cnt; i++)
-            {
-                req.pageNo++;
-                var res2 = this.CampMakeFileByAPI(req);
+        public bool KeywordDel(string word, string userid)
+        {
+            var redisKey = _configuration.GetSection("REDIS:SEARCH_KEY").Value.ToString() + userid;
 
-                foreach (var c in res2.response.body.items.item.Where(w => string.IsNullOrEmpty(w.facltDivNm) == false))
-                {
-                    redis.StringSet("CAMP:" + c.contentId, JsonConvert.SerializeObject(c));
-                }
-            }
-
-
-            // to json  형식으로 Redis 에 저장
+            return _redis.redisDatabase.SortedSetRemove(redisKey, word);
         }
 
 
@@ -147,6 +135,15 @@ namespace CampingView.Services
             if (string.IsNullOrEmpty(req.keyword) == false)
             {
                 item2 = item;
+
+                // 검색 내용이 있으면 검색어 등록
+                if (string.IsNullOrEmpty(req.userid) == false)
+                {
+                    var redisKey = _configuration.GetSection("REDIS:SEARCH_KEY").Value.ToString() + req.userid;
+
+                    var score = Convert.ToInt64(DateTime.Now.ToString("yyyyMMddHHmmss"));
+                    _redis.redisDatabase.SortedSetAdd(redisKey, req.keyword, score);
+                }
             }
             else
             {

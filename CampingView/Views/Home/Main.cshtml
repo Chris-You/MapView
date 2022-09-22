@@ -25,6 +25,47 @@
         margin-right:10px;
     }
 
+
+	#options {
+		width: 95%;
+		height: 600px;
+		display: none;
+		background: #eee;
+		top: 0;
+		left: 0;
+		margin: 111px 20px 0 15px;
+		position: absolute;
+		z-index: 9999;
+	}
+
+	#recentKeyword {
+		width: 95%;
+		display: none;
+		background: #fff;
+		top: 0;
+		left: 0;
+		margin: 105px 20px 0 15px;
+		position: absolute;
+		z-index: 9999;
+		border:1px solid #e4e7e8;
+        color:#333;
+	}
+
+	#suggest {
+		width: 95%;
+		display: none;
+		background: #eee;
+		top: 0;
+		left: 0;
+		margin: 105px 20px 0 15px;
+		position: absolute;
+		z-index: 9999;
+	}
+
+    ul{
+        list-style:none;
+    }
+
 </style>
    
 
@@ -86,8 +127,6 @@
         else
         {
             mapInit();
-
-
         }
     }
 
@@ -268,6 +307,7 @@
         //console.log(markers.length);
 
         closeDiv("options");
+        closeDiv('recentKeyword');
 	}
 
     function setMap(lat, lng) {
@@ -653,12 +693,87 @@
         if ($("#options").css("display") == "none") {
             //$("#options").show();
             showDiv("options");
-
+            closeDiv("recentKeyword");
             $("#options").css("top", "0px");
         }
         else {
             closeDiv("options");
 		}
+	}
+
+    function RecentKeyword() {
+
+        $("#recentKeyword").show();
+
+        var list = "";
+
+        $.ajax({
+                type: "post",
+                url: "/home/Keyword",
+                //data: "query=" + $("#recentKeyword").val(),
+                success: function (data) {
+
+                    
+                    console.log(data)
+
+                    if (data != null && data != undefined) {
+
+                        if (data.length > 0) {
+
+                            list += "<div style='margin:10px 10px 0 10px;border-bottom:border:1px solid #e4e7e8;'>최근검색어</div>"
+
+                            list += "<div style='margin-top:10px;'>"
+                            list += "<ul>"
+
+                            for (var i = 0; i < data.length; i++) {
+                                //var word = data[i].key;
+                                //var date = data[i].value;
+                            
+                                list += "<li style='margin:7px 0 0 10px;'>"
+                                list += "    <div style='float:left;margin-left:4px;' ><img src='/img/icon/icons8-search.png' style='width:15px;'/></div>"
+                                list += "    <div style='float:left;width:300px;margin-left:5px;' >" + data[i].Key + "</div>"
+                                list += "    <div style='float:left;margin-left:20px;' >" + data[i].Value + "</div>"
+                                list += "    <div style='margin-left:388px;' ><a href='javascript:deleteKeyword(\""+ data[i].Key +"\");'> X </a></div>"
+                                list += "</li>"
+                            }
+
+                            list += "</ul>"
+                            list += "</div>"
+
+
+                            $("#recentKeyword").html(list);
+
+                        }
+                        else {
+                            
+                            closeDiv('recentKeyword');
+						}
+                        
+					}
+
+                },
+                error: function (data) {
+                    //alert("error: " + data.responseText);
+                }
+            });
+
+
+	}
+
+
+    function deleteKeyword(word) {
+        $.ajax({
+            type: "post",
+            url: "/home/KeywordDel",
+            data: "query=" + word,
+            success: function (data) {
+
+                if (data != null) {
+
+                    RecentKeyword();
+				}
+            }
+        });
 	}
 
 </script>
@@ -667,7 +782,7 @@
         <form class="form-inline">
           <div class="form-group">
             <div class="input-group">
-              <input type="text" class="form-control" id="keyword" placeholder="캠핑장 이름" style="border-radius:0px;">              
+              <input type="text" autocomplete="off" class="form-control" id="keyword" placeholder="캠핑장 이름" style="border-radius:0px;" onfocus="javascript:RecentKeyword();" onfocusout="javascript: closeDiv('recentKeyword');" >
                  <span class="input-group-btn">
                     <button class="btn btn-default" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:showOption();">상세조건 +</button> 
                     <button class="btn btn-success" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:searchMap();">검색하기</button> 
@@ -715,15 +830,7 @@
     </div>
 
 
-    <div id="options" style="width: 95%;height:600px;
-		display: none;
-		background: #eee;
-		top: 0;
-		left: 0;
-		margin:111px 20px 0 15px;
-		position: absolute;
-        z-index:9999;
-">
+    <div id="options">
         <div style="margin: 10px 10px 10px 10px;">
             <div class="panel panel-info">
               <div class="panel-heading">운영형태</div>
@@ -774,6 +881,10 @@
           </div>
 
     </div>
+
+
+    <div id="recentKeyword"></div>
+    
 
 
     <script type="text/javascript">

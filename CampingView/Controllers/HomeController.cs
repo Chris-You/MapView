@@ -33,6 +33,9 @@ namespace CampingView.Controllers
 
         public IActionResult Index()
         {
+            var name = User.Claims.FirstOrDefault(x => x.Type == "sns").Value;
+            var id = User.Claims.FirstOrDefault(x => x.Type == "id").Value;
+
             return View();
         }
 
@@ -65,18 +68,18 @@ namespace CampingView.Controllers
             req.numOfRows = 1000;
             req.MobileOS = "ETC";
             req.MobileApp = "CampView";
+            req.userid = base.GetUserId();
 
             var response = _campService.GetCampList(req);
-
 
             //todo  filter
             response = _campService.CampFilter(req, response);
 
-
-
-
             return new JsonResult(response);
         }
+
+
+
 
 
         [HttpPost]
@@ -109,8 +112,6 @@ namespace CampingView.Controllers
         [HttpGet]
         public IActionResult SetCampRedis()
         {
-            _campService.SetRedis();
-
             return new JsonResult("ok");
         }
 
@@ -119,6 +120,67 @@ namespace CampingView.Controllers
         {
             return View();
         }
+
+        [HttpPost]
+        public IActionResult Keyword(string query)
+        {
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            if (string.IsNullOrEmpty(base.GetUserId()) == false)
+            {
+                dic = _campService.GetkeywordList(base.GetUserId());
+            }
+
+            /*
+            CampReqModel req = new CampReqModel();
+            req.serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value;
+            req.searchurl = _configuration.GetSection("OPENAPI:PUBLIC_API_BASE_URL").Value;
+            req.pageNo = 1;
+            req.radius = 20000;
+            req.numOfRows = 1000;
+            req.MobileOS = "ETC";
+            req.MobileApp = "CampView";
+            req.userid = string.Empty;
+            req.keyword = query;
+
+            var response = _campService.GetCampList(req);
+            */
+
+
+            return new JsonResult(dic.ToList());
+        }
+
+
+        [HttpPost]
+        public IActionResult KeywordDel(string query)
+        {
+            Dictionary<string, bool> dic = new Dictionary<string, bool>();
+            if (string.IsNullOrEmpty(base.GetUserId()) == false)
+            {
+                bool isOk = _campService.KeywordDel(query, base.GetUserId());
+
+                dic.Add("result", isOk);
+            }
+
+            /*
+            CampReqModel req = new CampReqModel();
+            req.serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value;
+            req.searchurl = _configuration.GetSection("OPENAPI:PUBLIC_API_BASE_URL").Value;
+            req.pageNo = 1;
+            req.radius = 20000;
+            req.numOfRows = 1000;
+            req.MobileOS = "ETC";
+            req.MobileApp = "CampView";
+            req.userid = string.Empty;
+            req.keyword = query;
+
+            var response = _campService.GetCampList(req);
+            */
+
+
+            return new JsonResult(dic.ToList());
+        }
+
+
 
     }
 }

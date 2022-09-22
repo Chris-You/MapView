@@ -10,6 +10,7 @@ namespace CampingView.Models
 
     public class CampReqModel
     {
+        public string userid { get; set; }
         public string searchurl { get; set; }       
         
         public string serviceKey { get; set; }

@@ -7,61 +7,18 @@ namespace CampingView.ConsoleApp
 {
     public class RedisSample
     {
-
         private ConnectionMultiplexer _conntction;
-        private IDatabase _database;
+        public IDatabase redisDatabase;
+        public IServer redisServer;
 
-        public RedisSample()
+        public RedisSample(string host, int port, string pass)
         {
-
-        }
-
-        public bool Connect(string host, int port, string pass)
-        {
-            try
+            this._conntction = ConnectionMultiplexer.Connect(host + ":" + port + ",password=" + pass);
+            if (_conntction.IsConnected)
             {
-                this._conntction = ConnectionMultiplexer.Connect(host + ":" + port + ",password="+ pass);
-                if(_conntction.IsConnected)
-                {
-                    this._database = this._conntction.GetDatabase();
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                this.redisDatabase = this._conntction.GetDatabase();
+                this.redisServer = this._conntction.GetServer(host + ":" + port);
             }
-            catch(Exception e)
-            {
-                return false;
-            }
-        }
-
-        public string GetStr(string key)
-        {
-            return this._database.StringGet(key);
-        }
-
-        public bool SetStr(string key, string val)
-        {
-            return this._database.StringSet(key, val);
-        }
-
-        public string GetHash(string key)
-        {
-            return this._database.StringGet(key);
-        }
-
-        public void SetHash(string key, HashEntry[] hash)
-        {
-            this._database.HashSet(key, hash);
-        }
-
-        public string GetHash(string key, string field)
-        {
-            var val = this._database.HashGet(key, field);
-
-            return val.ToString();
         }
     }
 }

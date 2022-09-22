@@ -27,11 +27,16 @@ namespace CampingView.Services
     {
 
         private readonly IConfiguration _configuration;
-        //private string _cookieName = string.Empty;
+        private readonly RedisService _redis;
 
         public UserService(IConfiguration configuration)
         {
             _configuration = configuration;
+
+            _redis = new RedisService(
+                           _configuration.GetSection("REDIS:SERVER").Value.ToString(),
+                           _configuration.GetSection("REDIS:PORT").Value.ToString(),
+                           _configuration.GetSection("REDIS:PASSWORD").Value.ToString());
         }
 
         /*
@@ -90,21 +95,15 @@ namespace CampingView.Services
 
             await httpContext.SignInAsync(authenticationScheme, claimsPrincipal, authProperties);
 
-            this.SignUpRedis(user);
+            this.RedisSession(user);
         }
 
 
-        private void SignUpRedis(CookieUserModel user)
+        private void RedisSession(CookieUserModel user)
         {
             var userKey = _configuration.GetSection("REDIS:USER_KEY").Value.ToString() + ":" + user.Sns + ":" + user.Id;
 
-            var redis = new RedisService();
-
-            redis.Connect(_configuration.GetSection("REDIS:SERVER").Value.ToString(),
-                            _configuration.GetSection("REDIS:PORT").Value.ToString(),
-                            _configuration.GetSection("REDIS:PASSWORD").Value.ToString());
-
-            if(!redis.KeyExists(userKey))
+            if (!_redis.redisDatabase.KeyExists(userKey))
             {
                 HashEntry[] hash =
                 {
@@ -114,7 +113,7 @@ namespace CampingView.Services
                     new HashEntry("email", user.Email)
                 };
 
-                redis.HashSet(userKey, hash);
+                _redis.redisDatabase.HashSet(userKey, hash);
 
                 //var name = redis.HashGet(userKey, "name");
                 //var email = redis.HashGet(userKey, "email");
@@ -132,6 +131,8 @@ namespace CampingView.Services
             //claims.Add(new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()));
             claims.Add(new Claim("name", user.Name));
             claims.Add(new Claim("email", user.Email));
+            claims.Add(new Claim("sns", user.Sns));
+            claims.Add(new Claim("id", user.Id));
             return claims;
         }
     }
