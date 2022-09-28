@@ -39,7 +39,7 @@
 	}
 
 	#recentKeyword {
-		width: 95%;
+		width: 90%;
 		display: none;
 		background: #fff;
 		top: 0;
@@ -51,20 +51,18 @@
         color:#333;
 	}
 
-	#suggest {
-		width: 95%;
-		display: none;
-		background: #eee;
-		top: 0;
-		left: 0;
-		margin: 105px 20px 0 15px;
-		position: absolute;
-		z-index: 9999;
-	}
 
     ul{
         list-style:none;
     }
+
+
+	#closeBtn {
+		position: fixed;
+		z-index: 99;
+		left: 90%;
+		top: 85%;
+	}
 
 </style>
    
@@ -87,7 +85,7 @@
         markers=[];
         infoWindows = [];
         dataList = [];
-        console.log("mapInit");
+        //console.log("mapInit");
 	}
 
 
@@ -97,7 +95,7 @@
         markers=[];
         infoWindows = [];
         dataList = [];
-        console.log("mapInit");
+        //console.log("mapInit");
 
         navigator.geolocation.getCurrentPosition(function (position) {
             setMap(position.coords.latitude, position.coords.longitude);
@@ -489,7 +487,7 @@
         
         map.setCenter(new naver.maps.LatLng(dataList.response.body.items.item[seq].mapY, dataList.response.body.items.item[seq].mapX));
 
-        console.log(dataList.response.body.items.item[seq]);
+        //console.log(dataList.response.body.items.item[seq]);
 
         //$("#divCampList").hide();   // 상세 선택시 리스트 비노출
         $("#divCampDtl").show();
@@ -615,6 +613,7 @@
 
         getBlogs(seq);
 
+        getComment(seq);
 
     }
 
@@ -686,10 +685,9 @@
         if (tot2 == 0) $("#more").hide();
 	}
 
-
     function showOption() {
         
-        console.log($("#options").css("display"))
+        //console.log($("#options").css("display"))
         if ($("#options").css("display") == "none") {
             //$("#options").show();
             showDiv("options");
@@ -701,7 +699,7 @@
 		}
 	}
 
-    function RecentKeyword() {
+    function recentKeyword() {
 
         $("#recentKeyword").show();
 
@@ -714,7 +712,7 @@
                 success: function (data) {
 
                     
-                    console.log(data)
+                    //console.log(data)
 
                     if (data != null && data != undefined) {
 
@@ -729,10 +727,10 @@
                                 //var word = data[i].key;
                                 //var date = data[i].value;
                             
-                                list += "<li style='margin:7px 0 0 10px;'>"
+                                list += "<li style='margin:7px 0 0 10px;' onclick='javascript:searchMap();'>"
                                 list += "    <div style='float:left;margin-left:4px;' ><img src='/img/icon/icons8-search.png' style='width:15px;'/></div>"
-                                list += "    <div style='float:left;width:300px;margin-left:5px;' >" + data[i].Key + "</div>"
-                                list += "    <div style='float:left;margin-left:20px;' >" + data[i].Value + "</div>"
+                                list += "    <div style='float:left;width:280px;margin-left:5px;' >" + data[i].Key + "</div>"
+                                list += "    <div style='float:left;margin-left:0px;' >" + data[i].Value + "</div>"
                                 list += "    <div style='margin-left:388px;' ><a href='javascript:deleteKeyword(\""+ data[i].Key +"\");'> X </a></div>"
                                 list += "</li>"
                             }
@@ -760,7 +758,6 @@
 
 	}
 
-
     function deleteKeyword(word) {
         $.ajax({
             type: "post",
@@ -769,12 +766,126 @@
             success: function (data) {
 
                 if (data != null) {
+                    recentKeyword();
+				}
+            }
+        });
+    }
 
-                    RecentKeyword();
+    function getComment(seq) {
+
+        var comm = "";
+        var body = "";
+
+        $.ajax({
+                type: "post",
+                url: "/home/comments",
+                data: "contentid=" + dataList.response.body.items.item[seq].contentId,
+                success: function (data) {
+
+                    
+                    var head = '<p style="margin-bottom:15px;">■ <b>한줄평</b></p>';
+                        head += '<div>';
+
+                    var addBtn = true;
+                    if (data != null && data != undefined) {
+
+                        if (data.length > 0) {
+                            body += '<table style="border:0px;">';
+                            for (var i = 0; i < data.length; i++) {
+                                body += '<tr>'
+                                body += '  <td style="width:60px;padding:0 5px 3px 0;">'+ data[i].user + '</td>'
+                                body += '  <td style="width:280px;padding:0 5px 3px 0;">' + data[i].comment + '</td>'
+                                body += '  <td style="width:120px;padding:0 5px 3px 0;">';
+                                body += data[i].ymd;
+                                
+                                if (data[i].me) {
+                                    addBtn = false;
+                                    body += ' <button type="button" class="btn btn-danger btn-xs" onclick="delComment('+ seq +',\''+ dataList.response.body.items.item[seq].contentId +'\');">삭제</button>'
+                                }
+                                body += '  </td>'
+
+                                body += '</tr>'
+
+
+                            }
+                            
+                            body += '</table>'
+                        }
+                    }
+
+                    comm = head
+                    if (addBtn) {
+                        var addcomm = '';
+
+    addcomm += '<div class="input-group">'
+    addcomm += '  <input type="text" name="comment" id="comment" class="form-control" placeholder="">'
+    addcomm += '  <span class="input-group-btn">'
+    addcomm += '   <button type="button" class="btn btn-success" onclick = "addComment(' + seq + ',\'' + dataList.response.body.items.item[seq].contentId + '\');">등록 </button>'
+    addcomm += ' </span>'
+    addcomm += '</div>'
+
+
+                        comm += addcomm;
+                    }
+                    comm += body;
+                    comm += '</div>';
+
+                    $("#divComments").html(comm);
+
+                },
+                error: function (data) {
+                    //alert("error: " + data.responseText);
+                }
+            });
+	}
+
+
+    function addComment(seq, contentid) {
+        $.ajax({
+            type: "post",
+            url: "/home/AddComment",
+            data: "contentid=" + contentid + "&comment="+ $("#comment").val(),
+            success: function (data) {
+
+                if (data != null) {
+                    //console.log(data);
+
+                    for (var i = 0; i < data.length; i++) {
+                        if (data[i].Key == "result" && data[i].Value == "True") {
+                            // 등록 성공
+                            getComment(seq);
+                            
+						}
+					}
+				}
+            }
+        });
+    }
+
+    function delComment(seq, contentid) {
+        $.ajax({
+            type: "post",
+            url: "/home/DelComment",
+            data: "contentid=" + contentid,
+            success: function (data) {
+
+                if (data != null) {
+                    //console.log(data);
+
+                    for (var i = 0; i < data.length; i++) {
+                        if (data[i].Key == "result" && data[i].Value == "True") {
+                            // 등록 성공
+                            getComment(seq);
+                            
+						}
+					}
+
 				}
             }
         });
 	}
+
 
 </script>
 
@@ -782,7 +893,7 @@
         <form class="form-inline">
           <div class="form-group">
             <div class="input-group">
-              <input type="text" autocomplete="off" class="form-control" id="keyword" placeholder="캠핑장 이름" style="border-radius:0px;" onfocus="javascript:RecentKeyword();" onfocusout="javascript: closeDiv('recentKeyword');" >
+              <input type="text" autocomplete="off" class="form-control" id="keyword" placeholder="캠핑장 이름" style="border-radius:0px;" onfocus="javascript:recentKeyword();" >
                  <span class="input-group-btn">
                     <button class="btn btn-default" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:showOption();">상세조건 +</button> 
                     <button class="btn btn-success" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:searchMap();">검색하기</button> 
@@ -802,9 +913,9 @@
     <div id="fade" class="black_overlay" style="display:none;"></div>
     <div id="light" class="white_content" style="width:100%;">
 		<div>
-			<div style="text-align:right; vertical-align:text-top;">
+			<div id="closeBtn" style="text-align:right; vertical-align:text-top;">
 				<a href="javascript:void(0)" onclick="closeDiv('light');">
-					<img src="/img/close_square.png" style="width:18px;height:18px;" />
+					<img src="/img/close_square.png" style="width:40px;height:40px;" />
 				</a>
 			</div>
 
@@ -823,6 +934,10 @@
 				<div id="divInfo" style="width:100%;margin-top:15px;"></div>
 
 				<div id="divBlogs" style="width:100%;margin-top:15px;"></div>
+
+                <div id="divComments" style="width:100%;margin-top:15px;">
+                    
+                </div>
 
 			</div>
 
@@ -883,7 +998,7 @@
     </div>
 
 
-    <div id="recentKeyword"></div>
+    <div id="recentKeyword" onmouseout="javascript: closeDiv('recentKeyword');"></div>
     
 
 

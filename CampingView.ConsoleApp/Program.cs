@@ -11,7 +11,6 @@ namespace CampingView.ConsoleApp
         {
             Console.WriteLine("Hello World!");
 
-
             RedisTest();
 
         }
@@ -39,8 +38,19 @@ namespace CampingView.ConsoleApp
 
             redis.redisDatabase.HashSet("h-key", hash);
             Console.WriteLine(redis.redisDatabase.HashGet("h-key", "name") + "====" + redis.redisDatabase.HashGet("h-key", "email"));
+            Console.WriteLine(redis.redisDatabase.HashGet("h-key2", "name") + "====" + redis.redisDatabase.HashGet("h-key2", "email"));
 
-            Console.WriteLine("=====");
+            Console.WriteLine("===== set add");
+
+
+            redis.redisDatabase.SetAdd("sadd", "comment1");
+            redis.redisDatabase.SetAdd("sadd", "comment2");
+            Console.WriteLine(redis.redisDatabase.SetMembers("sadd").ToString());
+            foreach (var i in redis.redisDatabase.SetMembers("sad"))
+            {
+                Console.WriteLine(i.ToString());
+            }
+
 
 
             foreach (var i in redis.redisServer.Keys(0, "*"))

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using CampingView.Models;
 using CampingView.Services;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CampingView.Controllers
 {
@@ -103,7 +104,7 @@ namespace CampingView.Controllers
         [HttpPost]
         public IActionResult Blogs(string query)
         {
-            var response = _accountService.GetBlogList(query);
+            var response = _userService.GetBlogList(query);
 
             return new JsonResult(response);
         }
@@ -130,22 +131,6 @@ namespace CampingView.Controllers
                 dic = _campService.GetkeywordList(base.GetUserId());
             }
 
-            /*
-            CampReqModel req = new CampReqModel();
-            req.serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value;
-            req.searchurl = _configuration.GetSection("OPENAPI:PUBLIC_API_BASE_URL").Value;
-            req.pageNo = 1;
-            req.radius = 20000;
-            req.numOfRows = 1000;
-            req.MobileOS = "ETC";
-            req.MobileApp = "CampView";
-            req.userid = string.Empty;
-            req.keyword = query;
-
-            var response = _campService.GetCampList(req);
-            */
-
-
             return new JsonResult(dic.ToList());
         }
 
@@ -161,26 +146,100 @@ namespace CampingView.Controllers
                 dic.Add("result", isOk);
             }
 
-            /*
-            CampReqModel req = new CampReqModel();
-            req.serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value;
-            req.searchurl = _configuration.GetSection("OPENAPI:PUBLIC_API_BASE_URL").Value;
-            req.pageNo = 1;
-            req.radius = 20000;
-            req.numOfRows = 1000;
-            req.MobileOS = "ETC";
-            req.MobileApp = "CampView";
-            req.userid = string.Empty;
-            req.keyword = query;
-
-            var response = _campService.GetCampList(req);
-            */
-
-
             return new JsonResult(dic.ToList());
         }
 
 
+        [HttpPost]
+        public IActionResult Comments(string contentid)
+        {
+            var list = new List<CampComment>();
+            if (string.IsNullOrEmpty(base.GetUserId()) == false)
+            {
+                list = _campService.GetComments(base.GetUserId(), contentid);
+            }
+
+            return new JsonResult(list);
+        }
+
+        [HttpPost]
+        public IActionResult AddComment(CampComment comm)
+        {
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            if (string.IsNullOrEmpty(base.GetUserId()) == false)
+            {
+                comm.user = base.GetUserId();
+                comm.ymd = DateTime.Now.ToString("yyyy.MM.dd");
+                bool isOk = false;
+                var msg = "";
+                if (_campService.ChkComment(comm))
+                {
+                    isOk = false;
+                    msg = "already added";
+                }
+                else
+                {
+                    isOk = _campService.SetComment(comm);
+                    if(isOk)
+                    {
+                        msg = "ok";
+                    }
+                }
+                
+
+                dic.Add("result", isOk.ToString());
+                dic.Add("message", msg);
+            }
+            else
+            {
+                dic.Add("result", "False");
+                dic.Add("message", "Require Login");
+            }
+
+            return new JsonResult(dic.ToList());
+        }
+
+        [HttpPost]
+        public IActionResult DelComment(CampComment comm)
+        {
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            if (string.IsNullOrEmpty(base.GetUserId()) == false)
+            {
+                comm.user = base.GetUserId();
+                
+                bool isOk = false;
+                var msg = "";
+                if (_campService.ChkComment(comm))
+                {
+                    // contentid 의 데이터를 가져온다.
+                    var data = _campService.GetComments(base.GetUserId(), comm.contentid).Where(w => w.me);
+
+                    if (data != null && data.Count() > 0)
+                    {
+                        data.FirstOrDefault().user = base.GetUserId();
+
+                        isOk = _campService.DelComment(data.FirstOrDefault());
+                        msg = "ok";
+                    }
+                }
+                else
+                {
+                    msg = "comment not find";
+                }
+
+
+                dic.Add("result", isOk.ToString());
+                dic.Add("message", msg);
+            }
+            else
+            {
+                dic.Add("result", "False");
+                dic.Add("message", "Require Login");
+            }
+
+            return new JsonResult(dic.ToList());
+
+        }
 
     }
 }

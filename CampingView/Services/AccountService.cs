@@ -16,10 +16,8 @@ namespace CampingView.Services
 {
     public interface IAccountService
     {
-        SearchResModel GetBlogList(string query);
         Task<NaverAccessToken> GetAccessToken(string code, string state);
         NaverUserProfile GetUserProfile(string token);
-
 
         Task<KakaoAccessToken> GetKakaoAccessToken(string code, string state, string redirectUrl);
         KakaoUserProfile GetKakaoUserProfile(string token);
@@ -33,7 +31,6 @@ namespace CampingView.Services
 
         private string _clientId = string.Empty;
         private string _clientSecret = string.Empty;
-        private string _searechBlogUrl = string.Empty;
 
 
         public AccountService(IConfiguration configuration, IWebHostEnvironment hostingEnvironment, IHttpClientFactory clientFactory)
@@ -44,41 +41,6 @@ namespace CampingView.Services
 
             _clientId = _configuration.GetSection("OPENAPI:NAVER_CLIENT_ID").Value;
             _clientSecret = _configuration.GetSection("OPENAPI:NAVER_CLIENT_SECRET").Value;
-            _searechBlogUrl = _configuration.GetSection("OPENAPI:NAVER_SEARCH_BLOG_URL").Value;
-        }
-
-        public SearchResModel GetBlogList(string query)
-        {
-            var model = new SearchResModel();
-            
-
-            //string query = "네이버 Open API"; // 검색할 문자열
-            string url = _searechBlogUrl + query; // 결과가 JSON 포맷
-            // string url = "https://openapi.naver.com/v1/search/blog.xml?query=" + query;  // 결과가 XML 포맷
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            request.Headers.Add("X-Naver-Client-Id", _clientId); // 개발자센터에서 발급받은 Client ID
-            request.Headers.Add("X-Naver-Client-Secret", _clientSecret); // 개발자센터에서 발급받은 Client Secret
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            string status = response.StatusCode.ToString();
-            if (status == "OK")
-            {
-                Stream stream = response.GetResponseStream();
-                StreamReader reader = new StreamReader(stream, Encoding.UTF8);
-                string text = reader.ReadToEnd();
-                //Console.WriteLine(text);
-
-                model = JsonConvert.DeserializeObject<SearchResModel>(text);
-
-                model.items = model.items.OrderByDescending(o => o.postdate).ToList();
-            }
-            else
-            {
-                Console.WriteLine("Error 발생=" + status);
-                //Error Logging
-            }
-
-
-            return model;
         }
 
         public async Task<NaverAccessToken> GetAccessToken(string code, string state)

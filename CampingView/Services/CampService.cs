@@ -23,12 +23,16 @@ namespace CampingView.Services
     {
         CampResModel GetCampList(CampReqModel req);
         CampImgResModel GetCampImgList(CampReqModel req);
-
         CampResModel CampFilter(CampReqModel req, CampResModel res);
-
         
         Dictionary<string, string> GetkeywordList(string userid);
         bool KeywordDel(string word, string userid);
+
+        List<CampComment> GetComments(string userid, string contentid);
+        string GetComment(string userid, string contentid);
+        bool SetComment(CampComment comment);
+        bool DelComment(CampComment comment);
+        bool ChkComment(CampComment comment);
     }
 
     public class CampService : ICampService
@@ -454,8 +458,90 @@ namespace CampingView.Services
 
         }
 
+        
+        public List<CampComment> GetComments(string userid, string contentid)
+        {
+            var redisKey = _configuration.GetSection("REDIS:COMMENT_KEY").Value.ToString() + contentid ;
 
-        public void GetImagesAPI(int start, int end)
+            List<CampComment> list = new List<CampComment>();
+            //_redis.redisDatabase.SortedSetRangeByRankWithScores(redisKey, 0, -1, order: Order.Descending);
+            foreach (var i in _redis.redisDatabase.SetMembers(redisKey))
+            {
+                var splt =  i.ToString().Split(":::");
+
+                list.Add(new CampComment
+                        {
+                            user = splt[0].Substring(0,5) + "***",
+                            ymd = splt[1],
+                            comment = splt[2],
+                            contentid = contentid,
+                            me = (splt[0] == userid) ? true :false
+                        }
+                );
+            }
+
+            return list.OrderByDescending(o => o.me).ToList();
+        }
+
+        public string GetComment(string userid, string contentid)
+        {
+            var redisKey = _configuration.GetSection("REDIS:COMMENT_KEY").Value.ToString() + contentid;
+            var value = string.Empty;
+
+            List<CampComment> list = new List<CampComment>();
+            //_redis.redisDatabase.SortedSetRangeByRankWithScores(redisKey, 0, -1, order: Order.Descending);
+            foreach (var i in _redis.redisDatabase.SetMembers(redisKey))
+            {
+                var splt = i.ToString().Split(":::");
+
+                if(splt[0] == userid)
+                {
+                    value = i.ToString();
+                    break;
+                }
+            }
+
+            return value;
+            
+        }
+
+
+        public bool ChkComment(CampComment comment)
+        {
+            var redisKey = _configuration.GetSection("REDIS:COMMENT_KEY").Value.ToString() + comment.contentid;
+            bool isOk = false;
+            foreach (var i in _redis.redisDatabase.SetMembers(redisKey))
+            {
+                var splt = i.ToString().Split(":::");
+
+                if(splt[0] == comment.user)
+                {
+                    isOk = true;
+                    break;
+                }
+            }
+
+            return isOk;
+        }
+        
+        public bool SetComment(CampComment comment)
+        {
+            var redisKey = _configuration.GetSection("REDIS:COMMENT_KEY").Value.ToString() + comment.contentid;
+            var value = comment.user +":::"+ DateTime.Now.ToString("yyyy.MM.dd") + ":::" + comment.comment;
+
+            return _redis.redisDatabase.SetAdd(redisKey, value);
+        }
+
+        public bool DelComment(CampComment comment)
+        {
+            var redisKey = _configuration.GetSection("REDIS:COMMENT_KEY").Value.ToString() + comment.contentid;
+            var value = comment.user + ":::" + comment.ymd + ":::" + comment.comment;
+
+            return _redis.redisDatabase.SetRemove(redisKey, value);
+        }
+
+
+        private void GetImagesAPI(int start, int end)
         {
            
             //var imgUrl = "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_BASE_PATH").Value + "/" + req.contentId + "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_THUM").Value;
@@ -707,5 +793,9 @@ namespace CampingView.Services
                 */
             }
         }
+
+
+
+        
     }
 }

@@ -34,7 +34,7 @@ namespace CampingView.Controllers
             return View();
         }
 
-
+        
         public IActionResult NaverLogin()
         {
             var clientId = _configuration.GetSection("OPENAPI:NAVER_CLIENT_ID").Value;

@@ -239,5 +239,15 @@ namespace CampingView.Models
     }
 
     #endregion
+
+
+    public class  CampComment
+    {
+        public string user { get; set; }
+        public string contentid { get; set; }
+        public string comment { get; set; }
+        public string ymd { get; set; }
+        public bool me { get; set; }
+    }
     
 }
