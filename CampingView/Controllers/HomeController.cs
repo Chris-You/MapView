@@ -241,5 +241,64 @@ namespace CampingView.Controllers
 
         }
 
+
+        [HttpPost]
+        public IActionResult Like( string contentid, bool isLike)
+        {
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            if (string.IsNullOrEmpty(base.GetUserId()) == false)
+            {
+                var isOk = false;
+                var msg = "";
+
+                if (isLike)
+                {
+                    // 좋아요 삭제
+                    isOk = _campService.DelLike(base.GetUserId(), contentid);
+                }
+                else
+                {
+                    // 좋아요 등록
+                    isOk = _campService.SetLike(base.GetUserId(), contentid);
+                    
+                }
+                if (isOk)
+                {
+                    msg = "ok";
+                }
+
+                dic.Add("result", isOk.ToString());
+                dic.Add("message", msg);
+            }
+            else
+            {
+                dic.Add("result", "False");
+                dic.Add("message", "Require Login");
+            }
+
+            return new JsonResult(dic);
+        }
+
+        [HttpPost]
+        public IActionResult IsLike(string contentid)
+        {
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            if (string.IsNullOrEmpty(base.GetUserId()) == false)
+            {
+                var isOk = _campService.ChkLike(base.GetUserId(), contentid);
+
+                dic.Add("result", isOk.ToString());
+                dic.Add("message", "ok");
+            }
+            else
+            {
+                dic.Add("result", "False");
+                dic.Add("message", "false");
+            }
+
+            return new JsonResult(dic);
+        }
+
+
     }
 }

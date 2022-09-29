@@ -33,6 +33,10 @@ namespace CampingView.Services
         bool SetComment(CampComment comment);
         bool DelComment(CampComment comment);
         bool ChkComment(CampComment comment);
+
+        bool SetLike(string userid, string contentid);
+        bool DelLike(string userid, string contentid);
+        bool ChkLike(string userid, string contentid);
     }
 
     public class CampService : ICampService
@@ -63,7 +67,7 @@ namespace CampingView.Services
             var redisKey = _configuration.GetSection("REDIS:SEARCH_KEY").Value.ToString() + userid;
 
             Dictionary<string, string> dic = new Dictionary<string, string>();
-            //_redis.redisDatabase.SortedSetRangeByRankWithScores(redisKey, 0, -1, order: Order.Descending);
+            
             foreach (var k in _redis.redisDatabase.SortedSetRangeByRankWithScores(redisKey, 0, -1, order: Order.Descending))
             {
                 var key = k.ToString().Split(":")[0];
@@ -524,6 +528,8 @@ namespace CampingView.Services
             return isOk;
         }
         
+
+
         public bool SetComment(CampComment comment)
         {
             var redisKey = _configuration.GetSection("REDIS:COMMENT_KEY").Value.ToString() + comment.contentid;
@@ -536,6 +542,39 @@ namespace CampingView.Services
         {
             var redisKey = _configuration.GetSection("REDIS:COMMENT_KEY").Value.ToString() + comment.contentid;
             var value = comment.user + ":::" + comment.ymd + ":::" + comment.comment;
+
+            return _redis.redisDatabase.SetRemove(redisKey, value);
+        }
+
+        public bool ChkLike(string userid, string contentid)
+        {
+            var redisKey = _configuration.GetSection("REDIS:LIKE_KEY").Value.ToString() + userid;
+            bool isOk = false;
+            foreach (var i in _redis.redisDatabase.SetMembers(redisKey))
+            {
+                if (contentid == i.ToString())
+                {
+                    isOk = true;
+                    break;
+                }
+            }
+
+            return isOk;
+        }
+
+
+        public bool SetLike(string userid, string contentid)
+        {
+            var redisKey = _configuration.GetSection("REDIS:LIKE_KEY").Value.ToString() + userid;
+            var value = contentid;
+
+            return _redis.redisDatabase.SetAdd(redisKey, value);
+        }
+
+        public bool DelLike(string userid, string contentid)
+        {
+            var redisKey = _configuration.GetSection("REDIS:LIKE_KEY").Value.ToString() + userid;
+            var value = contentid;
 
             return _redis.redisDatabase.SetRemove(redisKey, value);
         }

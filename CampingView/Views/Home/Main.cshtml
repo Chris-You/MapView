@@ -138,7 +138,6 @@
         search( center);
     }
 
-
     function hideMarker() {
 
         for (var i = 0; i < markers.length; i++) {
@@ -151,9 +150,6 @@
 	}
 
     function search(centerPos) {
-
-        //console.log("search");
-        //console.log(centerPos);
 
         hideMarker();
 
@@ -186,9 +182,7 @@
             "keyword": $("#keyword").val(),
             "facltDivNm": facltDivNm,
             "induty": induty,
-            "sbrsCl": sbrsCl,
-            
-            
+            "sbrsCl": sbrsCl, 
         };
 
         //$("#divCampList").empty();
@@ -321,25 +315,6 @@
         //console.log(mapOptions);
 
         map = new naver.maps.Map('divMap', mapOptions);
-
-        /*
-        naver.maps.Event.addListener(map, 'bounds_changed', function(bounds) {
-            //contentEl.find('.center').text(map.getCenterPoint());
-            console.log('Center: ' + map.getCenter().toString() + ', Bounds: ' + bounds.toString());
-        });
-        */
-        /*
-        naver.maps.Event.addListener(map, 'mouseup', function(bounds) {
-            //contentEl.find('.center').text(map.getCenterPoint());
-            //console.log('Center: ' + map.getCenter().toString() + ', Bounds: ' + bounds.toString());
-
-            center.x = map.getCenter().x;
-            center.y = map.getCenter().y;
-            // 조회
-            search(center);
-        });
-        */
-
 	}
 
     function setMarker(lat, lng, facltNm, seq) {
@@ -363,7 +338,6 @@
 
         infoWindows.push(infoWindow);
 
-
         markers[seq].setMap(map);
         naver.maps.Event.addListener(markers[seq], 'click', getClickHandler(seq));
 
@@ -372,7 +346,6 @@
     function closeInfo(seq) {
         infoWindows[seq].close();
 	}
-
 
     // 해당 마커의 인덱스를 seq라는 클로저 변수로 저장하는 이벤트 핸들러를 반환합니다.
     function getClickHandler(seq) {
@@ -482,6 +455,60 @@
         //console.log(url);
     }
 
+    function like(seq) {
+
+        var likeVal = $("#btnLike").attr("data-value");
+        // 현재 좋아요 이면 true, 아니면 false
+        
+        $.ajax({
+            type: "post",
+            url: "/home/like",
+            data: "contentid=" + dataList.response.body.items.item[seq].contentId + "&isLike="+ likeVal,
+            success: function (data) {
+
+                if (data != null) {
+                    //console.log(data);
+
+                    if (data.result == "True") {
+                        // 등록 성공
+                        //getComment(seq);
+
+                        if (likeVal == "true") {
+                                
+                            $("#btnLike").attr("src", "/img/icon/icons8-heart-50.png")
+                            $("#btnLike").attr("data-value", "false");
+                        }
+                        else {
+                            $("#btnLike").attr("src", "/img/icon/icons8-heartfull-50.png")
+                            $("#btnLike").attr("data-value", "true");
+		                }
+					}
+				}
+            }
+        });
+    }
+
+    function isLike(seq) {
+        //
+        
+        $.ajax({
+            type: "post",
+            url: "/home/IsLike",
+            data: "contentid=" + dataList.response.body.items.item[seq].contentId,
+            success: function (data) {
+
+                if (data != null) {
+                    if (data.result == "True") {
+                        // 등록 성공
+                        $("#btnLike").attr("src", "/img/icon/icons8-heartfull-50.png")
+                        $("#btnLike").attr("data-value", "true");
+					}
+				}
+            }
+        });
+	}
+
+
     function setCampDetail(seq) {
 
         
@@ -494,11 +521,21 @@
         showDiv("light");
 
         var title = ""
-        title += "<p>■ <b>" + dataList.response.body.items.item[seq].facltNm + "</b> (" + dataList.response.body.items.item[seq].facltDivNm  +")</p>"
+        title += "<p>■ <b>" + dataList.response.body.items.item[seq].facltNm + "</b> (" + dataList.response.body.items.item[seq].facltDivNm + ")"
+
+        // 회원이면 좋아요 버튼 노출
+        title += '<img id="btnLike" src="/img/icon/icons8-heart-50.png" data-value="false" alt="like it" style="margin-left:15px;width:25px;" onclick="javascript:like('+ seq +');"/>';
+        
+
+        title += "</p>";
+
         title += "<p> - " + dataList.response.body.items.item[seq].addr1 + " " + dataList.response.body.items.item[seq].addr2 + "</p>"
         if (dataList.response.body.items.item[seq].lineIntro != "") {
             title += "<p> - " + dataList.response.body.items.item[seq].lineIntro + "</p>"
         }
+
+        
+
         title += "<hr style='height:5px;'/>";
         $("#divTitle").html(title);
 
@@ -608,12 +645,14 @@
         $("#divInfo").html(info);
 
 
+        isLike(seq);
 
         getImages(seq);
 
         getBlogs(seq);
 
         getComment(seq);
+
 
     }
 
@@ -804,12 +843,8 @@
                                     body += ' <button type="button" class="btn btn-danger btn-xs" onclick="delComment('+ seq +',\''+ dataList.response.body.items.item[seq].contentId +'\');">삭제</button>'
                                 }
                                 body += '  </td>'
-
                                 body += '</tr>'
-
-
                             }
-                            
                             body += '</table>'
                         }
                     }
@@ -818,13 +853,12 @@
                     if (addBtn) {
                         var addcomm = '';
 
-    addcomm += '<div class="input-group">'
-    addcomm += '  <input type="text" name="comment" id="comment" class="form-control" placeholder="">'
-    addcomm += '  <span class="input-group-btn">'
-    addcomm += '   <button type="button" class="btn btn-success" onclick = "addComment(' + seq + ',\'' + dataList.response.body.items.item[seq].contentId + '\');">등록 </button>'
-    addcomm += ' </span>'
-    addcomm += '</div>'
-
+                        addcomm += '<div class="input-group">'
+                        addcomm += '  <input type="text" name="comment" id="comment" class="form-control" placeholder="">'
+                        addcomm += '  <span class="input-group-btn">'
+                        addcomm += '   <button type="button" class="btn btn-success" onclick = "addComment(' + seq + ',\'' + dataList.response.body.items.item[seq].contentId + '\');">등록 </button>'
+                        addcomm += ' </span>'
+                        addcomm += '</div>'
 
                         comm += addcomm;
                     }
@@ -839,7 +873,6 @@
                 }
             });
 	}
-
 
     function addComment(seq, contentid) {
         $.ajax({
@@ -935,9 +968,9 @@
 
 				<div id="divBlogs" style="width:100%;margin-top:15px;"></div>
 
-                <div id="divComments" style="width:100%;margin-top:15px;">
-                    
-                </div>
+                <div id="divComments" style="width:100%;margin-top:15px;"></div>
+
+                <div style="margin-bottom: 15px;"></div>
 
 			</div>
 
