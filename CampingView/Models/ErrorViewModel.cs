@@ -1,6 +1,6 @@
 using System;
 
-namespace CampingView.Models
+namespace CampView.Models
 {
     public class ErrorViewModel
     {

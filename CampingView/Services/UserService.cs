@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
-using CampingView.Models;
+using CampView.Models;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
 using StackExchange.Redis;
@@ -16,7 +16,7 @@ using Newtonsoft.Json;
 using Microsoft.AspNetCore.Hosting;
 using System.Text;
 
-namespace CampingView.Services
+namespace CampView.Services
 {
     public interface IUserService
     {

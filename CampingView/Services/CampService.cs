@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Http;
 using System.IO;
-using CampingView.Models;
+using CampView.Models;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
@@ -13,10 +13,10 @@ using Newtonsoft.Json.Linq;
 using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
-using CampingView.Util;
+using CampView.Util;
 using StackExchange.Redis;
 
-namespace CampingView.Services
+namespace CampView.Services
 {
 
     public interface ICampService
@@ -472,7 +472,7 @@ namespace CampingView.Services
             foreach (var i in _redis.redisDatabase.SetMembers(redisKey))
             {
                 var splt =  i.ToString().Split(":::");
-
+                
                 list.Add(new CampComment
                         {
                             user = splt[0].Substring(0,5) + "***",

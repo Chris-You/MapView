@@ -5,12 +5,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using CampingView.Models;
-using CampingView.Services;
+using CampView.Models;
+using CampView.Services;
 using Microsoft.Extensions.Configuration;
 
 
-namespace CampingView.Controllers
+namespace CampView.Controllers
 {
     public class BaseController : Controller
     {

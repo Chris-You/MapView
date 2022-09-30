@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CampingView.Models
+namespace CampView.Models
 {
     #region ////네이버 블로그 검색
     public class SearchResModel

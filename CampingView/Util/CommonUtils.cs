@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CampingView.Util
+namespace CampView.Util
 {
     public class CommonUtils
     {

@@ -8,12 +8,12 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using CampingView.Services;
+using CampView.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 //using StackExchange.Redis;
 
-namespace CampingView
+namespace CampView
 {
     public class Startup
     {

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Web;
 
-namespace CampingView.Util
+namespace CampView.Util
 {
     public class CookieUtil
     {

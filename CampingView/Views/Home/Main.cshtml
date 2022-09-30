@@ -884,12 +884,10 @@
                 if (data != null) {
                     //console.log(data);
 
-                    for (var i = 0; i < data.length; i++) {
-                        if (data[i].Key == "result" && data[i].Value == "True") {
-                            // 등록 성공
-                            getComment(seq);
+                    if (data.result == "True") {
+                        // 등록 성공
+                        getComment(seq);
                             
-						}
 					}
 				}
             }
@@ -906,12 +904,10 @@
                 if (data != null) {
                     //console.log(data);
 
-                    for (var i = 0; i < data.length; i++) {
-                        if (data[i].Key == "result" && data[i].Value == "True") {
-                            // 등록 성공
-                            getComment(seq);
+                    if (data.result == "True") {
+                        // 등록 성공
+                        getComment(seq);
                             
-						}
 					}
 
 				}

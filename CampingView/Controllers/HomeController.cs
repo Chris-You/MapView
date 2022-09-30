@@ -5,12 +5,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using CampingView.Models;
-using CampingView.Services;
+using CampView.Models;
+using CampView.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authorization;
 
-namespace CampingView.Controllers
+namespace CampView.Controllers
 {
     public class HomeController : BaseController
     {
@@ -196,7 +196,7 @@ namespace CampingView.Controllers
                 dic.Add("message", "Require Login");
             }
 
-            return new JsonResult(dic.ToList());
+            return new JsonResult(dic);
         }
 
         [HttpPost]
@@ -237,7 +237,7 @@ namespace CampingView.Controllers
                 dic.Add("message", "Require Login");
             }
 
-            return new JsonResult(dic.ToList());
+            return new JsonResult(dic);
 
         }
 

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using StackExchange.Redis;
 
-namespace CampingView.Services
+namespace CampView.Services
 {
     public class RedisService
     {
@@ -13,9 +13,13 @@ namespace CampingView.Services
 
         private ConnectionMultiplexer _conntction;
         
-        public RedisService(string host, string port, string pass)
+        public RedisService(string host, string port, string pass) : this(host, port, pass, "0")
         {
-            this._conntction = ConnectionMultiplexer.Connect(host + ":" + port + ",password=" + pass);
+        }
+
+        public RedisService(string host, string port, string pass, string db)
+        {
+            this._conntction = ConnectionMultiplexer.Connect(host + ":" + port + ",password=" + pass + ",DefaultDatabase=" + db);
             if (_conntction.IsConnected)
             {
                 this.redisDatabase = this._conntction.GetDatabase();
