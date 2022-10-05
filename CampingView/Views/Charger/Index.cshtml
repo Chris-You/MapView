@@ -1,0 +1,434 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "_LayoutCharger";
+}
+
+@section Scripts
+{
+<script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=ak5szsi1xk&callback=mapSet&submodules=geocoder"></script>
+}
+
+
+
+
+
+    
+    
+
+
+<script type="text/javascript">
+
+
+    var map;
+    var geocoder;
+    var markers=[];
+    var infoWindows = [];
+    var dataList = [];
+    
+
+    var center = {
+        x: 0,
+        y: 0
+    };
+
+    $(document).ready(function () {
+        mapSet();
+
+    });
+
+    function mapSet() {
+
+        if(!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser');
+        }
+        else
+        {
+            mapInit();
+        }
+    }
+
+    function resetMap() {
+        
+        markers=[];
+        infoWindows = [];
+        dataList = [];
+        //console.log("mapInit");
+	}
+
+   
+    function mapInit() {
+
+        map = null;
+        markers=[];
+        infoWindows = [];
+        dataList = [];
+        //console.log("mapInit");
+
+        navigator.geolocation.getCurrentPosition(function (position) {
+            setMap(position.coords.latitude, position.coords.longitude);
+
+            center.x = position.coords.longitude;
+            center.y = position.coords.latitude;
+            console.log("init");
+            //console.log(position);
+
+            
+            var latlng = map.getCenter(); 
+            console.log(center);
+            console.log(latlng);
+            search(latlng);
+
+            }
+            , function (error) {
+                console.log(error);
+            });
+	}
+    
+
+    function setMap(lat, lng) {
+
+        var mapOptions = {
+            center: new naver.maps.LatLng(lat, lng),
+            zoom: 15,
+            //scaleControl: false,
+            logoControl: false,
+            //mapDataControl: false,
+            //zoomControl: false,
+        };
+
+        //console.log(mapOptions);
+
+        map = new naver.maps.Map('divMap', mapOptions);
+        // 주소-좌표 변환 객체를 생성합니다
+        //geocoder = new naver.maps.services.Geocoder();
+
+        // 마우스 드래그로 지도 이동이 완료되었을 때 마지막 파라미터로 넘어온 함수를 호출하도록 이벤트를 등록합니다
+        naver.maps.Event.addListener(map, 'dragend', function(event) {        
+    
+            // 지도 중심좌표를 얻어옵니다 
+            var latlng = map.getCenter(); 
+    
+            //var message = '중심좌표 : ' + latlng.getLat() + ', '+ latlng.getLng();
+            
+            console.log("mouseEvent dragend");
+            console.log(event);
+
+            //var resultDiv = document.getElementById('result');  
+            //resultDiv.innerHTML = message;
+
+             //searchCoordinateToAddress(event.coord);
+
+
+            search(event.coord);
+    
+        });
+
+
+        naver.maps.Event.addListener(map, 'click', function (event) {
+            // 클릭한 위도, 경도 정보를 가져옵니다 
+            console.log("mouse click");
+            console.log(event);
+        });
+
+
+    }
+
+
+    function searchCoordinateToAddress(latlng) {
+
+        naver.maps.Service.reverseGeocode({
+            coords: latlng,
+            orders: [
+                naver.maps.Service.OrderType.ADDR,
+                naver.maps.Service.OrderType.ROAD_ADDR
+            ].join(',')
+            }, function (status, response)
+            {
+                if (status === naver.maps.Service.Status.ERROR)
+                {
+                    if (!latlng) {
+                        return alert('ReverseGeocode Error, Please check latlng');
+                    }
+                    if (latlng.toString) {
+                        return alert('ReverseGeocode Error, latlng:' + latlng.toString());
+                    }
+                    if (latlng.x && latlng.y) {
+                        return alert('ReverseGeocode Error, x:' + latlng.x + ', y:' + latlng.y);
+                    }
+
+                    return alert('ReverseGeocode Error, Please check latlng');
+                }
+
+                console.log(response);
+
+                var address = response.v2.address,
+                    htmlAddresses = [];
+
+                if (address.jibunAddress !== '') {
+                    htmlAddresses.push('[지번 주소] ' + address.jibunAddress);
+                }
+
+                if (address.roadAddress !== '') {
+                    htmlAddresses.push('[도로명 주소] ' + address.roadAddress);
+                }
+                /*
+            infoWindow.setContent([
+                '<div style="padding:10px;min-width:200px;line-height:150%;">',
+                '<h4 style="margin-top:5px;">검색 좌표</h4><br />',
+                htmlAddresses.join('<br />'),
+                '</div>'
+            ].join('\n'));
+
+            */
+
+            //infoWindow.open(map, latlng);
+        });
+    }
+
+
+
+
+    function hideMarker() {
+
+        for (var i = 0; i < markers.length; i++) {
+            markers[i].setMap(null);
+            infoWindows[i].close();
+        }
+
+        markers = [];
+        infoWindows = [];
+	}
+
+    function search(latlng) {
+
+        hideMarker();
+
+        console.log("search");
+        console.log(latlng);
+
+
+
+        naver.maps.Service.reverseGeocode({
+            coords: latlng,
+            orders: [
+                naver.maps.Service.OrderType.ADDR,
+                naver.maps.Service.OrderType.ROAD_ADDR
+            ].join(',')
+            }, function (status, response)
+            {
+                if (status === naver.maps.Service.Status.ERROR)
+                {
+                    if (!latlng) {
+                        return alert('ReverseGeocode Error, Please check latlng');
+                    }
+                    if (latlng.toString) {
+                        return alert('ReverseGeocode Error, latlng:' + latlng.toString());
+                    }
+                    if (latlng.x && latlng.y) {
+                        return alert('ReverseGeocode Error, x:' + latlng.x + ', y:' + latlng.y);
+                    }
+
+                    return alert('ReverseGeocode Error, Please check latlng');
+                }
+
+                
+                var result = response.v2.results;
+                var address = response.v2.address;
+                var htmlAddresses = [];
+
+                if (address.jibunAddress !== '') {
+                    htmlAddresses.push('[지번 주소] ' + address.jibunAddress);
+                }
+
+                if (address.roadAddress !== '') {
+                    htmlAddresses.push('[도로명 주소] ' + address.roadAddress);
+                }
+
+                //console.log(response.v2.results);
+                //console.log(htmlAddresses[0]);
+
+
+                $("#depth1").val(result[0].region.area1.name);
+                if (result[0].region.area2.name == '') {
+                    $("#depth2").val(result[0].region.area3.name);
+                    $("#depth3").val("");
+                }
+                else {
+                    $("#depth2").val(result[0].region.area2.name);
+                    $("#depth3").val(result[0].region.area3.name);
+				}
+                
+
+                ajax(latlng);
+
+
+                /*
+            infoWindow.setContent([
+                '<div style="padding:10px;min-width:200px;line-height:150%;">',
+                '<h4 style="margin-top:5px;">검색 좌표</h4><br />',
+                htmlAddresses.join('<br />'),
+                '</div>'
+            ].join('\n'));
+
+            */
+
+            //infoWindow.open(map, latlng);
+        });
+
+
+
+
+
+
+        /*
+        searchDetailAddrFromCoords(latlng, function (result, status)
+        {
+            if (status === kakao.maps.services.Status.OK) {
+                var detailAddr = !!result[0].road_address ? '<div>도로명주소 : ' + result[0].road_address.address_name + '</div>' : '';
+                detailAddr += '<div>지번 주소 : ' + result[0].address.address_name + '</div>';
+            
+                var content = '<div class="bAddr">' +
+                                '<span class="title">법정동 주소정보</span>' + 
+                                detailAddr + 
+                            '</div>';
+
+                // 마커를 클릭한 위치에 표시합니다 
+                //marker.setPosition(mouseEvent.latLng);
+                //marker.setMap(map);
+
+                // 인포윈도우에 클릭한 위치에 대한 법정동 상세 주소정보를 표시합니다
+                //infowindow.setContent(content);
+                //infowindow.open(map, marker);
+
+                console.log(content);
+
+                $("#depth1").val(result[0].address.region_1depth_name);
+                $("#depth2").val(result[0].address.region_2depth_name);
+                $("#depth3").val(result[0].address.region_3depth_name);
+
+                ajax(latlng);
+            }
+        });
+        */
+
+    }
+
+    function ajax(latlng) {
+        var url = "/Charger/Search";
+
+        var data = {
+            "depth1": $("#depth1").val(),
+            "depth2": $("#depth2").val(),
+            "depth3": $("#depth3").val(),
+            "lat": latlng.y,
+            "lng": latlng.x,
+        };
+
+        //$("#divCampList").empty();
+        var list = "";
+        console.log("azax... request")
+        $.ajax({
+            type: "post",
+            url: "/charger/Search",
+            url: url ,
+            data: data,
+            async:false,
+            success: function (data) {
+                //script = data.replace(/<script>(.*)<\/script>/, "$1"); // Remove tags
+                //eval(script); // Execute javascript
+                console.log(data);
+
+                if (data.length > 0) {
+
+                    dataList = data;
+
+                    for (var i = 0; i < data.length; i++) {
+
+                        var lng = data[i].lng;
+                        var lat = data[i].lat;
+
+                        setMarker(lat, lng, data[i].statNm, i);
+                    }
+
+                }
+
+            },
+            error: function (data) {
+                //alert("error: " + data.responseText);
+            }
+        });
+	}
+
+
+    function closeInfo(seq) {
+        infoWindows[seq].close();
+	}
+
+    function setMarker(lat, lng, facltNm, seq) {
+
+        var marker = new naver.maps.Marker({
+            position: new naver.maps.LatLng(lat, lng),
+            map: map,
+            /*
+            icon: {
+                url: '/img/camp_icon.png',
+                size: new naver.maps.Size(22, 35)
+                
+            }
+            */
+        });
+
+        markers.push(marker);
+        
+        var infoWindow = new naver.maps.InfoWindow({
+            content: '<div style="width:250px;text-align:center;padding:10px;" onclick="closeInfo('+ seq +')"> <b>'+ facltNm +'</b></div>'
+        });
+
+        infoWindows.push(infoWindow);
+
+        markers[seq].setMap(map);
+        naver.maps.Event.addListener(markers[seq], 'mouseover', getClickHandler(seq));
+        naver.maps.Event.addListener(markers[seq], 'mouseout', getClickHandler(seq));
+
+    }
+
+    function getClickHandler(seq) {
+
+        return function (e) {
+
+            getClickListItem(seq);
+            
+        }
+    }
+
+
+    function getClickListItem(seq) {
+
+        var marker = markers[seq],
+        infoWindow = infoWindows[seq];
+
+        if (infoWindow.getMap()) {
+            infoWindow.close();
+        } else {
+            infoWindow.open(map, marker);
+        }
+
+        //setCampDetail(seq);
+    }
+
+
+
+
+
+
+
+
+</script>
+
+<input type="hidden" name="depth1" id="depth1" value=""/>
+<input type="hidden" name="depth2" id="depth2" value=""/>
+<input type="hidden" name="depth3" id="depth3" value=""/>
+
+<div id="divMap" style="width:100%;height:250px;"></div>

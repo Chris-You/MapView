@@ -12,6 +12,7 @@ using CampView.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 //using StackExchange.Redis;
+using CampView.Models.CustomSettings;
 
 namespace CampView
 {
@@ -29,9 +30,12 @@ namespace CampView
         {
             services.AddControllersWithViews();
 
+            services.AddScoped<IChargerService, ChargerService>();
             services.AddScoped<ICampService, CampService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IUserService, UserService>();
+
+            services.AddScoped<ILottoService, LottoService>();
 
             services.AddAuthentication(options =>
             {
@@ -68,6 +72,9 @@ namespace CampView
             });
             */
             services.AddHttpClient();
+
+            // customSetting.json load
+            services.Configure<ChargerCode>(Configuration.GetSection("ChargerCode"));
 
 
         }
@@ -112,7 +119,7 @@ namespace CampView
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Main}/{id?}");
+                    pattern: "{controller=Charger}/{action=Index}/{id?}");
             });
         }
     }

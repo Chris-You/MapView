@@ -15,12 +15,12 @@ namespace CampView.Controllers
     public class AccountController : Controller
     {
         private readonly IConfiguration _configuration;
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<CampController> _logger;
 
         private IAccountService _accountService;
         private readonly IUserService _userService;
 
-        public AccountController(ILogger<HomeController> logger, IConfiguration config,
+        public AccountController(ILogger<CampController> logger, IConfiguration config,
                               IAccountService accountService,IUserService userService)
         {
             _logger = logger;
@@ -71,7 +71,7 @@ namespace CampView.Controllers
                 }
             }
 
-            return LocalRedirect("~/Home/Main");
+            return LocalRedirect("~/Camp/Index");
         }
 
 
@@ -89,7 +89,7 @@ namespace CampView.Controllers
             // 로그인 성공
             await _userService.SignIn(this.HttpContext, user, false);
 
-            return LocalRedirect("~/Home/Main");
+            return LocalRedirect("~/Camp/Index");
         }
 
 
@@ -133,14 +133,14 @@ namespace CampView.Controllers
                 }
             }
 
-            return LocalRedirect("~/Home/Main");
+            return LocalRedirect("~/Camp/Index");
         }
 
 
         public async Task<IActionResult> LogoutAsync()
         {
             await _userService.SignOut(this.HttpContext);
-            return RedirectPermanent("~/Home/Main");
+            return RedirectPermanent("~/Camp/Index");
         }
 
         [Authorize]

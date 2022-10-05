@@ -1,0 +1,180 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name ="google-signin-client_id" content="1061916295015-dcb9sn0767gmk7md8i0hsss0lplbgd4k.apps.googleusercontent.com">
+
+    <title>@ViewData["Title"] Ev 충전소</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/css/site_charger.css">
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js"></script>
+    
+
+    <!-- bxSlider.js-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/bxslider/4.2.12/jquery.bxslider.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/bxslider/4.2.12/jquery.bxslider.min.js"></script>
+
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1971674194330083"
+     crossorigin="anonymous"></script>
+
+    @RenderSection("Scripts", required: false)
+
+
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            $("#burgur").click(function () {  
+                
+                if ($("#burgur").hasClass('on'))
+                { 
+                    $("#burgur").removeClass('on'); 
+                    $("#side-menu").removeClass('on');
+                }
+                else
+                {
+                    $("#burgur").addClass('on');  
+                    $("#side-menu").addClass('on');
+                }
+            });
+        });
+
+        function goPage(url) {
+            location.href = url;
+		}
+
+
+    </script>
+
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="container">
+        <div class="head">
+            <div class="side-open" id="side-open" style="float:left;">
+                <!--
+                <span class="burgur" id="burgur">
+                    <span class="top-line"></span>
+                    <span class="bot-line"></span>
+                </span>
+                -->
+            </div>
+      
+            <div class="logo"><span onclick="javascript: goPage('/');">ChargerView</span></div>
+
+            <div class="login">
+            @if (User.Identity.IsAuthenticated)
+			{
+                    
+                @if (User.Claims.Any(x => x.Type == "name"))
+				{
+                    <span style="font-size:12px;">
+                    @string.Format("{0}님", User.Claims.FirstOrDefault(x => x.Type == "name").Value)
+                    </span>
+				}
+                <span style="font-size:16px;"><a href="/Account/Logout"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span></a></span>
+			}
+			else
+			{
+                <span style="font-size:16px;"><a href="/Account/Login"><span class="glyphicon glyphicon-log-in" aria-hidden="true"></span></a></span>
+			}
+
+            </div>
+            
+        </div>
+        <div class="body">
+            <div class="content">
+                @RenderBody()
+            </div>
+
+            
+        </div>
+    </div> 
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2022 - Charger. All Rights Reserved.
+        </div>
+    </footer>
+
+    
+    <div class="side-menu" id="side-menu">
+        <!--
+        <div class="side-menu-title">
+        메뉴
+        </div>
+        -->
+        <ul>
+            <li>건의하기</li>
+            <li>슬라이드 메뉴</li>
+            <li>슬라이드 메뉴</li>
+            <li>슬라이드 메뉴</li>
+            <li>슬라이드 메뉴</li>
+        </ul>
+    </div>
+
+</div>
+
+
+    @*
+    <header class="header">
+        
+        <div class="container">
+
+                <div class="panel-heading" style="float:left;">
+                    <h4><a href="/">CampView</a></h4>
+                </div>
+
+                <div class="panel-heading" style="float:right;">
+                @if (User.Identity.IsAuthenticated)
+				{
+                    
+                   @if (User.Claims.Any(x => x.Type == "name"))
+				   {
+                       <span style="font-size:12px;">
+                        @string.Format("{0}님", User.Claims.FirstOrDefault(x => x.Type == "name").Value)
+                       </span>
+				   }
+                   <span style="font-size:16px;"><a href="/Account/Logout"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span></a></span>
+				}
+				else
+				{
+                   <span style="font-size:16px;"><a href="/Account/Login"><span class="glyphicon glyphicon-log-in" aria-hidden="true"></span></a></span>
+				}
+
+                </div>
+            </div>
+        
+
+    </header>
+
+    
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2022 - CampView. All Rights Reserved.
+        </div>
+    </footer>
+
+*@    
+
+
+</body>
+</html>
+

@@ -624,7 +624,7 @@ namespace CampView.Services
                     // 이미지 폴더가 없거나, 이미지가 없으면 썸네일 파일 생성
                     DirectoryInfo di2 = Directory.CreateDirectory(pathThum);
 
-                    string url = _configuration.GetSection("OPENAPI:PUBLIC_API_IMAGE_URL").Value; // URL
+                    string url = _configuration.GetSection("OPENAPI:CAMP_API_IMAGE_URL").Value; // URL
                     url += "?ServiceKey=" + _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value; // Service Key
                     url += "&MobileOS=ETC";
                     url += "&MobileApp=CampView";

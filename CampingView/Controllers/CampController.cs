@@ -12,16 +12,16 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace CampView.Controllers
 {
-    public class HomeController : BaseController
+    public class CampController : BaseController
     {
         private readonly IConfiguration _configuration;
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<CampController> _logger;
 
         private ICampService _campService;
         private IAccountService _accountService;
         private IUserService _userService;
 
-        public HomeController(ILogger<HomeController> logger, IConfiguration config, 
+        public CampController(ILogger<CampController> logger, IConfiguration config, 
                               ICampService campService, IAccountService accountService,
                               IUserService userService)
         {
@@ -30,14 +30,6 @@ namespace CampView.Controllers
             _campService = campService;
             _accountService = accountService;
             _userService = userService;
-        }
-
-        public IActionResult Index()
-        {
-            var name = User.Claims.FirstOrDefault(x => x.Type == "sns").Value;
-            var id = User.Claims.FirstOrDefault(x => x.Type == "id").Value;
-
-            return View();
         }
 
         public IActionResult Privacy()
@@ -53,8 +45,11 @@ namespace CampView.Controllers
         }
 
 
-        public IActionResult Main()
+        public IActionResult Index()
         {
+            //var name = User.Claims.FirstOrDefault(x => x.Type == "sns").Value;
+            //var id = User.Claims.FirstOrDefault(x => x.Type == "id").Value;
+
             return View();
         }
 
@@ -63,7 +58,7 @@ namespace CampView.Controllers
         public IActionResult Search(CampReqModel req)
         {
             req.serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value;
-            req.searchurl = _configuration.GetSection("OPENAPI:PUBLIC_API_BASE_URL").Value;
+            req.searchurl = _configuration.GetSection("OPENAPI:CAMP_API_BASE_URL").Value;
             req.pageNo = 1;
             req.radius = 20000;
             req.numOfRows = 1000;
@@ -89,7 +84,7 @@ namespace CampView.Controllers
             CampReqModel model = new CampReqModel
             {
                 serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value,
-                searchurl = _configuration.GetSection("OPENAPI:PUBLIC_API_IMAGE_URL").Value,
+                searchurl = _configuration.GetSection("OPENAPI:CAMP_API_IMAGE_URL").Value,
                 MobileOS = "ETC",
                 MobileApp = "CampView",
                 contentId = req.contentId

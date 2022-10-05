@@ -11,10 +11,18 @@ namespace CampingView.ConsoleApp
         {
             Console.WriteLine("Hello World!");
 
-            RedisTest();
-
+            //RedisTest();
+            ChargerCode
         }
 
+
+
+        public static void Reflec()
+        {
+
+
+
+        }
 
         public static void RedisTest()
         {

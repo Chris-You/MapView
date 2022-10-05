@@ -15,8 +15,6 @@ namespace CampView.Controllers
     public class BaseController : Controller
     {
 
-        
-
         public BaseController()
         {
             

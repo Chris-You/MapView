@@ -169,7 +169,7 @@
         
 
         //data = "mapX=" + centerPos.x + "&mapY=" + centerPos.y + "&keyword=" + $("#keyword").val()
-        var url = "/home/Search";
+        var url = "/Camp/Search";
         /*
         data["mapX"] = centerPos.x;
         data["mapY"] = centerPos.y;
@@ -190,7 +190,7 @@
 
         $.ajax({
             type: "post",
-            //url: "/home/Search",
+            //url: "/camp/Search",
             url: url ,
             data: data,
             success: function (data) {
@@ -379,7 +379,7 @@
 
         $.ajax({
                 type: "post",
-                url: "/home/SearchImage",
+                url: "/Camp/SearchImage",
                 data: "contentId=" + dataList.response.body.items.item[seq].contentId,
                 success: function (data) {
 
@@ -462,7 +462,7 @@
         
         $.ajax({
             type: "post",
-            url: "/home/like",
+            url: "/Camp/like",
             data: "contentid=" + dataList.response.body.items.item[seq].contentId + "&isLike="+ likeVal,
             success: function (data) {
 
@@ -493,7 +493,7 @@
         
         $.ajax({
             type: "post",
-            url: "/home/IsLike",
+            url: "/Camp/IsLike",
             data: "contentid=" + dataList.response.body.items.item[seq].contentId,
             success: function (data) {
 
@@ -664,7 +664,7 @@
 
         $.ajax({
                 type: "post",
-                url: "/home/Blogs",
+                url: "/Camp/Blogs",
                 data: "query=" + encodeURIComponent(name),
                 success: function (data) {
                     //script = data.replace(/<script>(.*)<\/script>/, "$1"); // Remove tags
@@ -746,7 +746,7 @@
 
         $.ajax({
                 type: "post",
-                url: "/home/Keyword",
+                url: "/Camp/Keyword",
                 //data: "query=" + $("#recentKeyword").val(),
                 success: function (data) {
 
@@ -800,7 +800,7 @@
     function deleteKeyword(word) {
         $.ajax({
             type: "post",
-            url: "/home/KeywordDel",
+            url: "/Camp/KeywordDel",
             data: "query=" + word,
             success: function (data) {
 
@@ -818,7 +818,7 @@
 
         $.ajax({
                 type: "post",
-                url: "/home/comments",
+                url: "/Camp/comments",
                 data: "contentid=" + dataList.response.body.items.item[seq].contentId,
                 success: function (data) {
 
@@ -877,7 +877,7 @@
     function addComment(seq, contentid) {
         $.ajax({
             type: "post",
-            url: "/home/AddComment",
+            url: "/Camp/AddComment",
             data: "contentid=" + contentid + "&comment="+ $("#comment").val(),
             success: function (data) {
 
@@ -897,7 +897,7 @@
     function delComment(seq, contentid) {
         $.ajax({
             type: "post",
-            url: "/home/DelComment",
+            url: "/Camp/DelComment",
             data: "contentid=" + contentid,
             success: function (data) {
 
