@@ -74,12 +74,6 @@
     var infoWindows = [];
     var dataList = [];
 
-    var center = {
-        x: 0,
-        y: 0
-    };
-
-    
     function resetMap() {
         
         markers=[];
@@ -100,13 +94,11 @@
         navigator.geolocation.getCurrentPosition(function (position) {
             setMap(position.coords.latitude, position.coords.longitude);
 
-            center.x = position.coords.longitude;
-            center.y = position.coords.latitude;
+            var latlng = map.getCenter(); 
+            console.log("init");
+            console.log(latlng);
 
-            //console.log("position");
-            //console.log(center);
-
-            search(center);
+            search(latlng);
 
             }
             , function (error) {
@@ -128,14 +120,9 @@
         }
     }
 
-    function searchMap() {
+    function searchCenter() {
 
-        //console.log(map.getCenter());
-        //search();
-        center.x = map.getCenter().x;
-        center.y = map.getCenter().y;
-
-        search( center);
+        search(map.getCenter());
     }
 
     function hideMarker() {
@@ -149,9 +136,20 @@
         infoWindows = [];
 	}
 
-    function search(centerPos) {
+    function search(latlng) {
 
         hideMarker();
+
+        
+        ajax(latlng)
+        //console.log(markers.length);
+
+        closeDiv("options");
+        closeDiv('recentKeyword');
+	}
+
+
+    function ajax(latlng) {
 
         let facltDivNm = [];
         let induty = [];
@@ -167,18 +165,12 @@
             sbrsCl.push($(this).val());
         });
         
-
-        //data = "mapX=" + centerPos.x + "&mapY=" + centerPos.y + "&keyword=" + $("#keyword").val()
+        
         var url = "/Camp/Search";
-        /*
-        data["mapX"] = centerPos.x;
-        data["mapY"] = centerPos.y;
-        data["keyword"] = $("#keyword").val();
-        data["facltDivNm"] = facltDivNm;
-        */
+        
         var data = {
-            "mapX": centerPos.x,
-            "mapY": centerPos.y,
+            "mapX": latlng.x,
+            "mapY": latlng.y,
             "keyword": $("#keyword").val(),
             "facltDivNm": facltDivNm,
             "induty": induty,
@@ -295,12 +287,8 @@
             }
         });
 
-
-        //console.log(markers.length);
-
-        closeDiv("options");
-        closeDiv('recentKeyword');
 	}
+
 
     function setMap(lat, lng) {
         var mapOptions = {
@@ -315,6 +303,30 @@
         //console.log(mapOptions);
 
         map = new naver.maps.Map('divMap', mapOptions);
+
+
+                // 마우스 드래그로 지도 이동이 완료되었을 때 마지막 파라미터로 넘어온 함수를 호출하도록 이벤트를 등록합니다
+        naver.maps.Event.addListener(map, 'dragend', function(event) {        
+    
+            // 지도 중심좌표를 얻어옵니다 
+            var latlng = map.getCenter(); 
+    
+            //var message = '중심좌표 : ' + latlng.getLat() + ', '+ latlng.getLng();
+            
+            console.log("mouseEvent dragend");
+            console.log(event);
+
+            //var resultDiv = document.getElementById('result');  
+            //resultDiv.innerHTML = message;
+
+             //searchCoordinateToAddress(event.coord);
+
+
+            search(event.coord);
+    
+        });
+
+
 	}
 
     function setMarker(lat, lng, facltNm, seq) {
@@ -766,7 +778,7 @@
                                 //var word = data[i].key;
                                 //var date = data[i].value;
                             
-                                list += "<li style='margin:7px 0 0 10px;' onclick='javascript:searchMap();'>"
+                                list += "<li style='margin:7px 0 0 10px;' onclick='javascript:searchCenter();'>"
                                 list += "    <div style='float:left;margin-left:4px;' ><img src='/img/icon/icons8-search.png' style='width:15px;'/></div>"
                                 list += "    <div style='float:left;width:280px;margin-left:5px;' >" + data[i].Key + "</div>"
                                 list += "    <div style='float:left;margin-left:0px;' >" + data[i].Value + "</div>"
@@ -925,7 +937,7 @@
               <input type="text" autocomplete="off" class="form-control" id="keyword" placeholder="캠핑장 이름" style="border-radius:0px;" onfocus="javascript:recentKeyword();" >
                  <span class="input-group-btn">
                     <button class="btn btn-default" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:showOption();">상세조건 +</button> 
-                    <button class="btn btn-success" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:searchMap();">검색하기</button> 
+                    <button class="btn btn-success" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:searchCenter();">검색하기</button> 
                     
                 </span> 
             </div>
@@ -1018,7 +1030,7 @@
          <div class="form-group" style="margin: 50px 10px 10px 10px;">
             <div class="input-group">
                  <span class="input-group-btn">
-                     <button class="btn btn-success btn-block" type="button" onclick="javascript:searchMap();">검색하기</button>
+                     <button class="btn btn-success btn-block" type="button" onclick="javascript:searchCenter();">검색하기</button>
                     <button class="btn btn-default btn-block" type="button" onclick="javascript:showOption();">닫기</button> 
                 </span> 
             </div>
