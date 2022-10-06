@@ -79,16 +79,18 @@ namespace CampView.Services
                 });
 
 
-                 var list = itemList.Select(s => new { 
-                     s.statNm
-                    ,s.statId
-                    ,s.addr
-                    ,s.location
-                    ,s.lat
-                    ,s.lng
-                    ,s.zcode
-                    ,s.zscode
-                    }).Distinct().ToList();
+                var list = itemList.Select(s => new {
+                    s.statNm
+                   , s.statId
+                   , s.addr
+                   , s.location
+                   , s.lat
+                   , s.lng
+                   , s.zcode
+                   , s.zscode
+                   , s.kind
+                   , s.kindDetail
+                }).Distinct().ToList();
 
                 var json = JsonConvert.SerializeObject(list);
                 File.WriteAllText(path, json.ToString());
@@ -128,6 +130,9 @@ namespace CampView.Services
                     model.lat = i.lat;
                     model.lng = i.lng;
                     model.addr = i.addr;
+                    model.kind = i.kind;
+                    model.kindDetail = i.kindDetail;
+
                     model.distance = i.distance;
 
                     item3.Add(model);

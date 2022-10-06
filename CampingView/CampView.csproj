@@ -8,10 +8,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Views\Lotto\**" />
     <Compile Remove="wwwroot\contents\**" />
+    <Content Remove="Views\Lotto\**" />
     <Content Remove="wwwroot\contents\**" />
+    <EmbeddedResource Remove="Views\Lotto\**" />
     <EmbeddedResource Remove="wwwroot\contents\**" />
+    <None Remove="Views\Lotto\**" />
     <None Remove="wwwroot\contents\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\LottoController.cs" />
+    <Compile Remove="Services\LottoService.cs" />
   </ItemGroup>
 
   <ItemGroup>

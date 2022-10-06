@@ -145,6 +145,13 @@ namespace CampView.Models.Charger
         public string lat { get; set; }
         public string lng { get; set; }
         public double distance { get; set; }
+        public bool avail { get; set; }
+
+        public string kind { get; set; }
+        public string kindDetail { get; set; }
+        public string kindNm { get; set; }
+        public string kindDetailNm { get; set; }
+
 
         public List<ChargerItem> chgr { get; set; }
         public List<ChargerStatusItem> status { get; set; }
@@ -162,14 +169,10 @@ namespace CampView.Models.Charger
     public class ChargerItem : ChargerModel
     {
         
-        public string statNm { get; set; }
-        public string statId { get; set; }
+
         public string chgerId { get; set; }
         public string chgerType { get; set; }
-        public string addr { get; set; }
-        public string location { get; set; }
-        public string lat { get; set; }
-        public string lng { get; set; }
+
         public string useTime { get; set; }
         public string busiId { get; set; }
         public string bnm { get; set; }
@@ -185,8 +188,6 @@ namespace CampView.Models.Charger
         public string method { get; set; }
         public string zcode { get; set; }
         public string zscode { get; set; }
-        public string kind { get; set; }
-        public string kindDetail { get; set; }
         public string parkingFree { get; set; }
         public string note { get; set; }
         public string limitYn { get; set; }

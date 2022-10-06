@@ -35,7 +35,7 @@ namespace CampView
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IUserService, UserService>();
 
-            services.AddScoped<ILottoService, LottoService>();
+            //services.AddScoped<ILottoService, LottoService>();
 
             services.AddAuthentication(options =>
             {

@@ -342,7 +342,10 @@
                         var lng = data[i].lng;
                         var lat = data[i].lat;
 
-                        setMarker(lat, lng, data[i].statNm, i);
+                        setMarker(lat, lng, data[i].statNm, i, data[i].avail);
+
+
+
                     }
 
                 }
@@ -359,18 +362,26 @@
         infoWindows[seq].close();
 	}
 
-    function setMarker(lat, lng, facltNm, seq) {
+    function setMarker(lat, lng, facltNm, seq, avail) {
+
+        var iconUrl = "/img/icon/";
+        if (avail) {
+            iconUrl += "icons8-charger_avail.png";
+        }
+        else {
+            iconUrl += "icons8-charger_not.png";
+		}
 
         var marker = new naver.maps.Marker({
             position: new naver.maps.LatLng(lat, lng),
             map: map,
-            /*
+            
             icon: {
-                url: '/img/camp_icon.png',
-                size: new naver.maps.Size(22, 35)
+                url: iconUrl,
+                //size: new naver.maps.Size(22, 35)
                 
             }
-            */
+            
         });
 
         markers.push(marker);
@@ -382,22 +393,24 @@
         infoWindows.push(infoWindow);
 
         markers[seq].setMap(map);
-        naver.maps.Event.addListener(markers[seq], 'mouseover', getClickHandler(seq));
-        naver.maps.Event.addListener(markers[seq], 'mouseout', getClickHandler(seq));
+        naver.maps.Event.addListener(markers[seq], 'mouseover', getClickHandler(seq, false));
+        naver.maps.Event.addListener(markers[seq], 'mouseout', getClickHandler(seq, false));
+
+        naver.maps.Event.addListener(markers[seq], 'click', getClickHandler(seq, true));
 
     }
 
-    function getClickHandler(seq) {
+    function getClickHandler(seq, isClick) {
 
         return function (e) {
 
-            getClickListItem(seq);
+            getClickListItem(seq, isClick);
             
         }
     }
 
 
-    function getClickListItem(seq) {
+    function getClickListItem(seq, isClick) {
 
         var marker = markers[seq],
         infoWindow = infoWindows[seq];
@@ -408,13 +421,109 @@
             infoWindow.open(map, marker);
         }
 
-        //setCampDetail(seq);
+        if (isClick) {
+            showDetail(seq);
+        }
     }
 
 
+    
+    function showDetail(seq) {
+
+        
+        //map.setCenter(new naver.maps.LatLng(dataList[seq].lat, dataList[seq].lng));
+        var html = "";
+        $("#divChargeDtl").empty();
+        
+
+        var title = "<p>■ <b>충전소 정보 </b><p>"
+        title += "<div class='gridcontainer'>";
+
+        title += "<div class='gridtitle' >- 충전소명</div><div> " + dataList[seq].statNm + "</div>";
+        title += "<div class='gridtitle' >- 주소</div><div> " + dataList[seq].addr;
+
+        if (dataList[seq].location != "" && dataList[seq].location != "null" ) {
+            title += " (" + dataList[seq].location + ")"
+        }
+        title += "</div>"
+        title += "<div class='gridtitle' >- 충전소 구분</div><div> " + dataList[seq].kindNm + " " + dataList[seq].kindDetailNm + "</div>";
+        
+        if (dataList[seq].chgr.length > 0) {
+
+            title += "<div class='gridtitle' >- 운영기관</div><div> " + dataList[seq].chgr[0].busiNm + " ☎ <a href='tel:" + dataList[seq].chgr[0].busiCall + "'>" + dataList[seq].chgr[0].busiCall + "</a></div>";
+
+            title += "<div class='gridtitle' >- 이용가능시간</div><div>" + dataList[seq].chgr[0].useTime + "</div>";
+
+            var parking = "<span style='color:red;'>있음</span>";
+            if (dataList[seq].chgr[0].parkingFree == "Y") {
+                parking = "없음";
+            }
+            title += "<div class='gridtitle' >- 주차료</div><div>" + parking + "</div>";
+
+            if (dataList[seq].chgr[0].limitYn == "Y") {
+
+                var limit = "제한";
+                if (dataList[seq].chgr[0].limitDetail != "") limit = dataList[seq].chgr[0].limitDetail;
+
+                title += "<div class='gridtitle' >- 이용자 제한</div><div><span style='color:red;'>" + limit + "</span></div>";
+            }
+
+            if (dataList[seq].chgr[0].note != "") {
+                title += "<div class='gridtitle' >- 충전소 안내</div><div>" + dataList[seq].chgr[0].note + "</div>";
+            }
+        }
+
+        title += "</div>"
+        title += "<hr style='height:5px;'/>";
 
 
 
+        // 충전기 정보
+        var list = "<p>■ <b>충전기 정보</b><p>";
+        list += '<table class="table table-condensed table-hover table-striped">';
+        list += '<tr>';
+        list += '<td><b>번호</b><td>';
+        list += '<td><b>충전용량</b><td>';
+        list += '<td><b>상태</b><td>';
+        list += '<td><b>충전완료 시간</b><td>';
+        list += '<td><b>충전중 시작시간</b><td>';
+        list += '</tr>';
+
+        if (dataList[seq].chgr.length > 0) {
+            for (var i = 0; i < dataList[seq].chgr.length; i++) {
+                var stat = '';
+                if (dataList[seq].chgr[i].stat == "2")  stat = '<span class="label label-success">충전대기</span>';
+                else if (dataList[seq].chgr[i].stat == "3") stat = '<span class="label label-primary">충전중</span>';
+                else if (dataList[seq].chgr[i].stat == "4") stat = '<span class="label label-warning">운영중지</span>';
+                else if (dataList[seq].chgr[i].stat == "5") stat = '<span class="label label-danger">점검중</span>';
+                else if (dataList[seq].chgr[i].stat == "9") stat = '<span class="label label-default">상태미확인</span>';
+                else if (dataList[seq].chgr[i].stat == "1") stat = '<span class="label label-default">통신이상</span>';
+
+
+                list += '<tr>';
+                list += '  <td>'+ dataList[seq].chgr[i].chgerId +'<td>';
+                list += '  <td>'+ (dataList[seq].chgr[i].output == "" ? "-" : dataList[seq].chgr[i].output + 'Kw' ) +'<td>';
+                list += '  <td>'+ stat + '<td>';
+                list += '  <td>'+ (dataList[seq].chgr[i].stat == "2" ? dtYmd(dataList[seq].chgr[i].lastTsdt) : '-') +'<td>';
+                list += '  <td>'+ (dataList[seq].chgr[i].stat=="3" ? dtYmd(dataList[seq].chgr[i].nowTsdt) : '-') +'<td>';
+                list += '</tr>';
+            }
+        }
+        
+        list += '</table>';
+
+        html = title + list;
+
+        $("#divChargeDtl").html(html);
+
+    }
+
+
+    function dtYmd(dt) {
+
+        return dt.substr(0, 4) + "-" + dt.substr(4, 2) + "-" + dt.substr(6, 2) +" " +  dt.substr(8, 2) + ":" +  dt.substr(10, 2);
+
+	}
 
 
 
@@ -425,3 +534,32 @@
 <input type="hidden" name="depth3" id="depth3" value=""/>
 
 <div id="divMap" style="width:100%;height:250px;"></div>
+<div style="text-align:right;"><a target="_blank" href="https://icons8.com/icon/39110/tesla-supercharger-pin"> icon</a> by <a target="_blank" href="https://icons8.com">Icons8</a></div>
+
+
+
+
+<div id="divChargeDtl" style="margin-top: 25px;"></div>
+
+
+<div id="divComment" style="margin-top:25px;width:100%;"></div>
+
+
+<div id="divBottom" style="width:100%;height:100px;"></div>
+
+
+<style type="text/css">
+
+	.gridcontainer {
+		display: grid;
+		grid-template-columns: 150px 350px;
+		grid-template-rows: 30px 50px 30px 30px 30px 30px 30px;
+	}
+
+	.gridtitle {
+        font-weight:bold;
+        text-align:left;
+        margin:0 10px 0 15px;
+	}
+
+</style>
