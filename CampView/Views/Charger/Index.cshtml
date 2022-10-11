@@ -7,6 +7,7 @@
 
 @section Scripts
 {
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
 <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=ak5szsi1xk&callback=mapSet&submodules=geocoder"></script>
 }
 
@@ -437,13 +438,11 @@
         } else {
             infoWindow.open(map, marker);
         }
-
     }
 
 
     
     function showDetail(seq) {
-
         
         //map.setCenter(new naver.maps.LatLng(dataList[seq].lat, dataList[seq].lng));
         var html = "";
@@ -453,7 +452,8 @@
         var title = "<p>■ <b>"+ dataList[seq].statNm + "</b><p>"
         title += "<div class='gridcontainer'>";
 
-        title += "<div class='gridtitle' >- 주소</div><div> " + dataList[seq].addr;
+        title += "<div class='gridtitle' >- 주소</div><div><span id='address'  data-clipboard-text=\"" + dataList[seq].addr + "\" > " + dataList[seq].addr + "</span>";
+        //title += " <button type='button' class='btn btn-default btn-xs' onclick='clipboard(\"address\");'>복사</button>"
 
         if (dataList[seq].location != "" && dataList[seq].location != "null" ) {
             title += "<br /> (" + dataList[seq].location + ")"
@@ -549,7 +549,26 @@
     }
 
 
+    function clipboard(objId) {
 
+        var clipboard = new ClipboardJS('#' + objId);
+        console.log(clipboard);
+
+
+        clipboard.on('success', function(e) {
+            console.info('Action:', e.action);
+            console.info('Text:', e.text);
+            console.info('Trigger:', e.trigger);
+
+            e.clearSelection();
+        });
+
+        clipboard.on('error', function(e) {
+            console.error('Action:', e.action);
+            console.error('Trigger:', e.trigger);
+        });
+
+	}
 
 
 
