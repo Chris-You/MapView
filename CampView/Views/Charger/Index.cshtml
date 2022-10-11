@@ -11,6 +11,22 @@
 }
 
 
+<style type="text/css">
+
+	.gridcontainer {
+		display: grid;
+		grid-template-columns: 150px 350px;
+		grid-template-rows: 50px 30px 30px 30px 30px 30px;
+	}
+
+	.gridtitle {
+        font-weight:bold;
+        text-align:left;
+        margin:0 10px 0 15px;
+	}
+
+</style>
+
 <script type="text/javascript">
 
 
@@ -84,7 +100,7 @@
 
         var mapOptions = {
             center: new naver.maps.LatLng(lat, lng),
-            zoom: 15,
+            zoom: 14,
             //scaleControl: false,
             logoControl: false,
             //mapDataControl: false,
@@ -114,7 +130,7 @@
              //searchCoordinateToAddress(event.coord);
 
 
-            search(event.coord);
+            search(latlng);
     
         });
 
@@ -123,6 +139,9 @@
             // 클릭한 위도, 경도 정보를 가져옵니다 
             console.log("mouse click");
             console.log(event);
+
+            search(event.coord);
+
         });
 
 
@@ -198,8 +217,8 @@
 
         hideMarker();
 
-        console.log("search");
-        console.log(latlng);
+        //console.log("search");
+        //console.log(latlng);
 
 
 
@@ -256,62 +275,31 @@
 
                 ajax(latlng);
 
-
-                /*
-            infoWindow.setContent([
-                '<div style="padding:10px;min-width:200px;line-height:150%;">',
-                '<h4 style="margin-top:5px;">검색 좌표</h4><br />',
-                htmlAddresses.join('<br />'),
-                '</div>'
-            ].join('\n'));
-
-            */
-
-            //infoWindow.open(map, latlng);
         });
 
-
-
-
-
-
-        /*
-        searchDetailAddrFromCoords(latlng, function (result, status)
-        {
-            if (status === kakao.maps.services.Status.OK) {
-                var detailAddr = !!result[0].road_address ? '<div>도로명주소 : ' + result[0].road_address.address_name + '</div>' : '';
-                detailAddr += '<div>지번 주소 : ' + result[0].address.address_name + '</div>';
-            
-                var content = '<div class="bAddr">' +
-                                '<span class="title">법정동 주소정보</span>' + 
-                                detailAddr + 
-                            '</div>';
-
-                // 마커를 클릭한 위치에 표시합니다 
-                //marker.setPosition(mouseEvent.latLng);
-                //marker.setMap(map);
-
-                // 인포윈도우에 클릭한 위치에 대한 법정동 상세 주소정보를 표시합니다
-                //infowindow.setContent(content);
-                //infowindow.open(map, marker);
-
-                console.log(content);
-
-                $("#depth1").val(result[0].address.region_1depth_name);
-                $("#depth2").val(result[0].address.region_2depth_name);
-                $("#depth3").val(result[0].address.region_3depth_name);
-
-                ajax(latlng);
-            }
-        });
-        */
+        
 
     }
 
-    function ajax(latlng) {
-        var url = "/Charger/Search";
 
-        var data = {
+    function worker(urls) {
+        
+        var worker = new Worker('/script/worker_charger.js');
+        
+        worker.postMessage(urls);  // 워커에 메시지를 보낸다.
+
+
+
+        worker.onmessage = function (e) {
+            console.log(e.data);
+		}
+
+	}
+
+
+    function ajax(latlng) {
+
+        var req = {
             "depth1": $("#depth1").val(),
             "depth2": $("#depth2").val(),
             "depth3": $("#depth3").val(),
@@ -320,18 +308,19 @@
         };
 
         //$("#divCampList").empty();
-        var list = "";
+        
         console.log("azax... request")
+        showDiv();
+
         $.ajax({
             type: "post",
-            url: "/charger/Search",
-            url: url ,
-            data: data,
+            url: "/charger/search",
+            data: req,
             async:false,
             success: function (data) {
                 //script = data.replace(/<script>(.*)<\/script>/, "$1"); // Remove tags
                 //eval(script); // Execute javascript
-                console.log(data);
+                //console.log(data);
 
                 if (data.length > 0) {
 
@@ -343,19 +332,34 @@
                         var lat = data[i].lat;
 
                         setMarker(lat, lng, data[i].statNm, i, data[i].avail);
-
-
-
                     }
-
                 }
+
+
+                //ajaxStatus(req);
+
 
             },
             error: function (data) {
                 //alert("error: " + data.responseText);
-            }
+                closeDiv("light");
+            },
+            complete: function () {
+                closeDiv("light");
+			}
         });
-	}
+
+        var data = {
+            "url": "/charger/Status",
+            "req" : req
+        };
+
+
+        //worker(data);
+
+    }
+
+    
 
 
     function closeInfo(seq) {
@@ -364,24 +368,30 @@
 
     function setMarker(lat, lng, facltNm, seq, avail) {
 
-        var iconUrl = "/img/icon/";
-        if (avail) {
-            iconUrl += "icons8-charger_avail.png";
+        var iconUrl = "";
+        if (avail =="Y") {
+            //iconUrl += '<span class="glyphicon glyphicon-map-marker" aria-hidden="true" style="color:#31b0d5;"></span>';
+            iconUrl = '/img/icon/icons8-charger_avail.png';
+        } 
+        else if (avail =="X"){
+            //iconUrl += '<span class="glyphicon glyphicon-map-marker" aria-hidden="true" style="color:#c9302c;"></span>';
+            iconUrl = '/img/icon/icons8-charger_not.png';
         }
-        else {
-            iconUrl += "icons8-charger_not.png";
-		}
+        else{
+            //iconUrl += '<span class="glyphicon glyphicon-map-marker" aria-hidden="true" style="color:#777;"></span>';
+            iconUrl = '/img/icon/icons8-charger_not.png';
+        }
 
         var marker = new naver.maps.Marker({
             position: new naver.maps.LatLng(lat, lng),
             map: map,
-            
+
             icon: {
                 url: iconUrl,
-                //size: new naver.maps.Size(22, 35)
-                
+                size: new naver.maps.Size(28, 32),
+                //content: iconUrl,
+                //anchor: new naver.maps.Point(19, 58),
             }
-            
         });
 
         markers.push(marker);
@@ -415,15 +425,16 @@
         var marker = markers[seq],
         infoWindow = infoWindows[seq];
 
-        if (infoWindow.getMap()) {
+        if (isClick) {
+            showDetail(seq);
+        }
+        else {
+            if (infoWindow.getMap()) {
             infoWindow.close();
         } else {
             infoWindow.open(map, marker);
         }
-
-        if (isClick) {
-            showDetail(seq);
-        }
+		}
     }
 
 
@@ -436,21 +447,20 @@
         $("#divChargeDtl").empty();
         
 
-        var title = "<p>■ <b>충전소 정보 </b><p>"
+        var title = "<p>■ <b>"+ dataList[seq].statNm + "</b><p>"
         title += "<div class='gridcontainer'>";
 
-        title += "<div class='gridtitle' >- 충전소명</div><div> " + dataList[seq].statNm + "</div>";
         title += "<div class='gridtitle' >- 주소</div><div> " + dataList[seq].addr;
 
         if (dataList[seq].location != "" && dataList[seq].location != "null" ) {
-            title += " (" + dataList[seq].location + ")"
+            title += "<br /> (" + dataList[seq].location + ")"
         }
         title += "</div>"
         title += "<div class='gridtitle' >- 충전소 구분</div><div> " + dataList[seq].kindNm + " " + dataList[seq].kindDetailNm + "</div>";
         
         if (dataList[seq].chgr.length > 0) {
 
-            title += "<div class='gridtitle' >- 운영기관</div><div> " + dataList[seq].chgr[0].busiNm + " ☎ <a href='tel:" + dataList[seq].chgr[0].busiCall + "'>" + dataList[seq].chgr[0].busiCall + "</a></div>";
+            title += "<div class='gridtitle' >- 운영기관</div><div> " + dataList[seq].chgr[0].busiNm + "&nbsp;&nbsp; ☎ <a href='tel:" + dataList[seq].chgr[0].busiCall + "'>" + dataList[seq].chgr[0].busiCall + "</a></div>";
 
             title += "<div class='gridtitle' >- 이용가능시간</div><div>" + dataList[seq].chgr[0].useTime + "</div>";
 
@@ -485,26 +495,36 @@
         list += '<td><b>번호</b><td>';
         list += '<td><b>충전용량</b><td>';
         list += '<td><b>상태</b><td>';
-        list += '<td><b>충전완료 시간</b><td>';
+        list += '<td><b>충전기 타입</b><td>';
         list += '<td><b>충전중 시작시간</b><td>';
         list += '</tr>';
 
         if (dataList[seq].chgr.length > 0) {
             for (var i = 0; i < dataList[seq].chgr.length; i++) {
                 var stat = '';
-                if (dataList[seq].chgr[i].stat == "2")  stat = '<span class="label label-success">충전대기</span>';
-                else if (dataList[seq].chgr[i].stat == "3") stat = '<span class="label label-primary">충전중</span>';
+                if (dataList[seq].chgr[i].stat == "2")  stat = '<span class="label label-primary">충전대기</span>';
+                else if (dataList[seq].chgr[i].stat == "3") stat = '<span class="label label-success">충전중</span>';
                 else if (dataList[seq].chgr[i].stat == "4") stat = '<span class="label label-warning">운영중지</span>';
                 else if (dataList[seq].chgr[i].stat == "5") stat = '<span class="label label-danger">점검중</span>';
                 else if (dataList[seq].chgr[i].stat == "9") stat = '<span class="label label-default">상태미확인</span>';
                 else if (dataList[seq].chgr[i].stat == "1") stat = '<span class="label label-default">통신이상</span>';
 
 
+                var type = '';
+                if (dataList[seq].chgr[i].chgerType == "01") type = 'DC차데모';
+                else if (dataList[seq].chgr[i].chgerType == "02") type = 'AC완속';
+                else if (dataList[seq].chgr[i].chgerType == "03") type = 'DC차데모, AC3상';
+                else if (dataList[seq].chgr[i].chgerType == "04") type = 'DC콤보';
+                else if (dataList[seq].chgr[i].chgerType == "05") type = 'DC차데모,DC콤보';
+                else if (dataList[seq].chgr[i].chgerType == "06") type = 'DC차데모,AC3상,DC콤보';
+                else if (dataList[seq].chgr[i].chgerType == "07") type = 'AC3상';
+
+
                 list += '<tr>';
                 list += '  <td>'+ dataList[seq].chgr[i].chgerId +'<td>';
                 list += '  <td>'+ (dataList[seq].chgr[i].output == "" ? "-" : dataList[seq].chgr[i].output + 'Kw' ) +'<td>';
                 list += '  <td>'+ stat + '<td>';
-                list += '  <td>'+ (dataList[seq].chgr[i].stat == "2" ? dtYmd(dataList[seq].chgr[i].lastTsdt) : '-') +'<td>';
+                list += '  <td>'+ type +'<td>';
                 list += '  <td>'+ (dataList[seq].chgr[i].stat=="3" ? dtYmd(dataList[seq].chgr[i].nowTsdt) : '-') +'<td>';
                 list += '</tr>';
             }
@@ -523,7 +543,10 @@
 
         return dt.substr(0, 4) + "-" + dt.substr(4, 2) + "-" + dt.substr(6, 2) +" " +  dt.substr(8, 2) + ":" +  dt.substr(10, 2);
 
-	}
+    }
+
+
+
 
 
 
@@ -536,6 +559,7 @@
 <div id="divMap" style="width:100%;height:250px;"></div>
 <div style="text-align:right;"><a target="_blank" href="https://icons8.com/icon/39110/tesla-supercharger-pin"> icon</a> by <a target="_blank" href="https://icons8.com">Icons8</a></div>
 
+ <div id="fade" class="black_overlay" style="display:none;z-index:1000;height:417px;"></div>
 
 
 
@@ -548,18 +572,23 @@
 <div id="divBottom" style="width:100%;height:100px;"></div>
 
 
-<style type="text/css">
+    <script type="text/javascript">
 
-	.gridcontainer {
-		display: grid;
-		grid-template-columns: 150px 350px;
-		grid-template-rows: 30px 50px 30px 30px 30px 30px 30px;
-	}
+	    /// 화면의 중앙에 레이어띄움
+        function showDiv() {
 
-	.gridtitle {
-        font-weight:bold;
-        text-align:left;
-        margin:0 10px 0 15px;
-	}
+            var maskHeight = $(document).height();
+		    var maskWidth = $(window).width();
 
-</style>
+		    
+            $('#fade').show();
+            console.log("show~~");
+	    }
+
+	    function closeDiv(objId) {
+		    $('#fade').hide();
+		    console.log("hide~~");
+	    }
+
+
+    </script>

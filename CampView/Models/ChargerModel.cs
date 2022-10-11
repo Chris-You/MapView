@@ -145,7 +145,7 @@ namespace CampView.Models.Charger
         public string lat { get; set; }
         public string lng { get; set; }
         public double distance { get; set; }
-        public bool avail { get; set; }
+        public string avail { get; set; }
 
         public string kind { get; set; }
         public string kindDetail { get; set; }

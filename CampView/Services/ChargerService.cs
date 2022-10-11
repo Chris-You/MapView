@@ -14,10 +14,10 @@ using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using CampView.Util;
-using StackExchange.Redis;
 using Microsoft.Extensions.Options;
 using CampView.Models.CustomSettings;
 using System.Reflection;
+
 
 namespace CampView.Services
 {
@@ -25,7 +25,7 @@ namespace CampView.Services
     public interface IChargerService
     {
         List<ChargerModel> GetChargerList(ChargerReqModel req);
-        List<ChargerItem> GetChargerAPIList(ChargerReqModel req);
+        List<ChargerItem> GetChargerAPIList(ChargerReqModel req, List<ChargerModel> list);
         List<ChargerStatusItem> GetChargerStatusAPIList(ChargerReqModel req);
 
 
@@ -41,7 +41,7 @@ namespace CampView.Services
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly IHttpClientFactory _clientFactory;
         private readonly IOptions<ChargerCode> _chargerConfig;
-
+        private readonly RedisService _redis;
 
         public ChargerService(IConfiguration configuration, IWebHostEnvironment hostingEnvironment, IHttpClientFactory clientFactory,
                              IOptions<ChargerCode> chargerConfig)
@@ -50,6 +50,13 @@ namespace CampView.Services
             _hostingEnvironment = hostingEnvironment;
             _clientFactory = clientFactory;
             _chargerConfig = chargerConfig;
+
+
+            _redis = new RedisService(
+                            _configuration.GetSection("REDIS:SERVER").Value.ToString(),
+                            _configuration.GetSection("REDIS:PORT").Value.ToString(),
+                            _configuration.GetSection("REDIS:PASSWORD").Value.ToString(),
+                            _configuration.GetSection("REDIS:CHARGER_DB_IDX").Value.ToString());
 
         }
 
@@ -67,17 +74,19 @@ namespace CampView.Services
                 var res = this.ChargerAPI(req,0);
                 var itemList = res.items.item;
 
-                var cnt = res.totalCount / res.numOfRows;
-                var mod = (res.totalCount % res.numOfRows > 0) ? cnt++ : cnt;
-
-                Parallel.For(0, cnt, (i) =>
+                if (res.numOfRows > 0)
                 {
-                    ++req.pageNo;
-                    var res2 = this.ChargerAPI(req, 0);
+                    var cnt = res.totalCount / res.numOfRows;
+                    var mod = (res.totalCount % res.numOfRows > 0) ? cnt++ : cnt;
 
-                    itemList = itemList.Union(res2.items.item).ToList();
-                });
+                    Parallel.For(0, cnt, (i) =>
+                    {
+                        ++req.pageNo;
+                        var res2 = this.ChargerAPI(req, 0);
 
+                        itemList = itemList.Union(res2.items.item).ToList();
+                    });
+                }
 
                 var list = itemList.Select(s => new {
                     s.statNm
@@ -144,21 +153,58 @@ namespace CampView.Services
             return item3.Where(w => w!= null && w.distance <= radius).ToList();
         }
 
-        public List<ChargerItem> GetChargerAPIList(ChargerReqModel req)
+        public List<ChargerItem> GetChargerAPIList(ChargerReqModel req, List<ChargerModel> list)
         {
-            var res = this.ChargerAPI(req, 1);
-            var itemList = res.items.item;
+            var itemList = new List<ChargerItem>();
 
-            var cnt = res.totalCount / res.numOfRows;
-            var mod = (res.totalCount % res.numOfRows > 0) ? cnt++ : cnt;
-
-            Parallel.For(0, cnt, (i) =>
+            var redisKey = _configuration.GetSection("REDIS:CHARGER_SEARCH_KEY").Value.ToString() + req.zcode + ":" + req.zscode;
+            if (_redis.redisDatabase.KeyExists(redisKey))
             {
-                ++req.pageNo;
-                var res2 = this.ChargerAPI(req, 1);
+                var json = _redis.redisDatabase.StringGet(redisKey);
 
-                itemList = itemList.Union(res2.items.item).ToList();
-            });
+                itemList = JsonConvert.DeserializeObject<List<ChargerItem>>(json);
+            }
+            else
+            {
+                var res = this.ChargerAPI(req, 1);
+                itemList = res.items.item;
+
+                try
+                {
+                    if (res.numOfRows > 0)
+                    {
+                        var cnt = res.totalCount / res.numOfRows;
+                        var mod = (res.totalCount % res.numOfRows > 0) ? cnt++ : cnt;
+
+                        Parallel.For(0, cnt, (i) =>
+                        {
+                            ++req.pageNo;
+                            var res2 = this.ChargerAPI(req, 1);
+
+                            itemList = itemList.Union(res2.items.item).ToList();
+                        });
+                    }
+
+
+                    //  응답데이터 redis 등록
+
+                    var jsonStr = JsonConvert.SerializeObject(itemList);
+
+                    var span = DateTime.Now.AddMinutes(5) - DateTime.Now;   // 만료시간 5분
+                    _redis.redisDatabase.StringSet(redisKey, jsonStr, span);
+
+
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+
+
+            
+            
+
 
 
             return itemList;
@@ -303,13 +349,17 @@ namespace CampView.Services
                 StreamReader reader = new StreamReader(response.GetResponseStream());
                 results = reader.ReadToEnd();
 
+                // 응답데이터를 json 파일로 생성
                 //using (FileStream fs = File.Create(path))
                 //{
                 //    Byte[] json = new UTF8Encoding(true).GetBytes(results);
                 //    fs.Write(json, 0, json.Length);
                 //}
 
-                // 응답데이터를 json 파일로 생성
+              
+
+
+
                 return JsonConvert.DeserializeObject<ChargerResModel>(results);
             }
         }

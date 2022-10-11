@@ -105,7 +105,6 @@
                 console.log(error);
             });
 
-        return center;
 	}
 
 
@@ -319,12 +318,18 @@
             //var resultDiv = document.getElementById('result');  
             //resultDiv.innerHTML = message;
 
-             //searchCoordinateToAddress(event.coord);
-
-
-            search(event.coord);
+            //searchCoordinateToAddress(event.coord);
+            search(latlng);
     
         });
+
+
+        naver.maps.Event.addListener(map, 'click', function (event) {
+            // 클릭한 위도, 경도 정보를 가져옵니다 
+            console.log("mouse click");
+            console.log(event);
+        });
+
 
 
 	}

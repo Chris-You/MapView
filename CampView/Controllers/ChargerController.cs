@@ -53,7 +53,7 @@ namespace CampView.Controllers
             req.serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value;
             req.searchurl = _configuration.GetSection("OPENAPI:CHARGER_API_INFO_URL").Value;
             req.pageNo = 1;
-            req.numOfRows = 999;
+            req.numOfRows = 9999;
             req.userid = base.GetUserId();
 
             req.zcode = _chargerService.GetZcode(req);
@@ -62,8 +62,10 @@ namespace CampView.Controllers
             // 근처 충전소 리스트
             var itemList = _chargerService.GetChargerList(req);
             //var statusList = _chargerService.GetChargerList(req);
-            var chgr = _chargerService.GetChargerAPIList(req);
+            //var chgr = new List<ChargerItem>();
+            var chgr = _chargerService.GetChargerAPIList(req, itemList);
             //var status = new List<ChargerStatusItem>();
+
 
             
             Parallel.ForEach(itemList, i => {
@@ -75,21 +77,29 @@ namespace CampView.Controllers
                    () => {
                        //i.status = status.Where(w => w.statId == i.statId).ToList();
                    }
-               );
+                );
 
-                i.avail = i.chgr.Where(w => w.stat == "2" && w.delYn == "N" ).Count() > 0 ? true : false;
+
+                i.avail = i.chgr.Where(w => w.stat == "2" && w.delYn == "N").Count() > 0 ? "Y" :
+                                    (i.chgr.Where(w => w.stat == "0" || w.stat == "1" || w.stat == "3").Count() == i.chgr.Count() ? "X" : "N");
+                                        
+
                 i.kindNm = _chargerService.GetCodeNm(CodeType.kind, i.kind);
                 i.kindDetailNm = _chargerService.GetCodeNm(CodeType.kindDetail, i.kindDetail);
             });
-
+            
             
 
-            var val = _chargerConfig.Value;
+            
 
             //todo  filter
             //response = _chargerService.CampFilter(req, response);
 
             return new JsonResult(itemList.OrderBy(s => s.statNm));
         }
+
+
+       
+
     }
 }
