@@ -29,16 +29,19 @@ namespace CampView.Controllers
             _userService = userService;
         }
 
-        public IActionResult Login()
+        public IActionResult Login(string path)
         {
+
+            ViewBag.LoginPath = path;
+
             return View();
         }
 
         
-        public IActionResult NaverLogin()
+        public IActionResult NaverLogin(string path)
         {
             var clientId = _configuration.GetSection("OPENAPI:NAVER_CLIENT_ID").Value;
-            var redirectURI = string.Format("{0}://{1}{2}", Request.Scheme, Request.Host, "/Account/NaverLoginCallBack");
+            var redirectURI = string.Format("{0}://{1}{2}", Request.Scheme, Request.Host, "/Account/NaverLoginCallBack?path=" + path);
             var state = DateTime.Now.ToString("yyyyMMddHHmmssmi");
             var apiURL = "https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id="
                 + clientId + "&redirect_uri=" + redirectURI + "&state=" + state;
@@ -46,7 +49,7 @@ namespace CampView.Controllers
             return new RedirectResult(apiURL);
         }
                 
-        public async Task<IActionResult> NaverLoginCallBack(string code, string state)
+        public async Task<IActionResult> NaverLoginCallBack(string code, string state, string path)
         { 
             var id = string.Empty;
             var token = await _accountService.GetAccessToken(code, state);
@@ -71,7 +74,19 @@ namespace CampView.Controllers
                 }
             }
 
-            return LocalRedirect("~/Camp/Index");
+            return LocalRedirect(this.GetRedirectUrl(path));
+        }
+
+        private string GetRedirectUrl(string path)
+        {
+            if(path.ToLower() == "camp")
+            {
+                return "~/Camp/Index";
+            }
+            else
+            {
+                return "~/Charger/Index";
+            }
         }
 
 
@@ -93,13 +108,12 @@ namespace CampView.Controllers
         }
 
 
-        public IActionResult KakaoLogin()
+        public IActionResult KakaoLogin(string path)
         {
             var restApiKey = _configuration.GetSection("OPENAPI:KAKAO_REST_KEY").Value;
             var redirectURI = string.Format("{0}://{1}{2}", Request.Scheme, Request.Host, "/Account/KakaoLoginCallBack");
             var state = DateTime.Now.ToString("yyyyMMddHHmmssmi");
             var apiURL = "https://kauth.kakao.com/oauth/authorize?client_id="+ restApiKey + "&redirect_uri="+ redirectURI + "&response_type=code&state=" + state;
-
 
             return new RedirectResult(apiURL);
         }
@@ -137,10 +151,11 @@ namespace CampView.Controllers
         }
 
 
-        public async Task<IActionResult> LogoutAsync()
+        public async Task<IActionResult> LogoutAsync(string path)
         {
             await _userService.SignOut(this.HttpContext);
-            return RedirectPermanent("~/Camp/Index");
+
+            return RedirectPermanent(this.GetRedirectUrl(path));
         }
 
         [Authorize]

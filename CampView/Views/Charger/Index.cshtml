@@ -16,7 +16,7 @@
 
 	.gridcontainer {
 		display: grid;
-		grid-template-columns: 130px 320px;
+		grid-template-columns: 120px 270px;
 		grid-template-rows: 60px 30px 30px 30px 30px 30px;
 	}
 
@@ -24,6 +24,13 @@
         font-weight:bold;
         text-align:left;
         margin:0 10px 0 15px;
+	}
+
+
+	.gridcomment {
+		display: grid;
+		grid-template-columns: 90px 270px 40px;
+		grid-template-rows: 60px;
 	}
 
 </style>
@@ -45,6 +52,9 @@
 
     $(document).ready(function () {
         mapSet();
+
+
+        getComments();
 
     });
 
@@ -490,6 +500,25 @@
         title += "<hr style='height:5px;'/>";
 
 
+        var addcomm = "<p>■ <b>한줄평</b><p>";
+        addcomm += '<div class="input-group gridcomment">'
+        addcomm += ' <div>'
+        addcomm += '  <select name="star" id="star" class="form-control">'
+        addcomm += '    <option value="5">Star 5</option><option value="4">Star 4</option><option value="3">Star 3</option><option value="2">Star 2</option><option value="1">Star 1</option>'
+        addcomm += '  </select>'
+        addcomm += ' </div>'
+        addcomm += ' <div>'
+        addcomm += '  <input type="text" name="comment" id="comment" class="form-control" placeholder="">'
+        addcomm += ' </div>'
+        addcomm += ' <div>'
+        addcomm += '  <span class="input-group-btn">'
+        addcomm += '   <button type="button" class="btn btn-success" onclick = "addComment(\'' + dataList[seq].statId + '\');">등록 </button>'
+        addcomm += ' </span>'
+        addcomm += ' </div>'
+        addcomm += '</div>'
+
+        
+
 
         // 충전기 정보
         var list = "<p>■ <b>충전기 정보</b><p>";
@@ -535,7 +564,7 @@
         
         list += '</table>';
 
-        html = title + list;
+        html = title + addcomm + list;
 
         $("#divChargeDtl").html(html);
 
@@ -569,6 +598,65 @@
         });
 
 	}
+
+    function getComments() {
+
+        $.ajax({
+            type: "post",
+            url: "/charger/comments",
+            data: "",
+            success: function (data) {
+                //script = data.replace(/<script>(.*)<\/script>/, "$1"); // Remove tags
+                //eval(script); // Execute javascript
+                console.log(data);
+
+
+                var list = '<table class="table table-condensed table-hover table-striped">';
+                
+
+                if (data.length > 0) {
+                    for (var i = 0; i < data.length; i++) {
+                        list += '<tr>';
+                        list += '  <td style="width:40px;">'+ data[i].user.substr(0,5) +'</td>';
+                        list += '  <td style="width:40px;">'+ data[i].star  +'</td>';
+                        list += '  <td>'+ data[i].comment + '</td>';
+                        list += '  <td style="width:100px;">' + data[i].date.substring(0, 10) +'</td>';
+                        list += '</tr>';
+                    }
+                }
+        
+                list += '</table>';
+
+                $("#divComment").html(list);
+
+            },
+            error: function (data) {
+                //alert("error: " + data.responseText);
+               
+            },
+            complete: function () {
+               
+			}
+        });
+
+    }
+
+    function addComment(statId) {
+        $.ajax({
+            type: "post",
+            url: "/charger/CommentIns",
+            data: "&star="+ $("#star").val() + "&statId=" + statId + "&comment="+ $("#comment").val(),
+            success: function (data) {
+
+                if (data != null) {
+                   console.log(data);
+
+                   
+				}
+            }
+        });
+    }
+
 
 
 

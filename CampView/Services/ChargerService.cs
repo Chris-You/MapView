@@ -33,6 +33,10 @@ namespace CampView.Services
         string GetZScode(ChargerReqModel req);
 
         string GetCodeNm(CodeType codeType, string code);
+
+        List<ChargerComment> CommentList();
+        ChargerComment CommentIns(ChargerComment comment);
+        
     }
 
     public class ChargerService : IChargerService
@@ -42,6 +46,7 @@ namespace CampView.Services
         private readonly IHttpClientFactory _clientFactory;
         private readonly IOptions<ChargerCode> _chargerConfig;
         private readonly RedisService _redis;
+        private readonly MongoDBService _mongoDB;
 
         public ChargerService(IConfiguration configuration, IWebHostEnvironment hostingEnvironment, IHttpClientFactory clientFactory,
                              IOptions<ChargerCode> chargerConfig)
@@ -57,6 +62,11 @@ namespace CampView.Services
                             _configuration.GetSection("REDIS:PORT").Value.ToString(),
                             _configuration.GetSection("REDIS:PASSWORD").Value.ToString(),
                             _configuration.GetSection("REDIS:CHARGER_DB_IDX").Value.ToString());
+
+
+            _mongoDB = new MongoDBService(_configuration.GetSection("MONGODB:SERVER").Value.ToString(),
+                            _configuration.GetSection("MONGODB:PORT").Value.ToString(),
+                            _configuration.GetSection("MONGODB:DB_NAME").Value.ToString());
 
         }
 
@@ -424,6 +434,31 @@ namespace CampView.Services
             {
                 return true;
             }
+        }
+
+        public List<ChargerComment> CommentList()
+        {
+            var docName = _configuration.GetSection("MONGODB:CHARGER_COMMENT").Value;
+
+            return _mongoDB.CommentList(docName);
+        }
+
+        public ChargerComment CommentIns(ChargerComment comment)
+        {
+
+            var docName = _configuration.GetSection("MONGODB:CHARGER_COMMENT").Value;
+
+            var doc = _mongoDB.GetComment(comment, docName);
+
+            if(doc == null)
+            {
+                _mongoDB.InsComment(comment, docName);
+
+                doc = _mongoDB.GetComment(comment, docName);
+            }
+
+            return doc;
+
         }
 
     }    

@@ -98,8 +98,43 @@ namespace CampView.Controllers
             return new JsonResult(itemList.OrderBy(s => s.statNm));
         }
 
+        [HttpPost]
+        public IActionResult Comments()
+        {
+            var list = _chargerService.CommentList().OrderByDescending(o => o.date).Take(10);
 
-       
+            return new JsonResult(list);
+        }
+
+
+        [HttpPost]
+        public IActionResult CommentIns(ChargerComment comm)
+        {
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            if (string.IsNullOrEmpty(base.GetUserId()) == false)
+            {
+                comm.user = base.GetUserId();
+                comm.date = DateTime.Now;
+
+                comm = _chargerService.CommentIns(comm);
+
+                if(comm != null)
+                {
+                    dic.Add("result", "true");
+                    dic.Add("message", "ok");
+                }
+                
+            }
+            else
+            {
+                dic.Add("result", "False");
+                dic.Add("message", "Require Login");
+            }
+
+            return new JsonResult(dic);
+        }
+
+
 
     }
 }

@@ -4,6 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Net;
 using System.Web;
+using System.Text;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace CampView.Util
 {
@@ -11,12 +15,8 @@ namespace CampView.Util
     {
         public void SetCookie(string name, string value, int? expireDay)
         {
-            Cookie cookie = new Cookie(name, value);
 
-            if(expireDay != null && expireDay > 0)
-            cookie.Expires = DateTime.Now.AddDays((int)expireDay);
 
-            
         }
 
         public void GetCookie()

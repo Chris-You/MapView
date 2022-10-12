@@ -99,7 +99,7 @@ namespace CampView.Controllers
         [HttpPost]
         public IActionResult Blogs(string query)
         {
-            var response = _userService.GetBlogList(query);
+            var response = _campService.GetBlogList(query);
 
             return new JsonResult(response);
         }

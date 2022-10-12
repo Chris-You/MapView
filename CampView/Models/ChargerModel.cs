@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MongoDB.Bson;
+
 
 namespace CampView.Models.Charger
 {
@@ -248,11 +250,12 @@ namespace CampView.Models.Charger
 
     public class  ChargerComment
     {
+        public ObjectId Id { get; set; }
         public string user { get; set; }
-        public string contentid { get; set; }
+        public string statId { get; set; }
+        public int star { get; set; }
         public string comment { get; set; }
-        public string ymd { get; set; }
-        public bool me { get; set; }
+        public DateTime date { get; set; }
     }
     
 }

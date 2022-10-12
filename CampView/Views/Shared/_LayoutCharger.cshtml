@@ -82,11 +82,11 @@
                     @string.Format("{0}님", User.Claims.FirstOrDefault(x => x.Type == "name").Value)
                     </span>
 				}
-                <span style="font-size:16px;"><a href="/Account/Logout"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span></a></span>
+                <span style="font-size:16px;"><a href="/Account/Logout?path=charger"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span></a></span>
 			}
 			else
 			{
-                <span style="font-size:16px;"><a href="/Account/Login"><span class="glyphicon glyphicon-log-in" aria-hidden="true"></span></a></span>
+                <span style="font-size:16px;"><a href="/Account/Login?path=charger"><span class="glyphicon glyphicon-log-in" aria-hidden="true"></span></a></span>
 			}
 
             </div>
