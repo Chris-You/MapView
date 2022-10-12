@@ -104,6 +104,7 @@ namespace CampView.Controllers
             var list = _chargerService.CommentList().OrderByDescending(o => o.date).Take(10);
 
             return new JsonResult(list);
+
         }
 
 
