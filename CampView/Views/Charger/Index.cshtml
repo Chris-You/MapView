@@ -32,7 +32,7 @@
 
 	.gridmain {
 		display: grid;
-		grid-template-columns: 280px 130px;
+		grid-template-columns: 260px 130px;
 		grid-template-rows: 30px 20px;
 		margin-bottom: 8px;
 		background-color: #d9edf7;
@@ -52,7 +52,7 @@
 
 	.gridcomment {
 		display: grid;
-		grid-template-columns: 350px 100px;
+		grid-template-columns: 300px 100px;
 		grid-template-rows: 50px;
 	}
     /*
@@ -91,6 +91,14 @@
 		.star_rating_list a.on {
 			color: #facf00;
 		}
+
+	#closeBtn {
+		position: fixed;
+		z-index: 99;
+		left: 90%;
+		top: 85%;
+        display:none;
+	}
 
 
 </style>
@@ -246,7 +254,7 @@
                 }
 
                 console.log(response);
-
+                /*
                 var address = response.v2.address,
                     htmlAddresses = [];
 
@@ -257,6 +265,7 @@
                 if (address.roadAddress !== '') {
                     htmlAddresses.push('[도로명 주소] ' + address.roadAddress);
                 }
+                */
                 /*
             infoWindow.setContent([
                 '<div style="padding:10px;min-width:200px;line-height:150%;">',
@@ -288,11 +297,6 @@
     function search(latlng) {
 
         hideMarker();
-
-        //console.log("search");
-        //console.log(latlng);
-
-
 
         naver.maps.Service.reverseGeocode({
             coords: latlng,
@@ -333,7 +337,6 @@
                 //console.log(response.v2.results);
                 //console.log(htmlAddresses[0]);
 
-
                 $("#depth1").val(result[0].region.area1.name);
                 if (result[0].region.area2.name == '') {
                     $("#depth2").val(result[0].region.area3.name);
@@ -343,14 +346,9 @@
                     $("#depth2").val(result[0].region.area2.name);
                     $("#depth3").val(result[0].region.area3.name);
 				}
-                
 
                 ajax(latlng);
-
-        });
-
-        
-
+            });
     }
 
 
@@ -406,11 +404,6 @@
                         setMarker(lat, lng, data[i].statNm, i, data[i].avail);
                     }
                 }
-
-
-                //ajaxStatus(req);
-
-
             },
             error: function (data) {
                 //alert("error: " + data.responseText);
@@ -425,10 +418,6 @@
             "url": "/charger/Status",
             "req" : req
         };
-
-
-        //worker(data);
-
     }
 
     
@@ -526,6 +515,9 @@
         var html = "";
         $("#divChargeDtl").empty();
 
+        $('#divChargeDtl').show();
+        $('#closeBtn').show();
+
         var itemList;
 
         if (data != undefined) {
@@ -583,7 +575,6 @@
 
 
         var addcomm = "<p>■ <b>한줄평</b><p>";
-
         addcomm += '<div id="commentadd">'
         addcomm += '<p class="star_rating">';    
         addcomm += '  <a class="on">★</a>';
@@ -688,7 +679,7 @@
                 //eval(script); // Execute javascript
                 console.log(data);
 
-                var list = "<p>■ <b>최근 등록된 리뷰 </b></p>";
+                var list = "<p>■ <b>최근 등록된 코멘트 </b></p>";
                 list += '<table class="table table-condensed table-hover table-striped">';
                 
 
@@ -984,20 +975,31 @@
 
 <div id="fade" class="black_overlay" style="display:none;z-index:1000;height:417px;"></div>
 
-
-
 <div id="divChargeDtl" style="margin-top: 25px;"></div>
-
 
 <div id="divFavorList" style="margin-top: 25px;"></div>
 
 <div id="divComment" style="margin-top:25px;width:100%;"></div>
 
-
 <div id="divBottom" style="width:100%;height:100px;"></div>
 
 
+<div id="closeBtn" style="text-align:right; vertical-align:text-top;">
+	<a href="javascript:void(0)" onclick="showMain();">
+		<img src="/img/close_square.png" style="width:40px;height:40px;" />
+	</a>
+</div>
+
     <script type="text/javascript">
+
+
+        function showMain() {
+            $('#closeBtn').hide();
+            $('#divChargeDtl').hide();
+            
+
+            $('#divComment').show();
+		}
 
 	    /// 화면의 중앙에 레이어띄움
         function showDiv() {
