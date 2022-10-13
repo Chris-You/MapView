@@ -141,6 +141,7 @@ namespace CampView.Controllers
 
                     // 로그인 성ㅅ공
                     await _userService.SignIn(this.HttpContext, user, false);
+
                 }
             }
 
