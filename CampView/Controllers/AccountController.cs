@@ -112,7 +112,7 @@ namespace CampView.Controllers
         {
             var restApiKey = _configuration.GetSection("OPENAPI:KAKAO_REST_KEY").Value;
             var redirectURI = string.Format("{0}://{1}{2}", Request.Scheme, Request.Host, "/Account/KakaoLoginCallBack");
-            var state = DateTime.Now.ToString("yyyyMMddHHmmssmi");
+            var state = DateTime.Now.ToString("yyyyMMddHHmmssmi")+":" + path;
             var apiURL = "https://kauth.kakao.com/oauth/authorize?client_id="+ restApiKey + "&redirect_uri="+ redirectURI + "&response_type=code&state=" + state;
 
             return new RedirectResult(apiURL);
@@ -121,7 +121,6 @@ namespace CampView.Controllers
 
         public async Task<IActionResult> KakaoLoginCallBack(string code, string state)
         {
-            var id = string.Empty;
             var redirectUrl = string.Format("{0}://{1}{2}", Request.Scheme, Request.Host, "/Account/KakaoLoginCallBack");
 
             var token = await _accountService.GetKakaoAccessToken(code, state, redirectUrl);
@@ -142,12 +141,10 @@ namespace CampView.Controllers
 
                     // 로그인 성ㅅ공
                     await _userService.SignIn(this.HttpContext, user, false);
-
-
                 }
             }
 
-            return LocalRedirect("~/Camp/Index");
+            return LocalRedirect(this.GetRedirectUrl(state.Split(":")[1]));
         }
 
 

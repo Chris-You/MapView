@@ -25,7 +25,7 @@ namespace CampView.Services
     public interface IChargerService
     {
         List<ChargerModel> GetChargerList(ChargerReqModel req);
-        List<ChargerItem> GetChargerAPIList(ChargerReqModel req, List<ChargerModel> list);
+        List<ChargerItem> GetChargerAPIList(ChargerReqModel req);
         List<ChargerStatusItem> GetChargerStatusAPIList(ChargerReqModel req);
 
 
@@ -35,8 +35,16 @@ namespace CampView.Services
         string GetCodeNm(CodeType codeType, string code);
 
         List<ChargerComment> CommentList();
+        List<ChargerComment> CommentList(string statId);
         ChargerComment CommentIns(ChargerComment comment);
-        
+        bool DelComment(ChargerComment comment);
+
+
+        //List<ChargerFavor> FavorList();
+        List<ChargerFavor> FavorList(string userid);
+        bool InsFavor(string userid, string statId, string zscode);
+        bool DelFavor(string userid, string statId);
+        bool ChkFavor(string userid, string statId);
     }
 
     public class ChargerService : IChargerService
@@ -159,11 +167,18 @@ namespace CampView.Services
 
             });
 
+            if(string.IsNullOrEmpty(req.lat) && string.IsNullOrEmpty(req.lng))
+            {
+                return item3.Where(w => w != null).ToList();
+            }
+            else
+            {
+                return item3.Where(w => w != null && w.distance <= radius).ToList();
+            }
             
-            return item3.Where(w => w!= null && w.distance <= radius).ToList();
         }
 
-        public List<ChargerItem> GetChargerAPIList(ChargerReqModel req, List<ChargerModel> list)
+        public List<ChargerItem> GetChargerAPIList(ChargerReqModel req)
         {
             var itemList = new List<ChargerItem>();
 
@@ -207,7 +222,7 @@ namespace CampView.Services
                 }
                 catch (Exception e)
                 {
-
+                    Console.WriteLine(e);
                 }
             }
 
@@ -443,6 +458,14 @@ namespace CampView.Services
             return _mongoDB.CommentList(docName);
         }
 
+        public List<ChargerComment> CommentList(string statId)
+        {
+            var docName = _configuration.GetSection("MONGODB:CHARGER_COMMENT").Value;
+
+            return _mongoDB.CommentList(docName, statId);
+        }
+
+
         public ChargerComment CommentIns(ChargerComment comment)
         {
 
@@ -459,6 +482,109 @@ namespace CampView.Services
 
             return doc;
 
+        }
+
+        public bool DelComment(ChargerComment comment)
+        {
+            var docName = _configuration.GetSection("MONGODB:CHARGER_COMMENT").Value;
+
+            return _mongoDB.DelComment(comment, docName);
+        }
+
+
+
+
+        
+        public List<ChargerFavor> FavorList(string userid)
+        {
+            var docName = _configuration.GetSection("MONGODB:CHARGER_FAVOR").Value;
+
+            var list = _mongoDB.DataListByUser<ChargerFavor>(docName, userid);
+
+            foreach(var item in list)
+            {
+                var path = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CHARGER:CHARGER_LIST_JSON").Value;
+                path = path.Replace("{}", item.zscode.Substring(0,2));
+
+                if (this.ExistFile(path))
+                {
+                    var resp = JsonConvert.DeserializeObject<List<ChargerItem>>(File.ReadAllText(path));
+
+                    if (resp.Count() > 0)
+                    {
+                        var tmp = resp.Where(w => w.statId == item.statId);
+                        if(tmp != null &&  tmp.Count() > 0)
+                        {
+                            item.statNm = tmp.First().statNm;
+                            item.addr = tmp.First().addr;
+                        }
+                    }
+                }
+            }
+
+            return list;
+        }
+        
+        /*
+        public List<ChargerFavor> FavorList(string statId)
+        {
+            var docName = _configuration.GetSection("MONGODB:CHARGER_FAVOR").Value;
+
+            return _mongoDB.DataList<ChargerFavor>(docName, statId);
+        }
+        */
+
+        public bool InsFavor(string user, string statId, string zscode)
+        {
+            var isOk = false;
+            try
+            {
+                var docName = _configuration.GetSection("MONGODB:CHARGER_FAVOR").Value;
+                var doc = _mongoDB.GetData<ChargerFavor>(user, statId, docName);
+                if (doc == null)
+                {
+                    var favor = new ChargerFavor();
+                    favor.statId = statId;
+                    favor.user = user;
+                    favor.zscode = zscode;
+                    favor.date = DateTime.Now;
+
+                    _mongoDB.InsData<ChargerFavor>(favor, docName);
+
+                    isOk = true;
+                }
+                
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+
+            return isOk;
+
+        }
+
+        public bool DelFavor(string user, string statId)
+        {
+            var docName = _configuration.GetSection("MONGODB:CHARGER_FAVOR").Value;
+
+            return _mongoDB.DelData<ChargerFavor>(user, statId, docName);
+        }
+
+
+        public bool ChkFavor(string userid, string statId)
+        {
+            var docName = _configuration.GetSection("MONGODB:CHARGER_FAVOR").Value;
+            bool isOk = false;
+
+            var data = _mongoDB.GetData<ChargerFavor>(userid, statId, docName);
+            if(data != null)
+            {
+                isOk = true;
+            }
+            
+
+            return isOk;
         }
 
     }    

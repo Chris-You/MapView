@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
-
+using System.Text.Json.Serialization;
 
 namespace CampView.Models.Charger
 {
@@ -156,12 +156,12 @@ namespace CampView.Models.Charger
 
 
         public List<ChargerItem> chgr { get; set; }
-        public List<ChargerStatusItem> status { get; set; }
+        //public List<ChargerStatusItem> status { get; set; }
 
         public ChargerModel()
         {
             chgr = new List<ChargerItem>();
-            status = new List<ChargerStatusItem>();
+            //status = new List<ChargerStatusItem>();
         }
 
     }
@@ -251,11 +251,30 @@ namespace CampView.Models.Charger
     public class  ChargerComment
     {
         public ObjectId Id { get; set; }
+        [JsonIgnore]
         public string user { get; set; }
         public string statId { get; set; }
+        public string statNm { get; set; }
+        public string zscode { get; set; }
         public int star { get; set; }
         public string comment { get; set; }
         public DateTime date { get; set; }
+
+        public bool me { get; set; }
+
     }
-    
+
+    public class ChargerFavor
+    {
+        public ObjectId Id { get; set; }
+        [JsonIgnore]
+        public string user { get; set; }
+        public string statId { get; set; }
+        public string statNm { get; set; }
+        public string addr { get; set; }
+        public string zscode { get; set; }
+        public DateTime date { get; set; }
+        public int totalCnt { get; set; }
+        public int availCnt { get; set; }
+    }
 }
