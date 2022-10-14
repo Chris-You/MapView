@@ -52,6 +52,11 @@ namespace CampView.Controllers
         }
 
 
+        /// <summary>
+        /// 충전소 기본정보 json 파일 생성(매주 일요일 새벽 1회 실행이 되도록)
+        /// </summary>
+        /// <param name="req"></param>
+        /// <returns></returns>
         [HttpGet]
         public IActionResult MakeFile(ChargerReqModel req)
         {
