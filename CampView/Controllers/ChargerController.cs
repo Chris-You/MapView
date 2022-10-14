@@ -42,12 +42,73 @@ namespace CampView.Controllers
 
 
 
+
+
         public IActionResult Index()
         {
             ViewBag.UserId = base.GetUserId();
 
             return View();
         }
+
+
+        [HttpGet]
+        public IActionResult MakeFile(ChargerReqModel req)
+        {
+            req.serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value;
+            req.searchurl = _configuration.GetSection("OPENAPI:CHARGER_API_INFO_URL").Value;
+            req.pageNo = 1;
+            req.numOfRows = 9999;
+            req.userid = base.GetUserId();
+
+            //req.zcode = _chargerService.GetZcode(req);
+            //req.zscode = _chargerService.GetZScode(req);
+
+            _chargerService.MakeFile(req);
+
+
+            return new JsonResult(req);
+        }
+
+        /// <summary>
+        /// 10분마다 호출 하여 데이터 캐싱해놓기
+        /// </summary>
+        /// <param name="req"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult MakeRedisCache(ChargerReqModel req)
+        {
+            req.serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value;
+            req.searchurl = _configuration.GetSection("OPENAPI:CHARGER_API_INFO_URL").Value;
+            
+            req.numOfRows = 9999;
+            req.userid = base.GetUserId();
+
+            //req.zcode = _chargerService.GetZcode(req);
+            //req.zscode = _chargerService.GetZScode(req);
+
+            if (string.IsNullOrEmpty(req.zcode) == false)
+            {
+                var zscode = _chargerConfig.Value.zscode;
+
+                foreach (var zs in zscode.Where(w=> w.code.Substring(0,2) == req.zcode))
+                {
+                    req.pageNo = 1;
+                    req.zcode = zs.code.Substring(0, 2);
+                    req.zscode = zs.code;
+
+                    var list = _chargerService.MakeRedisCache(req);
+                }
+            }
+            else
+            {
+                var list = _chargerService.MakeRedisCache(req);
+            }
+
+            return new JsonResult(req);
+        }
+
+
 
         [HttpPost]
         public IActionResult Search(ChargerReqModel req)
@@ -63,21 +124,14 @@ namespace CampView.Controllers
 
             // 근처 충전소 리스트
             var itemList = _chargerService.GetChargerList(req);
-            //var statusList = _chargerService.GetChargerList(req);
-            //var chgr = new List<ChargerItem>();
-            var chgr = _chargerService.GetChargerAPIList(req);
-            //var status = new List<ChargerStatusItem>();
-
-
+            var chgr = _chargerService.GetChargerDtlList(req);
+            
             
             Parallel.ForEach(itemList, i => {
                 
                 Parallel.Invoke(
                    () => {
                        i.chgr = chgr.Where(w => w.statId == i.statId).ToList();
-                   },
-                   () => {
-                       //i.status = status.Where(w => w.statId == i.statId).ToList();
                    }
                 );
 
@@ -118,10 +172,8 @@ namespace CampView.Controllers
             // 근처 충전소 리스트
             var itemList = _chargerService.GetChargerList(req);
             itemList = itemList.Where(w => w.statId == statId).ToList();
-            var chgr = _chargerService.GetChargerAPIList(req);
+            var chgr = _chargerService.GetChargerDtlList(req);
             
-
-
 
             Parallel.ForEach(itemList, i => {
 
@@ -249,7 +301,7 @@ namespace CampView.Controllers
                            req.zcode = i.zscode.Substring(0, 2);
                            req.zscode = i.zscode;
 
-                           var chgr = _chargerService.GetChargerAPIList(req);
+                           var chgr = _chargerService.GetChargerDtlList(req);
 
                            i.totalCnt = chgr.Where(w => w.statId == i.statId).Count();
                            i.availCnt = chgr.Where(w => w.statId == i.statId && w.stat == "2" && w.delYn == "N").Count();
