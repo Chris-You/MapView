@@ -108,7 +108,6 @@ namespace CampView.Services
             var docs = comments.Find(new BsonDocument()).ToList();
             if (docs.Count > 0)
                 return docs;
-
             else
                 return null;
         }

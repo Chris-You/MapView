@@ -9,10 +9,11 @@ using CampView.Models;
 using CampView.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace CampView.Controllers
 {
-    public class AccountController : Controller
+    public class AccountController : BaseController
     {
         private readonly IConfiguration _configuration;
         private readonly ILogger<CampController> _logger;
@@ -29,10 +30,10 @@ namespace CampView.Controllers
             _userService = userService;
         }
 
-        public IActionResult Login(string path)
+        public IActionResult Login(string? path)
         {
 
-            ViewBag.LoginPath = path;
+            ViewBag.LoginPath = path?? "camp";
 
             return View();
         }
@@ -163,5 +164,43 @@ namespace CampView.Controllers
 
             return View(dic);
         }
+
+
+
+        
+        public IActionResult Faq(string path)
+        {
+            if(string.IsNullOrEmpty(base.GetUserId()))
+            {
+                return Redirect(LoginPath(path));
+            }
+            else
+            {
+                ViewBag.LoginPath = path ?? "camp";
+
+                return View();
+            }
+        }
+
+
+        private string LoginPath(string path)
+        {
+            return "/Account/Login?path=" + path;
+        }
+
+        [HttpPost]
+        public IActionResult RegFaq(Faq faq)
+        {
+            faq.user = base.GetUserId();
+            faq.status = "1";
+            faq.regDate = DateTime.Now;
+
+
+            var result = _userService.RegFaq(faq);
+
+
+            return new JsonResult(result);
+        }
+
     }
 }

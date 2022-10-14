@@ -26,12 +26,15 @@ namespace CampView.Services
         //string GetUser(ClaimsPrincipal principal, string claim);
         //Dictionary<string, string> GetUser(ClaimsPrincipal principal);
 
+        Faq RegFaq(Faq faq);
+
     }
 
     public class UserService : IUserService
     {
         private readonly IConfiguration _configuration;
         private readonly RedisService _redis;
+        private readonly MongoDBService _mongoDB;
 
         public UserService(IConfiguration configuration)
         {
@@ -41,6 +44,10 @@ namespace CampView.Services
                            _configuration.GetSection("REDIS:SERVER").Value.ToString(),
                            _configuration.GetSection("REDIS:PORT").Value.ToString(),
                            _configuration.GetSection("REDIS:PASSWORD").Value.ToString());
+
+            _mongoDB = new MongoDBService(_configuration.GetSection("MONGODB:SERVER").Value.ToString(),
+                            _configuration.GetSection("MONGODB:PORT").Value.ToString(),
+                            _configuration.GetSection("MONGODB:DB_NAME").Value.ToString());
         }
 
         /*
@@ -141,6 +148,16 @@ namespace CampView.Services
         }
 
 
-        
+
+        public Faq RegFaq(Faq faq)
+        {
+            var docName = _configuration.GetSection("MONGODB:USER_FAQ").Value;
+
+            _mongoDB.InsData<Faq>(faq, docName);
+
+            var newFaq = _mongoDB.DataListByUser<Faq>(docName, faq.user).OrderByDescending(o => o.regDate).First() ;
+
+            return newFaq;
+        }
     }
 }

@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MongoDB.Bson;
+using System.Text.Json.Serialization;
+
 
 namespace CampView.Models
 {
@@ -118,5 +121,21 @@ namespace CampView.Models
         public bool is_default_image { get; set; }
     }
 
+
+
+
+    public class Faq
+    {
+        public ObjectId Id { get; set; }
+        [JsonIgnore]
+        public string user { get; set; }
+        public string title { get; set; }
+        public string contents { get; set; }
+        public string path { get; set; }
+        public string status { get; set; }
+        public string reply { get; set; }
+        public DateTime regDate { get; set; }
+        public DateTime updDate { get; set; }
+    }
 
 }
