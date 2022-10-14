@@ -128,7 +128,8 @@ namespace CampView.Services
         {
             var itemList = new List<ChargerItem>();
             var redisKey = _configuration.GetSection("REDIS:CHARGER_SEARCH_KEY").Value.ToString() + req.zcode + ":" + req.zscode;
-            
+
+            var chcheTime = _configuration.GetSection("REDIS:CHARGER_CACHE_MINUTE").Value;
             var res = this.ChargerAPI(req, 1);
             itemList = res.items.item;
 
@@ -149,12 +150,10 @@ namespace CampView.Services
 
                 }
 
-
                 //  응답데이터 redis 등록
-
                 var jsonStr = JsonConvert.SerializeObject(itemList);
 
-                var span = DateTime.Now.AddMinutes(15) - DateTime.Now;   // 만료시간 15분
+                var span = DateTime.Now.AddMinutes(Convert.ToInt32(chcheTime)) - DateTime.Now;   // 만료시간 15분
                 _redis.redisDatabase.StringSet(redisKey, jsonStr, span);
             }
             catch (Exception e)
