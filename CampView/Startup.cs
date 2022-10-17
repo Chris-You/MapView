@@ -8,13 +8,13 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using CampView.Services;
+using MapView.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 //using StackExchange.Redis;
-using CampView.Models.CustomSettings;
+using MapView.Models.CustomSettings;
 
-namespace CampView
+namespace MapView
 {
     public class Startup
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CampView.Models.CustomSettings
+namespace MapView.Models.CustomSettings
 {
     public class ChargerCode
     {

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Http;
 using System.IO;
-using CampView.Models.Charger;
+using MapView.Models.Charger;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
@@ -13,13 +13,13 @@ using Newtonsoft.Json.Linq;
 using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
-using CampView.Util;
+using MapView.Util;
 using Microsoft.Extensions.Options;
-using CampView.Models.CustomSettings;
+using MapView.Models.CustomSettings;
 using System.Reflection;
 
 
-namespace CampView.Services
+namespace MapView.Services
 {
 
     public interface IChargerService

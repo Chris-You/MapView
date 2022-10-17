@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CampingView.Controllers
+namespace MapView.Controllers
 {
     public class UtilController : Controller
     {

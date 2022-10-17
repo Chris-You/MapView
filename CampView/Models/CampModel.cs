@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CampView.Models
+namespace MapView.Models
 {
 
     #region /////데이터 리스트 모델

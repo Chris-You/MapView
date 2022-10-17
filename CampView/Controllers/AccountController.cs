@@ -5,13 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using CampView.Models;
-using CampView.Services;
+using MapView.Models;
+using MapView.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
-namespace CampView.Controllers
+namespace MapView.Controllers
 {
     public class AccountController : BaseController
     {

@@ -5,15 +5,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using CampView.Models.Charger;
-using CampView.Models;
-using CampView.Services;
+using MapView.Models.Charger;
+using MapView.Models;
+using MapView.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
-using CampView.Models.CustomSettings;
+using MapView.Models.CustomSettings;
 
-namespace CampView.Controllers
+namespace MapView.Controllers
 {
     public class ChargerController : BaseController
     {

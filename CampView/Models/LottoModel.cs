@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CampView.Models
+namespace MapView.Models
 {
     public class LottoResModel
     {

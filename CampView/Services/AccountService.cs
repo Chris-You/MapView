@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Http;
 using System.IO;
-using CampView.Models;
+using MapView.Models;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json.Linq;
 using System.Text;
 
-namespace CampView.Services
+namespace MapView.Services
 {
     public interface IAccountService
     {

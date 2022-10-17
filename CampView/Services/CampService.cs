@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Http;
 using System.IO;
-using CampView.Models;
+using MapView.Models;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
@@ -13,10 +13,10 @@ using Newtonsoft.Json.Linq;
 using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
-using CampView.Util;
+using MapView.Util;
 using StackExchange.Redis;
 
-namespace CampView.Services
+namespace MapView.Services
 {
 
     public interface ICampService

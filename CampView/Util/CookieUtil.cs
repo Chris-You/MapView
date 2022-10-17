@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 
-namespace CampView.Util
+namespace MapView.Util
 {
     public class CookieUtil
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using StackExchange.Redis;
 
-namespace CampView.Services
+namespace MapView.Services
 {
     public class RedisService
     {

@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CampView", "CampView\CampView.csproj", "{43C719AE-1F97-400C-BDEA-D6FD0FC0C811}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapView", "CampView\MapView.csproj", "{43C719AE-1F97-400C-BDEA-D6FD0FC0C811}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CampView.ConsoleApp", "CampView.ConsoleApp\CampView.ConsoleApp.csproj", "{243A6921-2D99-4C05-9075-8ABCE2113F2B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapView.ConsoleApp", "CampView.ConsoleApp\MapView.ConsoleApp.csproj", "{243A6921-2D99-4C05-9075-8ABCE2113F2B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 using MongoDB.Bson;
-using CampView.Models.Charger;
+using MapView.Models.Charger;
 
-namespace CampView.Services
+namespace MapView.Services
 {
     public class MongoDBService
     {
