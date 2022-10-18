@@ -34,6 +34,7 @@ namespace MapView
             services.AddScoped<ICampService, CampService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IFestivalService, FestivalService>();
 
             //services.AddScoped<ILottoService, LottoService>();
 

@@ -1,0 +1,1010 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+@section Scripts
+{
+<script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=ak5szsi1xk&callback=mapSet"></script>
+}
+
+<style type="text/css">
+
+	.non-visiable {
+		display: none;
+	}
+
+	.alert {
+		margin-bottom:10px;
+		border-radius:0px;
+	}
+
+    label{
+        margin-left:3px;
+        margin-right:10px;
+    }
+
+
+	#options {
+		width: 95%;
+		height: 600px;
+		display: none;
+		background: #eee;
+		top: 0;
+		left: 0;
+		margin: 111px 20px 0 15px;
+		position: absolute;
+		z-index: 9999;
+	}
+
+	#recentKeyword {
+		width: 90%;
+		display: none;
+		background: #fff;
+		top: 0;
+		left: 0;
+		margin: 105px 20px 0 15px;
+		position: absolute;
+		z-index: 9999;
+		border:1px solid #e4e7e8;
+        color:#333;
+	}
+
+
+    ul{
+        list-style:none;
+    }
+
+
+	#closeBtn {
+		position: fixed;
+		z-index: 99;
+		left: 90%;
+		top: 85%;
+	}
+
+</style>
+   
+
+<script type="text/javascript">
+
+    var map;
+    var markers=[];
+    var infoWindows = [];
+    var dataList = [];
+
+    function resetMap() {
+        
+        markers=[];
+        infoWindows = [];
+        dataList = [];
+        //console.log("mapInit");
+	}
+
+
+    function mapInit() {
+
+        map = null;
+        markers=[];
+        infoWindows = [];
+        dataList = [];
+        //console.log("mapInit");
+
+        navigator.geolocation.getCurrentPosition(function (position) {
+            setMap(position.coords.latitude, position.coords.longitude);
+
+            var latlng = map.getCenter(); 
+            console.log("init");
+            console.log(latlng);
+
+            search(latlng);
+
+            }
+            , function (error) {
+                console.log(error);
+            });
+
+	}
+
+
+    function mapSet() {
+
+        if(!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser');
+        }
+        else
+        {
+            mapInit();
+        }
+    }
+
+    function searchCenter() {
+
+        search(map.getCenter());
+    }
+
+    function hideMarker() {
+
+        for (var i = 0; i < markers.length; i++) {
+            markers[i].setMap(null);
+            infoWindows[i].close();
+        }
+
+        markers = [];
+        infoWindows = [];
+	}
+
+    function search(latlng) {
+
+        hideMarker();
+
+        
+        ajax(latlng)
+        //console.log(markers.length);
+
+        closeDiv("options");
+        closeDiv('recentKeyword');
+	}
+
+
+    function ajax(latlng) {
+
+        let facltDivNm = [];
+        let induty = [];
+        let sbrsCl = [];
+
+        
+        var url = "/Festival/Search";
+        
+        var data = {
+        };
+
+        //$("#divCampList").empty();
+        var list = "";
+
+        $.ajax({
+            type: "post",
+            //url: "/camp/Search",
+            url: url ,
+            data: data,
+            success: function (data) {
+                //script = data.replace(/<script>(.*)<\/script>/, "$1"); // Remove tags
+                //eval(script); // Execute javascript
+
+                console.log(data);
+
+                if (data.response.body.items.length > 0) {
+
+                    dataList = data;
+                    for (var i = 0; i < data.response.body.items.length; i++) {
+
+                        var lng = data.response.body.items[i].longitude;
+                        var lat = data.response.body.items[i].latitude;
+
+                        setMarker(lat, lng, data.response.body.items[i].fstvlNm, i);
+                    }
+                    
+                   
+                }
+                else {
+                    // 검색내역이 없습니다.
+                    list += '<div style="text-align:center;">검색내역이 없습니다.</div>';
+
+				}
+
+                
+            },
+            error: function (data) {
+                //alert("error: " + data.responseText);
+            }
+        });
+
+	}
+
+
+    function setMap(lat, lng) {
+        var mapOptions = {
+            center: new naver.maps.LatLng(lat, lng),
+            zoom: 7,
+            //scaleControl: false,
+            logoControl: false,
+            //mapDataControl: false,
+            //zoomControl: false,
+        };
+
+        //console.log(mapOptions);
+
+        map = new naver.maps.Map('divMap', mapOptions);
+
+
+                // 마우스 드래그로 지도 이동이 완료되었을 때 마지막 파라미터로 넘어온 함수를 호출하도록 이벤트를 등록합니다
+        naver.maps.Event.addListener(map, 'dragend', function(event) {        
+    
+            // 지도 중심좌표를 얻어옵니다 
+            var latlng = map.getCenter(); 
+    
+            //var message = '중심좌표 : ' + latlng.getLat() + ', '+ latlng.getLng();
+            
+            console.log("mouseEvent dragend");
+            console.log(event);
+
+            //var resultDiv = document.getElementById('result');  
+            //resultDiv.innerHTML = message;
+
+            //searchCoordinateToAddress(event.coord);
+            //search(latlng);
+    
+        });
+
+
+        naver.maps.Event.addListener(map, 'click', function (event) {
+            // 클릭한 위도, 경도 정보를 가져옵니다 
+            console.log("mouse click");
+            console.log(event);
+        });
+
+
+
+	}
+
+    function setMarker(lat, lng, facltNm, seq) {
+        var marker = new naver.maps.Marker({
+            position: new naver.maps.LatLng(lat, lng),
+            map: map,
+            /*
+            icon: {
+                url: '/img/camp_icon.png',
+                size: new naver.maps.Size(22, 35)
+                
+            }
+            */
+        });
+
+        markers.push(marker);
+
+        var infoWindow = new naver.maps.InfoWindow({
+            content: '<div style="width:150px;text-align:center;padding:10px;" onclick="closeInfo('+ seq +')"> <b>'+ facltNm +'</b></div>'
+        });
+
+        infoWindows.push(infoWindow);
+
+        markers[seq].setMap(map);
+        naver.maps.Event.addListener(markers[seq], 'click', getClickHandler(seq));
+
+    }
+
+    function closeInfo(seq) {
+        infoWindows[seq].close();
+	}
+
+    // 해당 마커의 인덱스를 seq라는 클로저 변수로 저장하는 이벤트 핸들러를 반환합니다.
+    function getClickHandler(seq) {
+
+        return function (e) {
+
+            getClickListItem(seq);
+            
+        }
+    }
+
+    function getClickListItem(seq) {
+
+        var marker = markers[seq],
+        infoWindow = infoWindows[seq];
+
+        if (infoWindow.getMap()) {
+            infoWindow.close();
+        } else {
+            infoWindow.open(map, marker);
+        }
+
+        setCampDetail(seq);
+	}
+
+    function getImages(seq) {
+
+        var imgHtml = "";
+            $("#divImage").show();
+            $("#divImage").html("<div style='text-align:center;'><img src='/img/loading.gif'/></div>");
+
+        $.ajax({
+                type: "post",
+                url: "/Camp/SearchImage",
+                data: "contentId=" + dataList.response.body.items.item[seq].contentId,
+                success: function (data) {
+
+                    //$("#divImage").empty();
+
+                    if (data.response != null) {
+                        if (data.response.body.items != null) {
+                            if (data.response.body.items.item.length > 0) {
+
+                                imgHtml += '<div class="slider-img">';
+                                //imgHtml += '<div class="swiper-wrapper">';
+
+                                for (var i = 0; i < data.response.body.items.item.length; i++) {
+                                    //console.log(data.response.body.items.item[i]);
+                                    imgHtml += '<div class="swiper-slide"><a href="javascript:showImg(\'' + data.response.body.items.item[i].imageUrlOri + '\');"><img src="' + data.response.body.items.item[i].imageUrl + '" style="width:100%; height:300px;" /></a></div>'
+                                }
+
+                                imgHtml += '</div>';
+                                //imgHtml += '<div class="swiper-pagination"></div>';
+                                //imgHtml += '</div>';
+
+                                imgHtml += '<hr style="height:5px;"/>';
+                            }
+                            else {
+                                imgHtml = "<img src='/img/no_image.png' />";
+
+                                $("#divImage").hide();
+
+							}
+
+                            $("#divImage").html(imgHtml);
+
+                            slides();
+                        }
+                        else {
+                            $("#divImage").html("<img src='/img/no_image.png' />");
+                            $("#divImage").hide();
+                        }
+
+                    }
+                    else {
+                        $("#divImage").html("<img src='/img/no_image.png' />");
+                        $("#divImage").hide();
+					}
+                    
+                },
+                error: function (data) {
+                    //alert("error: " + data.responseText);
+                    $("#divImage").html("<img src='/img/no_image.png' />");
+                    $("#divImage").hide();
+                }
+            });
+	}
+
+    function slides() {
+         
+
+        $('.slider-img').bxSlider({
+            //controls: false
+            auto: true,
+        });
+
+
+        $('.slider-blog').bxSlider({
+            auto: true,
+            controls: false,
+        });
+
+	}
+
+    function showImg(url) {
+        window.open(url);
+        //console.log(url);
+    }
+
+    function like(seq) {
+
+        var likeVal = $("#btnLike").attr("data-value");
+        // 현재 좋아요 이면 true, 아니면 false
+        
+        $.ajax({
+            type: "post",
+            url: "/Camp/like",
+            data: "contentid=" + dataList.response.body.items.item[seq].contentId + "&isLike="+ likeVal,
+            success: function (data) {
+
+                if (data != null) {
+                    //console.log(data);
+
+                    if (data.result == "True") {
+                        // 등록 성공
+                        //getComment(seq);
+
+                        if (likeVal == "true") {
+                                
+                            $("#btnLike").attr("src", "/img/icon/icons8-heart-50.png")
+                            $("#btnLike").attr("data-value", "false");
+                        }
+                        else {
+                            $("#btnLike").attr("src", "/img/icon/icons8-heartfull-50.png")
+                            $("#btnLike").attr("data-value", "true");
+		                }
+					}
+				}
+            }
+        });
+    }
+
+    function isLike(seq) {
+        //
+        
+        $.ajax({
+            type: "post",
+            url: "/Camp/IsLike",
+            data: "contentid=" + dataList.response.body.items.item[seq].contentId,
+            success: function (data) {
+
+                if (data != null) {
+                    if (data.result == "True") {
+                        // 등록 성공
+                        $("#btnLike").attr("src", "/img/icon/icons8-heartfull-50.png")
+                        $("#btnLike").attr("data-value", "true");
+					}
+				}
+            }
+        });
+	}
+
+
+    function setCampDetail(seq) {
+
+        
+        map.setCenter(new naver.maps.LatLng(dataList.response.body.items.item[seq].mapY, dataList.response.body.items.item[seq].mapX));
+
+        //console.log(dataList.response.body.items.item[seq]);
+
+        //$("#divCampList").hide();   // 상세 선택시 리스트 비노출
+        $("#divCampDtl").show();
+        showDiv("light");
+
+        var title = ""
+        title += "<p>■ <b>" + dataList.response.body.items.item[seq].facltNm + "</b> (" + dataList.response.body.items.item[seq].facltDivNm + ")"
+
+        // 회원이면 좋아요 버튼 노출
+        title += '<img id="btnLike" src="/img/icon/icons8-heart-50.png" data-value="false" alt="like it" style="margin-left:15px;width:25px;" onclick="javascript:like('+ seq +');"/>';
+        title += "</p>";
+
+        title += "<p> - " + dataList.response.body.items.item[seq].addr1 + " " + dataList.response.body.items.item[seq].addr2 + "</p>"
+        if (dataList.response.body.items.item[seq].lineIntro != "") {
+            title += "<p> - " + dataList.response.body.items.item[seq].lineIntro + "</p>"
+        }
+
+        
+
+        title += "<hr style='height:5px;'/>";
+        $("#divTitle").html(title);
+
+        var reserve = "<p>■ <b>예약 문의</b></p>"
+        if (dataList.response.body.items.item[seq].tel != "") {
+            reserve += "<p> - 전화번호 : <a href='tel:" + dataList.response.body.items.item[seq].tel + "'>" + dataList.response.body.items.item[seq].tel + "</a><br></p>";
+        }
+        var homepage = dataList.response.body.items.item[seq].homepage;
+        if (homepage !="" && dataList.response.body.items.item[seq].homepage.indexOf("http") != 0) {
+            homepage = "http://" + homepage;
+        }
+        if (homepage != "") {
+            reserve += "<p> - 홈페이지 : <a href='" + homepage + "' target='_blank'> " + dataList.response.body.items.item[seq].homepage + "</a></p>"
+        }
+        $("#divReserve").html(reserve);
+            
+        var detail = '<div>';
+        detail += "<p>" + dataList.response.body.items.item[seq].intro + "<br></p>"
+        detail += '</div>';
+        detail += "<hr style='height:5px;'/>";
+        if (dataList.response.body.items.item[seq].intro != "") {
+            $("#divDesc").html(detail);
+            $("#divDesc").show();
+        }
+        else {
+            $("#divDesc").hide();
+		}
+
+
+        var induty = dataList.response.body.items.item[seq].induty.split(',');
+
+        var info = ''
+        info += '<p>■ <b>시설 및 운영정보</b></p>';
+        //info += '<p>' + dataList.response.body.items.item[seq].induty + '</p>';
+
+
+        // 업종및 사이트 수
+        /*
+        var cn1 = Number(dataList.response.body.items.item[seq].gnrlSiteCo);
+        var cn2 = Number(dataList.response.body.items.item[seq].autoSiteCo);
+        var cn3 = Number(dataList.response.body.items.item[seq].glampSiteCo);
+        var cn4 = Number(dataList.response.body.items.item[seq].caravSiteCo);
+
+        var str1 = (cn1 > 0 ? " (" + cn1 + "면)" : "");
+        var str2 = (cn2 > 0 ? " (" + cn2 + "면)" : "");
+        var str3 = (cn3 > 0 ? " (" + cn3 + "면)" : "");
+        var str4 = (cn4 > 0 ? " (" + cn4 + "면)" : "");
+        var sum = cn1 + cn2 + cn3 + cn4;
+        //var sumStr = sum > 0 ? "(사이트 수)" : "";
+
+        info += "<p> - 주요시설 ";
+
+        for (var i = 0; i < induty.length; i++) {
+
+            if (induty[i] == "일반야영장") 
+                info += ' <div class="col-xs-6">일반야영장'+ str1+ '</div>'
+            else if (induty[i] == "자동차야영장") 
+                info += ' <div class="col-xs-6">자동차야영장'+ str2 +'</div>'
+            else if (induty[i] == "글램핑") 
+                info += ' <div class="col-xs-6">글램핑'+ str3 +'</div>'
+            else if (induty[i] == "카라반") 
+                info += ' <div class="col-xs-6">카라반'+ str4 +'</div>'
+		}
+        info += "<br></p>";
+        */
+
+        info += "<p> - 주요시설 : " + dataList.response.body.items.item[seq].induty + "<br></p>";
+        info += "<p> - 애완동물 동반 : " + dataList.response.body.items.item[seq].animalCmgCl + "<br></p>";
+
+        if (dataList.response.body.items.item[seq].sbrsCl != "") {
+            info += "<p> - 시설정보 : " + dataList.response.body.items.item[seq].sbrsCl + "<br></p>";
+        }
+        if (dataList.response.body.items.item[seq].sbrsEtc != "") {
+            info += "<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; * " +  dataList.response.body.items.item[seq].sbrsEtc + "<br></p>";
+        }
+        if (dataList.response.body.items.item[seq].exprnProgrm != "") {
+            info += "<p> - 체험프로그램 : " +  dataList.response.body.items.item[seq].exprnProgrm + "<br></p>";
+        }
+        if (dataList.response.body.items.item[seq].clturEvent != "") {
+            info += "<p> - 자체문화행사 : " +  dataList.response.body.items.item[seq].clturEvent + "<br></p>";
+        }
+        if (dataList.response.body.items.item[seq].posblFcltyCl != "") {
+            info += "<p> - 주변이용 가능시설 : " +  dataList.response.body.items.item[seq].posblFcltyCl + "<br></p>";
+        }
+        
+        
+
+        if (dataList.response.body.items.item[seq].glampInnerFclty != "") {
+            info += "<p> - 글램핑 시설 : " +  dataList.response.body.items.item[seq].glampInnerFclty + "<br></p>";
+        }
+        if (dataList.response.body.items.item[seq].caravInnerFclty != "") {
+            info += "<p> - 카라반 시설 : " +  dataList.response.body.items.item[seq].caravInnerFclty + "<br></p>";
+        }
+
+
+        info += '<br />'
+        if (dataList.response.body.items.item[seq].featureNm != "") {
+            info += "<p> * " + dataList.response.body.items.item[seq].featureNm + "<br></p>";
+        }
+
+        info += "<p> * <span style='color:red;'>등록된 정보는 현장상황과 다소 다를 수 있으니 필요한 사항은 해당 캠핑장에 미리 확인하시기 바랍니다</span>.<br></p>";
+
+        info += '</div>'
+        
+        info += '<hr style="height:5px;"/>';
+
+        $("#divInfo").html(info);
+
+
+        isLike(seq);
+
+        getImages(seq);
+
+        getBlogs(seq);
+
+        getComment(seq);
+
+
+    }
+
+    function getBlogs(seq) {
+
+        var name = dataList.response.body.items.item[seq].facltNm;
+        var blog = ''
+        
+
+        $.ajax({
+                type: "post",
+                url: "/Camp/Blogs",
+                data: "query=" + encodeURIComponent(name),
+                success: function (data) {
+                    //script = data.replace(/<script>(.*)<\/script>/, "$1"); // Remove tags
+                    //eval(script); // Execute javascript
+
+                    //console.log(data);
+
+
+                    if (data.items != null && data.items.length > 0) {
+
+                        blog += '<p style="margin-bottom:15px;">■ <b>이용 후기(블로그)</b></p>';
+                        blog += '<div class="slider-blog">';
+
+                        for (var i = 0; i < data.items.length; i++) {
+                            
+                            blog += ' <div>';
+                            blog += '   <div style="margin-bottom:5px;"><b>' + data.items[i].title + '</b></div>';
+                            blog += '   <a href="' + data.items[i].link + '" target="_blank");">';
+                            blog += '     <div>'+ data.items[i].description +'</div>';                           
+                            blog += '   </a>';
+
+
+                            var ymd = data.items[i].postdate.substr(0, 4) + '-' +
+                                data.items[i].postdate.substr(4, 2) + '-' +
+                                data.items[i].postdate.substr(6, 2);
+
+
+                            blog += '   <div style="text-align:right;">'+ ymd +'</div>';
+                            blog += ' </div>';
+                        }
+                        blog += '</div>';
+
+                        $("#divBlogs").html(blog);
+                        slides();
+					}
+
+                },
+                error: function (data) {
+                    //alert("error: " + data.responseText);
+                }
+            });
+    }
+    
+    function viewMore() {
+        var tot = $("#divCampList > .non-visiable").length;
+        
+        if (tot > 0) {
+            $("#divCampList > .non-visiable").each(function (index, item) {
+                if (index < 5) {
+                    $(this).removeClass("non-visiable");
+                }
+            });
+        }
+
+        var tot2 = $("#divCampList > .non-visiable").length;
+        
+        if (tot2 == 0) $("#more").hide();
+	}
+
+    function showOption() {
+        
+        //console.log($("#options").css("display"))
+        if ($("#options").css("display") == "none") {
+            //$("#options").show();
+            showDiv("options");
+            closeDiv("recentKeyword");
+            $("#options").css("top", "0px");
+        }
+        else {
+            closeDiv("options");
+		}
+	}
+
+    function recentKeyword() {
+
+        $("#recentKeyword").show();
+
+        var list = "";
+
+        $.ajax({
+                type: "post",
+                url: "/Camp/Keyword",
+                //data: "query=" + $("#recentKeyword").val(),
+                success: function (data) {
+
+                    
+                    //console.log(data)
+
+                    if (data != null && data != undefined) {
+
+                        if (data.length > 0) {
+
+                            list += "<div style='margin:10px 10px 0 10px;border-bottom:border:1px solid #e4e7e8;'>최근검색어</div>"
+
+                            list += "<div style='margin-top:10px;'>"
+                            list += "<ul>"
+
+                            for (var i = 0; i < data.length; i++) {
+                                //var word = data[i].key;
+                                //var date = data[i].value;
+                            
+                                list += "<li style='margin:7px 0 0 10px;' onclick='javascript:searchCenter();'>"
+                                list += "    <div style='float:left;margin-left:4px;' ><img src='/img/icon/icons8-search.png' style='width:15px;'/></div>"
+                                list += "    <div style='float:left;width:280px;margin-left:5px;' >" + data[i].Key + "</div>"
+                                list += "    <div style='float:left;margin-left:0px;' >" + data[i].Value + "</div>"
+                                list += "    <div style='margin-left:388px;' ><a href='javascript:deleteKeyword(\""+ data[i].Key +"\");'> X </a></div>"
+                                list += "</li>"
+                            }
+
+                            list += "</ul>"
+                            list += "</div>"
+
+
+                            $("#recentKeyword").html(list);
+
+                        }
+                        else {
+                            
+                            closeDiv('recentKeyword');
+						}
+                        
+					}
+
+                },
+                error: function (data) {
+                    //alert("error: " + data.responseText);
+                }
+            });
+
+
+	}
+
+    function deleteKeyword(word) {
+        $.ajax({
+            type: "post",
+            url: "/Camp/KeywordDel",
+            data: "query=" + word,
+            success: function (data) {
+
+                if (data != null) {
+                    recentKeyword();
+				}
+            }
+        });
+    }
+
+    function getComment(seq) {
+
+        var comm = "";
+        var body = "";
+
+        $.ajax({
+                type: "post",
+                url: "/Camp/comments",
+                data: "contentid=" + dataList.response.body.items.item[seq].contentId,
+                success: function (data) {
+
+                    
+                    var head = '<p style="margin-bottom:15px;">■ <b>한줄평</b></p>';
+                        head += '<div>';
+
+                    var addBtn = true;
+                    if (data != null && data != undefined) {
+
+                        if (data.length > 0) {
+                            body += '<table style="border:0px;">';
+                            for (var i = 0; i < data.length; i++) {
+                                body += '<tr>'
+                                body += '  <td style="width:60px;padding:0 5px 3px 0;">'+ data[i].user + '</td>'
+                                body += '  <td style="width:280px;padding:0 5px 3px 0;">' + data[i].comment + '</td>'
+                                body += '  <td style="width:120px;padding:0 5px 3px 0;">';
+                                body += data[i].ymd;
+                                
+                                if (data[i].me) {
+                                    addBtn = false;
+                                    body += ' <button type="button" class="btn btn-danger btn-xs" onclick="delComment('+ seq +',\''+ dataList.response.body.items.item[seq].contentId +'\');">삭제</button>'
+                                }
+                                body += '  </td>'
+                                body += '</tr>'
+                            }
+                            body += '</table>'
+                        }
+                    }
+
+                    comm = head
+                    if (addBtn) {
+                        var addcomm = '';
+
+                        addcomm += '<div class="input-group">'
+                        addcomm += '  <input type="text" name="comment" id="comment" class="form-control" placeholder="">'
+                        addcomm += '  <span class="input-group-btn">'
+                        addcomm += '   <button type="button" class="btn btn-success" onclick = "addComment(' + seq + ',\'' + dataList.response.body.items.item[seq].contentId + '\');">등록 </button>'
+                        addcomm += ' </span>'
+                        addcomm += '</div>'
+
+                        comm += addcomm;
+                    }
+                    comm += body;
+                    comm += '</div>';
+
+                    $("#divComments").html(comm);
+
+                },
+                error: function (data) {
+                    //alert("error: " + data.responseText);
+                }
+            });
+	}
+
+    function addComment(seq, contentid) {
+        $.ajax({
+            type: "post",
+            url: "/Camp/AddComment",
+            data: "contentid=" + contentid + "&comment="+ $("#comment").val(),
+            success: function (data) {
+
+                if (data != null) {
+                    //console.log(data);
+
+                    if (data.result == "True") {
+                        // 등록 성공
+                        getComment(seq);
+                            
+					}
+				}
+            }
+        });
+    }
+
+    function delComment(seq, contentid) {
+        $.ajax({
+            type: "post",
+            url: "/Camp/DelComment",
+            data: "contentid=" + contentid,
+            success: function (data) {
+
+                if (data != null) {
+                    //console.log(data);
+
+                    if (data.result == "True") {
+                        // 등록 성공
+                        getComment(seq);
+                            
+					}
+
+				}
+            }
+        });
+	}
+
+
+</script>
+
+    <div id="divSearch" style="margin:0 0 8px 0;text-align:left;">
+        <form class="form-inline">
+          <div class="form-group">
+            <div class="input-group">
+              <input type="text" autocomplete="off" class="form-control" id="keyword" placeholder="캠핑장 이름" style="border-radius:0px;" onfocus="javascript:recentKeyword();" >
+                 <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:showOption();">상세조건 +</button> 
+                    <button class="btn btn-success" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:searchCenter();">검색하기</button> 
+                    
+                </span> 
+            </div>
+          </div>
+        </form>
+    </div>
+
+    <div id="divMap" style="width:100%;height:250px;"></div>
+    
+    <div id="divCampList" style="margin-top: 25px;"></div>
+
+    <div id="divBottom" style="width:100%;height:100px;"></div>
+
+    <div id="fade" class="black_overlay" style="display:none;"></div>
+    <div id="light" class="white_content" style="width:100%;">
+		<div>
+			<div id="closeBtn" style="text-align:right; vertical-align:text-top;">
+				<a href="javascript:void(0)" onclick="closeDiv('light');">
+					<img src="/img/close_square.png" style="width:40px;height:40px;" />
+				</a>
+			</div>
+
+			<div style="color:blue;margin-left:45px;"></div>
+
+			<div id="divCampDtl" style="margin-left:10px;display:none;">
+
+				<div id="divTitle" style="width:100%;margin-top:15px;"></div>
+
+				<div id="divReserve" style="width:100%;margin-top:15px;"></div>
+
+				<div id="divImage" style="width:100%;margin-top:5px;"></div>
+
+				<div id="divDesc" style="width:100%;margin-top:15px;display:none;"></div>
+
+				<div id="divInfo" style="width:100%;margin-top:15px;"></div>
+
+				<div id="divBlogs" style="width:100%;margin-top:15px;"></div>
+
+                <div id="divComments" style="width:100%;margin-top:15px;"></div>
+
+                <div style="margin-bottom: 15px;"></div>
+
+			</div>
+
+		</div>
+    </div>
+
+
+    <div id="options">
+        <div style="margin: 10px 10px 10px 10px;">
+            <div class="panel panel-info">
+              <div class="panel-heading">운영형태</div>
+              <div class="panel-body">
+                  <input type="checkbox" name="facltDivNm" id="facltDivNm1" value="지자체"/><label for="facltDivNm1">지자체 </label>
+                  <input type="checkbox" name="facltDivNm" id="facltDivNm2" value="국립공원"/><label for="facltDivNm2"> 국립공원 </label>
+                  <input type="checkbox" name="facltDivNm" id="facltDivNm3" value="자연휴양림"/><label for="facltDivNm3"> 자연휴양림 </label>
+                  <input type="checkbox" name="facltDivNm" id="facltDivNm4" value="국민여가"/><label for="facltDivNm4"> 국민여가 </label>
+                  <input type="checkbox" name="facltDivNm" id="facltDivNm5" value="민간"/><label for="facltDivNm5"> 민간 </label>
+              </div>
+            </div>
+            
+            <div class="panel panel-info">
+              <div class="panel-heading">주요시설</div>
+              <div class="panel-body">
+                  <input type="checkbox" name="induty" id="induty1"  value="일반야영장"/><label for="induty1"> 일반야영장 </label>
+                  <input type="checkbox" name="induty" id="induty2"  value="자동차야영장"/><label for="induty2"> 자동차야영장 </label>
+                  <input type="checkbox" name="induty" id="induty3"  value="카라반"/><label for="induty3"> 카라반 </label>
+                  <input type="checkbox" name="induty" id="induty4"  value="글램핑"/><label for="induty4"> 글램핑 </label>
+              </div>
+            </div>
+
+            <div class="panel panel-info">
+              <div class="panel-heading">부대시설</div>
+              <div class="panel-body">
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl1"  value="전기"/><label for="sbrsCl1"> 전기 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl2"  value="무선인터넷"/><label for="sbrsCl2"> 와이파이 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl3"  value="트렘폴린"/><label for="sbrsCl3"> 트렘폴린 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl4"  value="물놀이장"/><label for="sbrsCl4"> 물놀이장 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl5"  value="놀이터"/><label for="sbrsCl5"> 놀이터 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl6"  value="산책로"/><label for="sbrsCl6"> 산책로 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl7"  value="운동장"/><label for="sbrsCl7"> 운동장 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl8"  value="운동시설"/><label for="sbrsCl8"> 운동시설 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl9"  value="마트.편의점"/><label for="sbrsCl9"> 마트.편의점 </label>
+                  <input type="checkbox" name="sbrsCl" id="sbrsCl10"  value="온수"/><label for="sbrsCl10"> 온수 </label>
+              </div>
+            </div>
+
+        </div>
+
+         <div class="form-group" style="margin: 50px 10px 10px 10px;">
+            <div class="input-group">
+                 <span class="input-group-btn">
+                     <button class="btn btn-success btn-block" type="button" onclick="javascript:searchCenter();">검색하기</button>
+                    <button class="btn btn-default btn-block" type="button" onclick="javascript:showOption();">닫기</button> 
+                </span> 
+            </div>
+          </div>
+
+    </div>
+
+
+    <div id="recentKeyword" onmouseout="javascript: closeDiv('recentKeyword');"></div>
+    
+
+
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+		    $("#fade").on("click", function () {
+                closeDiv("light");
+                closeDiv("options");
+		    });
+
+		    // esc 키가 눌러지면 레이어를 닫는다.
+		    $(document).keydown(function (event) {
+			    if (event.keyCode == 27 || event.which == 27) {
+                    closeDiv("light");
+                    closeDiv("options");
+			    }
+            });
+        });
+
+
+        function wrapWindowByMask() {
+		    //화면의 높이와 너비를 구한다.
+		    var maskHeight = $(document).height();
+		    var maskWidth = $(window).width();
+
+		    //마스크의 높이와 너비를 화면 것으로 만들어 전체 화면을 채운다.
+		    $('#fade').css({ 'width': maskWidth, 'height': maskHeight });
+	    }
+
+	    /// 화면의 중앙에 레이어띄움
+	    function showDiv(objId) {
+		    wrapWindowByMask();
+
+		    $("#" +objId).css("position", "absolute");
+		    $("#" +objId).css("top", "80px");
+		    $("#" +objId).css("left", Math.max(0, (($(window).width() - $("#light").outerWidth()) / 2) + $(window).scrollLeft())  + "px");
+
+		    $('#fade').show();
+		    $("#" +objId).show();
+	    }
+
+	    function closeDiv(objId) {
+		    $('#fade').hide();
+		    $("#" +objId).hide();
+	    }
+
+
+    </script>
+
+    

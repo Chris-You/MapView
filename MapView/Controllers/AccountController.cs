@@ -84,6 +84,10 @@ namespace MapView.Controllers
             {
                 return "~/Camp/Index";
             }
+            else if (path.ToLower() == "festival")
+            {
+                return "~/festival/Index";
+            }
             else
             {
                 return "~/Charger/Index";

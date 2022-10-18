@@ -7,6 +7,11 @@
 		layout = "~/Views/Shared/_Layout.cshtml";
 		
 	}
+	else if (controller.ToLower() == "festival")
+	{
+		layout = "~/Views/Shared/_LayoutFestival.cshtml";
+		
+	}
 	else
 	{
 		layout = "~/Views/Shared/_LayoutCharger.cshtml";
