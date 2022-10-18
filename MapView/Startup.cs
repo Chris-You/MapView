@@ -119,7 +119,7 @@ namespace MapView
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Camp}/{action=Index}/{id?}");
+                    pattern: "{controller=charger}/{action=Index}/{id?}");
             });
         }
     }
