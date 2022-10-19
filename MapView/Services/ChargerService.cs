@@ -17,7 +17,7 @@ using MapView.Util;
 using Microsoft.Extensions.Options;
 using MapView.Models.CustomSettings;
 using System.Reflection;
-
+using MapView.Database;
 
 namespace MapView.Services
 {
@@ -56,8 +56,8 @@ namespace MapView.Services
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly IHttpClientFactory _clientFactory;
         private readonly IOptions<ChargerCode> _chargerConfig;
-        private readonly RedisService _redis;
-        private readonly MongoDBService _mongoDB;
+        private readonly Redis _redis;
+        private readonly Mongo _mongoDB;
 
         public ChargerService(IConfiguration configuration, IWebHostEnvironment hostingEnvironment, IHttpClientFactory clientFactory,
                              IOptions<ChargerCode> chargerConfig)
@@ -68,14 +68,14 @@ namespace MapView.Services
             _chargerConfig = chargerConfig;
 
 
-            _redis = new RedisService(
+            _redis = new Redis(
                             _configuration.GetSection("REDIS:SERVER").Value.ToString(),
                             _configuration.GetSection("REDIS:PORT").Value.ToString(),
                             _configuration.GetSection("REDIS:PASSWORD").Value.ToString(),
                             _configuration.GetSection("REDIS:CHARGER_DB_IDX").Value.ToString());
 
 
-            _mongoDB = new MongoDBService(_configuration.GetSection("MONGODB:SERVER").Value.ToString(),
+            _mongoDB = new Mongo(_configuration.GetSection("MONGODB:SERVER").Value.ToString(),
                             _configuration.GetSection("MONGODB:PORT").Value.ToString(),
                             _configuration.GetSection("MONGODB:DB_NAME").Value.ToString());
 

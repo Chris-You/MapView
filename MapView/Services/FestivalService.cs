@@ -15,6 +15,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using MapView.Util;
 using StackExchange.Redis;
+using MapView.Database;
 
 namespace MapView.Services
 {
@@ -52,7 +53,7 @@ namespace MapView.Services
         private string _clientSecret = string.Empty;
         private string _searechBlogUrl = string.Empty;
 
-        private readonly RedisService _redis;
+        private readonly Redis _redis;
 
         public FestivalService(IConfiguration configuration, IWebHostEnvironment hostingEnvironment, IHttpClientFactory clientFactory)
         {
@@ -63,7 +64,7 @@ namespace MapView.Services
             _clientId = _configuration.GetSection("OPENAPI:NAVER_CLIENT_ID").Value;
             _clientSecret = _configuration.GetSection("OPENAPI:NAVER_CLIENT_SECRET").Value;
 
-            _redis = new RedisService(
+            _redis = new Redis(
                             _configuration.GetSection("REDIS:SERVER").Value.ToString(),
                             _configuration.GetSection("REDIS:PORT").Value.ToString(),
                             _configuration.GetSection("REDIS:PASSWORD").Value.ToString());

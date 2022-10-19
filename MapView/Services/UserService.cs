@@ -15,6 +15,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Hosting;
 using System.Text;
+using MapView.Database;
 
 namespace MapView.Services
 {
@@ -33,19 +34,19 @@ namespace MapView.Services
     public class UserService : IUserService
     {
         private readonly IConfiguration _configuration;
-        private readonly RedisService _redis;
-        private readonly MongoDBService _mongoDB;
+        private readonly Redis _redis;
+        private readonly Mongo _mongoDB;
 
         public UserService(IConfiguration configuration)
         {
             _configuration = configuration;
 
-            _redis = new RedisService(
+            _redis = new Redis(
                            _configuration.GetSection("REDIS:SERVER").Value.ToString(),
                            _configuration.GetSection("REDIS:PORT").Value.ToString(),
                            _configuration.GetSection("REDIS:PASSWORD").Value.ToString());
 
-            _mongoDB = new MongoDBService(_configuration.GetSection("MONGODB:SERVER").Value.ToString(),
+            _mongoDB = new Mongo(_configuration.GetSection("MONGODB:SERVER").Value.ToString(),
                             _configuration.GetSection("MONGODB:PORT").Value.ToString(),
                             _configuration.GetSection("MONGODB:DB_NAME").Value.ToString());
         }

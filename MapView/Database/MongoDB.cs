@@ -7,14 +7,14 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using MapView.Models.Charger;
 
-namespace MapView.Services
+namespace MapView.Database
 {
-    public class MongoDBService
+    public class Mongo
     {
         private IMongoDatabase db;
         private MongoClient dbClient;
 
-        public MongoDBService(string host, string port, string dbName)
+        public Mongo(string host, string port, string dbName)
         {
             dbClient = new MongoClient("mongodb://" + host + ":" + port);
             db = dbClient.GetDatabase(dbName);
@@ -27,9 +27,9 @@ namespace MapView.Services
         }
 
 
-        public List<ChargerComment> CommentList(string docName)
+        public List<ChargerComment> CommentList(string collection)
         {
-            var comments = db.GetCollection<ChargerComment>(docName);
+            var comments = db.GetCollection<ChargerComment>(collection);
             
             var docs = comments.Find(new BsonDocument()).ToList();
             if (docs.Count > 0)
@@ -39,9 +39,9 @@ namespace MapView.Services
                 return null;
         }
 
-        public List<ChargerComment> CommentList(string docName, string statId)
+        public List<ChargerComment> CommentList(string collection, string statId)
         {
-            var comments = db.GetCollection<ChargerComment>(docName);
+            var comments = db.GetCollection<ChargerComment>(collection);
 
             var builder = Builders<ChargerComment>.Filter;
             var filter = builder.Eq("statId", statId);
@@ -56,9 +56,9 @@ namespace MapView.Services
 
 
 
-        public ChargerComment GetComment(ChargerComment comment, string docName)
+        public ChargerComment GetComment(ChargerComment comment, string collection)
         {
-            var comments = db.GetCollection<ChargerComment>(docName);
+            var comments = db.GetCollection<ChargerComment>(collection);
             var builder = Builders<ChargerComment>.Filter;
             var filter = builder.Eq("user", comment.user) & builder.Eq("statId", comment.statId);
 
@@ -72,15 +72,15 @@ namespace MapView.Services
         }
 
 
-        public void InsComment (ChargerComment comment, string docName)
+        public void InsComment (ChargerComment comment, string collection)
         {
-            var document = db.GetCollection<ChargerComment>(docName);
+            var document = db.GetCollection<ChargerComment>(collection);
             document.InsertOne(comment);
         }
 
-        public bool DelComment(ChargerComment comment, string docName)
+        public bool DelComment(ChargerComment comment, string collection)
         {
-            var comments = db.GetCollection<ChargerComment>(docName);
+            var comments = db.GetCollection<ChargerComment>(collection);
             var builder = Builders<ChargerComment>.Filter;
             var filter = builder.Eq("user", comment.user) & builder.Eq("statId", comment.statId);
 
@@ -101,9 +101,9 @@ namespace MapView.Services
 
 
 
-        public List<T> DataList<T>(string docName)
+        public List<T> DataList<T>(string collection)
         {
-            var comments = db.GetCollection<T>(docName);
+            var comments = db.GetCollection<T>(collection);
 
             var docs = comments.Find(new BsonDocument()).ToList();
             if (docs.Count > 0)
@@ -112,9 +112,9 @@ namespace MapView.Services
                 return null;
         }
 
-        public List<T> DataListByStatId<T>(string docName, string statId)
+        public List<T> DataListByStatId<T>(string collection, string statId)
         {
-            var comments = db.GetCollection<T>(docName);
+            var comments = db.GetCollection<T>(collection);
 
             var builder = Builders<T>.Filter;
             var filter = builder.Eq("statId", statId);
@@ -127,14 +127,14 @@ namespace MapView.Services
                 return null;
         }
 
-        public List<T> DataListByUser<T>(string docName, string userid)
+        public List<T> DataListByUser<T>(string collection, string userid)
         {
-            var comments = db.GetCollection<T>(docName);
+            var doc = db.GetCollection<T>(collection);
 
             var builder = Builders<T>.Filter;
             var filter = builder.Eq("user", userid);
 
-            var docs = comments.Find(filter).ToList();
+            var docs = doc.Find(filter).ToList();
             if (docs.Count > 0)
                 return docs;
 
@@ -143,13 +143,13 @@ namespace MapView.Services
         }
 
 
-        public T GetData<T>(string user, string statId, string docName)
+        public T GetData<T>(string user, string statId, string collection)
         {
-            var comments = db.GetCollection<T>(docName);
+            var doc = db.GetCollection<T>(collection);
             var builder = Builders<T>.Filter;
             var filter = builder.Eq("user", user) & builder.Eq("statId", statId);
 
-            var docs = comments.Find(filter).ToList();
+            var docs = doc.Find(filter).ToList();
             if (docs.Count > 0)
                 return docs.FirstOrDefault();
 
@@ -158,19 +158,19 @@ namespace MapView.Services
 
         }
 
-        public void InsData<T>(T data, string docName)
+        public void InsData<T>(T data, string collection)
         {
-            var document = db.GetCollection<T>(docName);
+            var document = db.GetCollection<T>(collection);
             document.InsertOne(data);
         }
 
-        public bool DelData<T>(string user, string statId, string docName)
+        public bool DelData<T>(string user, string statId, string collection)
         {
-            var comments = db.GetCollection<T>(docName);
+            var doc = db.GetCollection<T>(collection);
             var builder = Builders<T>.Filter;
             var filter = builder.Eq("user", user) & builder.Eq("statId", statId);
 
-            var del = comments.DeleteOne(filter);
+            var del = doc.DeleteOne(filter);
 
             if (del.DeletedCount > 0)
             {

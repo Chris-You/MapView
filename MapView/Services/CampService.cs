@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.IO;
 using MapView.Models;
+using MapView.Database;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
@@ -51,7 +52,7 @@ namespace MapView.Services
         private string _clientSecret = string.Empty;
         private string _searechBlogUrl = string.Empty;
 
-        private readonly RedisService _redis;
+        private readonly Redis _redis;
 
         public CampService(IConfiguration configuration, IWebHostEnvironment hostingEnvironment, IHttpClientFactory clientFactory)
         {
@@ -63,7 +64,7 @@ namespace MapView.Services
             _clientSecret = _configuration.GetSection("OPENAPI:NAVER_CLIENT_SECRET").Value;
             _searechBlogUrl = _configuration.GetSection("OPENAPI:NAVER_SEARCH_BLOG_URL").Value;
 
-            _redis = new RedisService(
+            _redis = new Redis(
                             _configuration.GetSection("REDIS:SERVER").Value.ToString(),
                             _configuration.GetSection("REDIS:PORT").Value.ToString(),
                             _configuration.GetSection("REDIS:PASSWORD").Value.ToString());

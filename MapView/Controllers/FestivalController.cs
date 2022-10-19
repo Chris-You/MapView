@@ -54,10 +54,5 @@ namespace MapView.Controllers
             return new JsonResult(response);
         }
 
-
-
-
-
-
     }
 }

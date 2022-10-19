@@ -71,8 +71,13 @@ namespace MapView.Controllers
 
             _chargerService.MakeFile(req);
 
+            var json = new
+            {
+                result = "ok",
+            };
 
-            return new JsonResult(req);
+
+            return new JsonResult(json);
         }
 
         /// <summary>
@@ -110,7 +115,12 @@ namespace MapView.Controllers
                 var list = _chargerService.MakeRedisCache(req);
             }
 
-            return new JsonResult(req);
+            var json = new
+            {
+                result = "ok",
+            };
+
+            return new JsonResult(json);
         }
 
 

@@ -33,7 +33,7 @@ namespace MapView.Controllers
         public IActionResult Login(string? path)
         {
 
-            ViewBag.LoginPath = path?? "camp";
+            ViewBag.LoginPath = path?? "charger";
 
             return View();
         }
@@ -65,7 +65,8 @@ namespace MapView.Controllers
                         Sns = "naver",
                         Id = profile.response.id,
                         Name = profile.response.name,
-                        Email = profile.response.email
+                        Email = profile.response.email,
+                        Path = path
                     };
 
                     // 로그인 성ㅅ공
@@ -82,7 +83,7 @@ namespace MapView.Controllers
         {
             if(path.ToLower() == "camp")
             {
-                return "~/Camp/Index";
+                return "~/camp/Index";
             }
             else if (path.ToLower() == "festival")
             {
@@ -90,7 +91,7 @@ namespace MapView.Controllers
             }
             else
             {
-                return "~/Charger/Index";
+                return "~/charger/Index";
             }
         }
 
@@ -104,6 +105,7 @@ namespace MapView.Controllers
                 Id = id,
                 Name = name,
                 Email = email
+
             };
 
             // 로그인 성공
@@ -141,7 +143,9 @@ namespace MapView.Controllers
                         Sns = "kakao",
                         Id = profile.id,
                         Name = profile.kakao_account.name != null ? profile.kakao_account.name : profile.kakao_account.profile.nickname,
-                        Email = profile.kakao_account.email_needs_agreement ? profile.kakao_account.email : ""
+                        Email = profile.kakao_account.email_needs_agreement ? profile.kakao_account.email : "",
+                        Path = state.Split(":")[1]
+
                     };
 
                     // 로그인 성ㅅ공
@@ -180,7 +184,7 @@ namespace MapView.Controllers
             }
             else
             {
-                ViewBag.LoginPath = path ?? "camp";
+                ViewBag.LoginPath = path ?? "charger";
 
                 return View();
             }
