@@ -132,7 +132,14 @@ namespace MapView.Services
 
                 if (resp.response.body.items != null && resp.response.body.items.Count() > 0)
                 {
-                    arr.Add(resp.response.body.items);
+                    if (string.IsNullOrEmpty(req.keyword) == false)
+                    {
+                        arr.Add(resp.response.body.items.Where(w => w.fstvlNm.IndexOf(req.keyword) >= 0).ToList());
+                    }
+                    else
+                    {
+                        arr.Add(resp.response.body.items);
+                    }
                 }
             });
             
@@ -148,12 +155,12 @@ namespace MapView.Services
                                                 Convert.ToInt32(w.fstvlStartDate.Replace("-", "")) <= dt2)).ToList();
             }
 
-            Random rand = new Random();
-            var shuffled = item.OrderBy(o => rand.Next()).ToList();
+            //Random rand = new Random();
+            //var shuffled = item.OrderBy(o => rand.Next()).ToList();
 
             model.response.header.resultCode = "00";
             model.response.header.resultMsg = "OK";
-            model.response.body.items = shuffled;
+            model.response.body.items = item.OrderBy(o => o.fstvlNm).ToList();
             model.response.body.numOfRows = item.Count();
             model.response.body.totalCount = item.Count();
             model.response.body.pageNo = 1;

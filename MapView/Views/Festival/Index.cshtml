@@ -11,6 +11,18 @@
 
 <style type="text/css">
 
+	.gridcontainer {
+		display: grid;
+		grid-template-columns: 120px 270px;
+		grid-template-rows: 60px 30px 30px 30px 30px 30px;
+	}
+
+	.gridtitle {
+		font-weight: bold;
+		text-align: left;
+		margin: 0 10px 0 15px;
+	}
+
 	.non-visiable {
 		display: none;
 	}
@@ -149,15 +161,11 @@
 
 
     function ajax(latlng) {
-
-        let facltDivNm = [];
-        let induty = [];
-        let sbrsCl = [];
-
-        
+       
         var url = "/Festival/Search";
         
         var data = {
+            "keyword": $("#keyword").val(),
         };
 
         //$("#divCampList").empty();
@@ -206,7 +214,7 @@
     function setMap(lat, lng) {
         var mapOptions = {
             center: new naver.maps.LatLng(lat, lng),
-            zoom: 7,
+            zoom: 8,
             //scaleControl: false,
             logoControl: false,
             //mapDataControl: false,
@@ -264,7 +272,8 @@
         markers.push(marker);
 
         var infoWindow = new naver.maps.InfoWindow({
-            content: '<div style="width:150px;text-align:center;padding:10px;" onclick="closeInfo('+ seq +')"> <b>'+ facltNm +'</b></div>'
+            content: '<div style="width:250px;"><div style="padding:10px;" onclick="closeInfo(' + seq + ')"> <b>' + facltNm + '</b><div>' +
+                     '<div> 기간 : '+ dataList.response.body.items[seq].fstvlStartDate +' ~ ' + dataList.response.body.items[seq].fstvlEndDate + '</div></div>'
         });
 
         infoWindows.push(infoWindow);
@@ -299,71 +308,10 @@
             infoWindow.open(map, marker);
         }
 
-        setCampDetail(seq);
+        setDetail(seq);
 	}
 
-    function getImages(seq) {
-
-        var imgHtml = "";
-            $("#divImage").show();
-            $("#divImage").html("<div style='text-align:center;'><img src='/img/loading.gif'/></div>");
-
-        $.ajax({
-                type: "post",
-                url: "/Camp/SearchImage",
-                data: "contentId=" + dataList.response.body.items.item[seq].contentId,
-                success: function (data) {
-
-                    //$("#divImage").empty();
-
-                    if (data.response != null) {
-                        if (data.response.body.items != null) {
-                            if (data.response.body.items.item.length > 0) {
-
-                                imgHtml += '<div class="slider-img">';
-                                //imgHtml += '<div class="swiper-wrapper">';
-
-                                for (var i = 0; i < data.response.body.items.item.length; i++) {
-                                    //console.log(data.response.body.items.item[i]);
-                                    imgHtml += '<div class="swiper-slide"><a href="javascript:showImg(\'' + data.response.body.items.item[i].imageUrlOri + '\');"><img src="' + data.response.body.items.item[i].imageUrl + '" style="width:100%; height:300px;" /></a></div>'
-                                }
-
-                                imgHtml += '</div>';
-                                //imgHtml += '<div class="swiper-pagination"></div>';
-                                //imgHtml += '</div>';
-
-                                imgHtml += '<hr style="height:5px;"/>';
-                            }
-                            else {
-                                imgHtml = "<img src='/img/no_image.png' />";
-
-                                $("#divImage").hide();
-
-							}
-
-                            $("#divImage").html(imgHtml);
-
-                            slides();
-                        }
-                        else {
-                            $("#divImage").html("<img src='/img/no_image.png' />");
-                            $("#divImage").hide();
-                        }
-
-                    }
-                    else {
-                        $("#divImage").html("<img src='/img/no_image.png' />");
-                        $("#divImage").hide();
-					}
-                    
-                },
-                error: function (data) {
-                    //alert("error: " + data.responseText);
-                    $("#divImage").html("<img src='/img/no_image.png' />");
-                    $("#divImage").hide();
-                }
-            });
-	}
+    
 
     function slides() {
          
@@ -381,93 +329,53 @@
 
 	}
 
-    function showImg(url) {
-        window.open(url);
-        //console.log(url);
-    }
 
-    function like(seq) {
 
-        var likeVal = $("#btnLike").attr("data-value");
-        // 현재 좋아요 이면 true, 아니면 false
+    function setDetail(seq) {
+
+        var itemList = dataList.response.body.items[seq];
         
-        $.ajax({
-            type: "post",
-            url: "/Camp/like",
-            data: "contentid=" + dataList.response.body.items.item[seq].contentId + "&isLike="+ likeVal,
-            success: function (data) {
-
-                if (data != null) {
-                    //console.log(data);
-
-                    if (data.result == "True") {
-                        // 등록 성공
-                        //getComment(seq);
-
-                        if (likeVal == "true") {
-                                
-                            $("#btnLike").attr("src", "/img/icon/icons8-heart-50.png")
-                            $("#btnLike").attr("data-value", "false");
-                        }
-                        else {
-                            $("#btnLike").attr("src", "/img/icon/icons8-heartfull-50.png")
-                            $("#btnLike").attr("data-value", "true");
-		                }
-					}
-				}
-            }
-        });
-    }
-
-    function isLike(seq) {
-        //
-        
-        $.ajax({
-            type: "post",
-            url: "/Camp/IsLike",
-            data: "contentid=" + dataList.response.body.items.item[seq].contentId,
-            success: function (data) {
-
-                if (data != null) {
-                    if (data.result == "True") {
-                        // 등록 성공
-                        $("#btnLike").attr("src", "/img/icon/icons8-heartfull-50.png")
-                        $("#btnLike").attr("data-value", "true");
-					}
-				}
-            }
-        });
-	}
-
-
-    function setCampDetail(seq) {
-
-        
-        map.setCenter(new naver.maps.LatLng(dataList.response.body.items.item[seq].mapY, dataList.response.body.items.item[seq].mapX));
+        map.setCenter(new naver.maps.LatLng(itemList.latitude, itemList.longitude));
 
         //console.log(dataList.response.body.items.item[seq]);
 
         //$("#divCampList").hide();   // 상세 선택시 리스트 비노출
-        $("#divCampDtl").show();
-        showDiv("light");
-
-        var title = ""
-        title += "<p>■ <b>" + dataList.response.body.items.item[seq].facltNm + "</b> (" + dataList.response.body.items.item[seq].facltDivNm + ")"
-
-        // 회원이면 좋아요 버튼 노출
-        title += '<img id="btnLike" src="/img/icon/icons8-heart-50.png" data-value="false" alt="like it" style="margin-left:15px;width:25px;" onclick="javascript:like('+ seq +');"/>';
-        title += "</p>";
-
-        title += "<p> - " + dataList.response.body.items.item[seq].addr1 + " " + dataList.response.body.items.item[seq].addr2 + "</p>"
-        if (dataList.response.body.items.item[seq].lineIntro != "") {
-            title += "<p> - " + dataList.response.body.items.item[seq].lineIntro + "</p>"
-        }
-
+        $("#divFestivalDtl").show();
         
+        
+         var title = "<p>■ <b>" + itemList.fstvlNm + "</b>";
+        title += '<img id="btnLike" src="/img/icon/icons8-heart-50.png" data-value="false" alt="favor it" style="margin-left:15px;width:25px;" onclick="javascript:favor(\''+ itemList.fstvlNm +'\',\''+ itemList.fstvlStartDate +'\');"/>';
+        title += "</p>";
+        title += "<p>"+ itemList.fstvlCo + "</p>";
 
         title += "<hr style='height:5px;'/>";
-        $("#divTitle").html(title);
 
+        title += "<div class='gridcontainer'>";
+
+        var addr = "";
+        if (itemList.rdnmadr != "") {
+            addr = itemList.rdnmadr;
+        }
+        else if (itemList.lnmadr != "") {
+            addr = itemList.lnmadr;
+        }
+
+        title += "<div class='gridtitle' >- 주소</div><div><span id='address'  data-clipboard-text=\"" + addr + "\" > " + addr + "</span>";
+
+        if (itemList.opar != "" && itemList.opar != "null" ) {
+            title += "<br /> (" + itemList.opar + ")"
+        }
+        title += "</div>"
+
+        title += "<div class='gridtitle' >- 기간</div><div> " + itemList.fstvlStartDate + " ~ " + itemList.fstvlEndDate + "</div>";
+        title += "<div class='gridtitle' >- 전화번호</div><div><a href='tel:" + itemList.phoneNumber + "'>" + itemList.phoneNumber + "</a></div>";
+        title += "<div class='gridtitle' >- 홈페이지</div><div><a href='" + itemList.homepageUrl + "' target='_blank'> " + itemList.homepageUrl + "</a></div>";
+        title += "<div class='gridtitle' >- 주관기관</div><div> " + itemList.mnnst + "</div>";
+        title += "<div class='gridtitle' >- 주최기관</div><div> " + itemList.auspcInstt + "</div>";
+        title += "<div class='gridtitle' >- 후원기관</div><div> " + itemList.suprtInstt + "</div>";
+        title += "<hr style='height:5px;'/>";
+        
+        /*
         var reserve = "<p>■ <b>예약 문의</b></p>"
         if (dataList.response.body.items.item[seq].tel != "") {
             reserve += "<p> - 전화번호 : <a href='tel:" + dataList.response.body.items.item[seq].tel + "'>" + dataList.response.body.items.item[seq].tel + "</a><br></p>";
@@ -500,36 +408,6 @@
         info += '<p>■ <b>시설 및 운영정보</b></p>';
         //info += '<p>' + dataList.response.body.items.item[seq].induty + '</p>';
 
-
-        // 업종및 사이트 수
-        /*
-        var cn1 = Number(dataList.response.body.items.item[seq].gnrlSiteCo);
-        var cn2 = Number(dataList.response.body.items.item[seq].autoSiteCo);
-        var cn3 = Number(dataList.response.body.items.item[seq].glampSiteCo);
-        var cn4 = Number(dataList.response.body.items.item[seq].caravSiteCo);
-
-        var str1 = (cn1 > 0 ? " (" + cn1 + "면)" : "");
-        var str2 = (cn2 > 0 ? " (" + cn2 + "면)" : "");
-        var str3 = (cn3 > 0 ? " (" + cn3 + "면)" : "");
-        var str4 = (cn4 > 0 ? " (" + cn4 + "면)" : "");
-        var sum = cn1 + cn2 + cn3 + cn4;
-        //var sumStr = sum > 0 ? "(사이트 수)" : "";
-
-        info += "<p> - 주요시설 ";
-
-        for (var i = 0; i < induty.length; i++) {
-
-            if (induty[i] == "일반야영장") 
-                info += ' <div class="col-xs-6">일반야영장'+ str1+ '</div>'
-            else if (induty[i] == "자동차야영장") 
-                info += ' <div class="col-xs-6">자동차야영장'+ str2 +'</div>'
-            else if (induty[i] == "글램핑") 
-                info += ' <div class="col-xs-6">글램핑'+ str3 +'</div>'
-            else if (induty[i] == "카라반") 
-                info += ' <div class="col-xs-6">카라반'+ str4 +'</div>'
-		}
-        info += "<br></p>";
-        */
 
         info += "<p> - 주요시설 : " + dataList.response.body.items.item[seq].induty + "<br></p>";
         info += "<p> - 애완동물 동반 : " + dataList.response.body.items.item[seq].animalCmgCl + "<br></p>";
@@ -571,16 +449,13 @@
         
         info += '<hr style="height:5px;"/>';
 
-        $("#divInfo").html(info);
+
+        */
+
+        $("#divFestivalDtl").html(title);
 
 
-        isLike(seq);
-
-        getImages(seq);
-
-        getBlogs(seq);
-
-        getComment(seq);
+      
 
 
     }
@@ -851,9 +726,9 @@
         <form class="form-inline">
           <div class="form-group">
             <div class="input-group">
-              <input type="text" autocomplete="off" class="form-control" id="keyword" placeholder="캠핑장 이름" style="border-radius:0px;" onfocus="javascript:recentKeyword();" >
+              <input type="text" autocomplete="off" class="form-control" id="keyword" placeholder="축제명 검색" style="border-radius:0px;" >
                  <span class="input-group-btn">
-                    <button class="btn btn-default" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:showOption();">상세조건 +</button> 
+                    <!--<button class="btn btn-default" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:showOption();">상세조건 +</button> -->
                     <button class="btn btn-success" type="button" style="border-radius:0px;margin-left:5px;" onclick="javascript:searchCenter();">검색하기</button> 
                     
                 </span> 
@@ -862,45 +737,17 @@
         </form>
     </div>
 
-    <div id="divMap" style="width:100%;height:250px;"></div>
+    <div id="divMap" style="width:100%;height:370px;"></div>
     
-    <div id="divCampList" style="margin-top: 25px;"></div>
+
+    <div id="divFestivalDtl" style="margin-top: 25px;"></div>
+
+    <div id="divFavorList" style="margin-top: 25px;"></div>
+
+    <div id="divComment" style="margin-top:25px;width:100%;"></div>
 
     <div id="divBottom" style="width:100%;height:100px;"></div>
 
-    <div id="fade" class="black_overlay" style="display:none;"></div>
-    <div id="light" class="white_content" style="width:100%;">
-		<div>
-			<div id="closeBtn" style="text-align:right; vertical-align:text-top;">
-				<a href="javascript:void(0)" onclick="closeDiv('light');">
-					<img src="/img/close_square.png" style="width:40px;height:40px;" />
-				</a>
-			</div>
-
-			<div style="color:blue;margin-left:45px;"></div>
-
-			<div id="divCampDtl" style="margin-left:10px;display:none;">
-
-				<div id="divTitle" style="width:100%;margin-top:15px;"></div>
-
-				<div id="divReserve" style="width:100%;margin-top:15px;"></div>
-
-				<div id="divImage" style="width:100%;margin-top:5px;"></div>
-
-				<div id="divDesc" style="width:100%;margin-top:15px;display:none;"></div>
-
-				<div id="divInfo" style="width:100%;margin-top:15px;"></div>
-
-				<div id="divBlogs" style="width:100%;margin-top:15px;"></div>
-
-                <div id="divComments" style="width:100%;margin-top:15px;"></div>
-
-                <div style="margin-bottom: 15px;"></div>
-
-			</div>
-
-		</div>
-    </div>
 
 
     <div id="options">
@@ -955,9 +802,6 @@
 
     </div>
 
-
-    <div id="recentKeyword" onmouseout="javascript: closeDiv('recentKeyword');"></div>
-    
 
 
     <script type="text/javascript">

@@ -19,6 +19,8 @@ namespace MapView.Models
         
         public string latitude { get; set; }
         public string longitude { get; set; }
+
+        public string keyword { get; set; }
     }
 
 

@@ -75,9 +75,7 @@ namespace MapView.Controllers
         }
 
 
-
-
-        
+        [HttpPost]
         public IActionResult GetImages(CampReqModel req)
         {
             CampReqModel model = new CampReqModel
