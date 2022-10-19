@@ -1,0 +1,29 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+
+    var controller = Context.Request.RouteValues["Controller"].ToString();
+
+}
+
+
+    <div class="side-menu" id="side-menu">
+        
+        <div class="side-menu-title">
+        메뉴
+        </div>
+        
+        <ul>
+            <li><a href="/camp">캠핑장 찿기</a></li>
+            <li><a href="/charger">EV충전소 찿기</a></li>
+            <li><a href="/festival">지역축제 찿기</a></li>
+            <li><a href="/Account/FAQ?path=@controller">건의하기</a></li>
+            <!--<li>슬라이드 메뉴</li>
+            <li>슬라이드 메뉴</li>
+            <li>슬라이드 메뉴</li>
+            <li>슬라이드 메뉴</li>-->
+        </ul>
+    </div>
+
+

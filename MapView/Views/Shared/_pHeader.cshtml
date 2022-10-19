@@ -1,0 +1,20 @@
+﻿@using MapView.Util;
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+	var controller = Context.Request.RouteValues["Controller"].ToString();
+	var title = Helper.GetTitle(controller);
+}
+        <div class="head">
+            <div class="side-open" id="side-open" style="float:left;">
+                <span class="burgur" id="burgur">
+                    <span class="top-line"></span>
+                    <span class="bot-line"></span>
+                </span>
+            </div>
+      
+            <div class="logo"><span onclick="javascript: goPage('/@controller');">@title</span></div>
+
+            <partial name="_pLogin.cshtml" />
+        </div>

@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -12,7 +14,7 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="~/css/site_charger.css">
+    <link rel="stylesheet" href="~/css/site_festival.css">
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
@@ -100,7 +102,7 @@
 
     <footer class="border-top footer text-muted">
 
-        <partial name="_footerPartial.cshtml" />
+        <partial name="_pFooter.cshtml" />
 
          @{
              //await Html.PartialAsync("_footerPartial");
@@ -119,22 +121,7 @@
     </footer>
 
     
-    <div class="side-menu" id="side-menu">
-        
-        <div class="side-menu-title">
-        메뉴
-        </div>
-        
-        <ul>
-            <li><a href="/camp">캠핑장 찿기</a></li>
-            <li><a href="/charger">EV충전소 찿기</a></li>
-            <li><a href="/Account/FAQ?path=festival">건의하기</a></li>
-            <!--<li>슬라이드 메뉴</li>
-            <li>슬라이드 메뉴</li>
-            <li>슬라이드 메뉴</li>
-            <li>슬라이드 메뉴</li>-->
-        </ul>
-    </div>
+    <partial name="_pSideMenu.cshtml" />
 
 </div>
 

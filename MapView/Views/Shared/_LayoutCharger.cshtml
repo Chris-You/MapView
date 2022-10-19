@@ -70,25 +70,13 @@
       
             <div class="logo"><span onclick="javascript: goPage('/Charger');">EV충전소</span></div>
 
-            <div class="login">
-            @if (User.Identity.IsAuthenticated)
-			{
-                    
-                @if (User.Claims.Any(x => x.Type == "name"))
-				{
-                    <span style="font-size:12px;">
-                    @string.Format("{0}님", User.Claims.FirstOrDefault(x => x.Type == "name").Value)
-                    </span>
-				}
-                <span style="font-size:16px;"><a href="/Account/Logout?path=charger"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span></a></span>
-			}
-			else
-			{
-                <span style="font-size:16px;"><a href="/Account/Login?path=charger"><span class="glyphicon glyphicon-log-in" aria-hidden="true"></span></a></span>
-			}
 
-            </div>
-            
+            <partial name="_pHeader.cshtml" />
+
+
+            <partial name="_pFooter.cshtml" />
+
+
         </div>
         
         <div class="body">
@@ -100,7 +88,7 @@
 
     <footer class="border-top footer text-muted">
 
-        <partial name="_footerPartial.cshtml" />
+        <partial name="_pFooter.cshtml" />
 
          @{
              //await Html.PartialAsync("_footerPartial");
@@ -119,22 +107,7 @@
     </footer>
 
     
-    <div class="side-menu" id="side-menu">
-        
-        <div class="side-menu-title">
-        메뉴
-        </div>
-        
-        <ul>
-            <li><a href="/camp">캠핑장 찿기</a></li>
-            <li><a href="/festival">지역축제 찿기</a></li>
-            <li><a href="/Account/FAQ?path=charger">건의하기</a></li>
-            <!--<li>슬라이드 메뉴</li>
-            <li>슬라이드 메뉴</li>
-            <li>슬라이드 메뉴</li>
-            <li>슬라이드 메뉴</li>-->
-        </ul>
-    </div>
+    <partial name="_pSideMenu.cshtml" />
 
 </div>
 

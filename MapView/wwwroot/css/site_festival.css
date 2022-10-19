@@ -8,9 +8,11 @@ a.navbar-brand {
 }
 
 /* Provide sufficient contrast against white background */
+
 a {
   color: #0366d6;
 }
+
 
 .btn-primary {
   color: #fff;
@@ -68,8 +70,8 @@ body {
     bottom: 0;
     width: 100%;
     white-space: nowrap;
-    line-height: 35px; /* Vertically center the text there */
-    background-color: #5e9cf2;
+    line-height: 40px; /* Vertically center the text there */
+    background-color: #f5a35b;
 }
 
 
@@ -79,7 +81,7 @@ body {
     left: 0;
     height: 50px;
     width: 100%;
-    background-color: #5e9cf2;
+    background-color: #f5a35b;
     z-index: 9999;
 }
 
@@ -89,7 +91,6 @@ main {
 
 
 .black_overlay {
-    display: none;
     position: absolute;
     top: 0%;
     left: 0%;
@@ -195,7 +196,7 @@ main {
     left: 0;
     height: 50px;
     width: 100%;
-    background-color: #5e9cf2;
+    background-color: #f5a35b;
     z-index: 9999;
     display: flex;
     justify-content: space-between;

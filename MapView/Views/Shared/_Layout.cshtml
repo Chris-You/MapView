@@ -1,4 +1,13 @@
-﻿<!DOCTYPE html>
+﻿@using MapView.Util;
+@{ 
+	var controller = Context.Request.RouteValues["Controller"].ToString();
+    var title = Helper.GetTitle(controller);
+
+	ViewData["Title"] = "맵뷰:" + title;
+}
+
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -6,11 +15,13 @@
 
     <meta name ="google-signin-client_id" content="1061916295015-dcb9sn0767gmk7md8i0hsss0lplbgd4k.apps.googleusercontent.com">
 
-    <title>@ViewData["Title"] 캠핑장 찾기</title>
+    <title>@ViewData["Title"]</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="~/css/site.css">
+
+    @RenderSection("Styles", required: false)
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
@@ -21,7 +32,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/bxslider/4.2.12/jquery.bxslider.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/bxslider/4.2.12/jquery.bxslider.min.js"></script>
-
 
     @RenderSection("Scripts", required: false)
 
@@ -54,80 +64,23 @@
 
 </head>
 <body>
-
-<div class="wrapper">
-    <div class="container">
-        <div class="head">
-            <div class="side-open" id="side-open" style="float:left;">
-                
-                <span class="burgur" id="burgur">
-                    <span class="top-line"></span>
-                    <span class="bot-line"></span>
-                </span>
-                
-            </div>
-      
-            <div class="logo"><span onclick="javascript: goPage('/camp');">캠핑View</span></div>
-
-            <div class="login">
-            @if (User.Identity.IsAuthenticated)
-			{
-                    
-                @if (User.Claims.Any(x => x.Type == "name"))
-				{
-                    <span style="font-size:12px;">
-                    @string.Format("{0}님", User.Claims.FirstOrDefault(x => x.Type == "name").Value)
-                    </span>
-				}
-                <span style="font-size:16px;"><a href="/Account/Logout?path=camp"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span></a></span>
-			}
-			else
-			{
-                <span style="font-size:16px;"><a href="/Account/Login?path=camp"><span class="glyphicon glyphicon-log-in" aria-hidden="true"></span></a></span>
-			}
-
-            </div>
-            
-        </div>
-        <div class="body">
-            <div class="content">
-                @RenderBody()
-            </div>
-
-            
-        </div>
-    </div> 
-
-    <footer class="border-top footer text-muted">
-
-        <partial name="_footerPartial.cshtml" />
-
+    <div class="wrapper">
         <div class="container">
-            &copy; 2022 - MapView. All Rights Reserved.
-        </div>
-    </footer>
 
+            <partial name="_pHeader.cshtml" />
+
+            <div class="body">
+                <div class="content">
+                    @RenderBody()
+                </div>
+            </div>
+        </div> 
+
+        <partial name="_pFooter.cshtml" />
     
-    <div class="side-menu" id="side-menu">
-        
-        <div class="side-menu-title">
-        메뉴
-        </div>
-        
-        <ul>
-            <li><a href="/Charger">EV충전소 찿기</a></li>
-            <li><a href="/festival">지역축제 찿기</a></li>
-            <li><a href="/Account/FAQ?path=camp">건의하기</a></li>
-            <!--<li>슬라이드 메뉴</li>
-            <li>슬라이드 메뉴</li>
-            <li>슬라이드 메뉴</li>-->
-        </ul>
+        <partial name="_pSideMenu.cshtml" />
+
     </div>
-
-</div>
-
-
-
 </body>
 </html>
 
