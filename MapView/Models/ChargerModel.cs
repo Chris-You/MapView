@@ -154,6 +154,11 @@ namespace MapView.Models.Charger
         public string kindNm { get; set; }
         public string kindDetailNm { get; set; }
 
+        public string zcode { get; set; }
+        public string zscode { get; set; }
+        public int totalCnt { get; set; }
+        public int availCnt { get; set; }
+
 
         public List<ChargerItem> chgr { get; set; }
         //public List<ChargerStatusItem> status { get; set; }
@@ -188,8 +193,8 @@ namespace MapView.Models.Charger
         public string powerType { get; set; }
         public string output { get; set; }
         public string method { get; set; }
-        public string zcode { get; set; }
-        public string zscode { get; set; }
+        //public string zcode { get; set; }
+        //public string zscode { get; set; }
         public string parkingFree { get; set; }
         public string note { get; set; }
         public string limitYn { get; set; }

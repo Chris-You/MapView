@@ -32,8 +32,8 @@ namespace MapView.Controllers
 
         public IActionResult Login(string? path)
         {
-
-            ViewBag.LoginPath = path?? "charger";
+            ViewData["LoginPath"] = path ?? "charger";
+            //ViewBag.LoginPath = path?? "charger";
 
             return View();
         }

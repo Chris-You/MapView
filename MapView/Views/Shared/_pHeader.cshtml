@@ -4,17 +4,38 @@
 *@
 @{
 	var controller = Context.Request.RouteValues["Controller"].ToString();
-	var title = Helper.GetTitle(controller);
+	
+
+	var path = ViewData["LoginPath"];
+	if(path != null)
+	{
+        controller = path.ToString();
+	}
+
+    var title = Helper.GetTitle(controller);
+
+
 }
         <div class="head">
             <div class="side-open" id="side-open" style="float:left;">
+                <!--
                 <span class="burgur" id="burgur">
                     <span class="top-line"></span>
                     <span class="bot-line"></span>
                 </span>
+                -->
+                <div style="margin-top:8px;cursor:pointer;" id="menu_on">
+                    <img src="~/img/icon/icon_head_menu.png" />
+                </div>
+                <div style="margin-top:8px;cursor:pointer;display:none;"  id="menu_off" >
+                    <img src="~/img/icon/icon_head_close.png" />
+                </div>
+                
             </div>
       
-            <div class="logo"><span onclick="javascript: goPage('/@controller');">@title</span></div>
+            <div class="logo"><span onclick="javascript: goPage('/@path');">@title</span></div>
 
             <partial name="_pLogin.cshtml" />
+
+
         </div>

@@ -140,33 +140,51 @@ namespace MapView.Controllers
             // 근처 충전소 리스트
             var itemList = _chargerService.GetChargerList(req);
             var chgr = _chargerService.GetChargerDtlList(req);
-            
-            
+
+
             Parallel.ForEach(itemList, i => {
-                
-                Parallel.Invoke(
-                   () => {
-                       i.chgr = chgr.Where(w => w.statId == i.statId).ToList();
-                   }
-                );
+
+            Parallel.Invoke(
+               () => {
+                   i.chgr = chgr.Where(w => w.statId == i.statId).ToList();
+               }
+            );
+
+            i.zcode = req.zcode;
+            i.zscode = req.zscode;
+            i.kindNm = _chargerService.GetCodeNm(CodeType.kind, i.kind);
+            i.kindDetailNm = _chargerService.GetCodeNm(CodeType.kindDetail, i.kindDetail);
+            i.totalCnt = chgr.Where(w => w.statId == i.statId).Count();
+            i.availCnt = chgr.Where(w => w.statId == i.statId && w.stat == "2" && w.delYn == "N").Count();
 
 
-                i.avail = i.chgr.Where(w => w.stat == "2" && w.delYn == "N").Count() > 0 ? "Y" :
-                                    (i.chgr.Where(w => w.stat == "0" || w.stat == "1" || w.stat == "3").Count() == i.chgr.Count() ? "X" : "N");
-                                        
+                /*
+            i.avail = i.chgr.Where(w => w.stat == "2" && w.delYn == "N").Count() > 0 ? "Y" :
+                                (i.chgr.Where(w => w.stat == "0" || w.stat == "1" || w.stat == "3").Count() == i.chgr.Count() ? "X" : "N");
+                */
+            i.avail = i.chgr.Where(w => w.stat == "2" && w.delYn == "N").Count() > 0 ? "Y" :
+                                   (i.chgr.Where(w => w.stat == "3").Count() == i.chgr.Count()? "U" : "N");
 
-                i.kindNm = _chargerService.GetCodeNm(CodeType.kind, i.kind);
-                i.kindDetailNm = _chargerService.GetCodeNm(CodeType.kindDetail, i.kindDetail);
+
+
+
+
+
+
             });
-            
-            
 
-            
+
+
+
 
             //todo  filter
             //response = _chargerService.CampFilter(req, response);
 
-            return new JsonResult(itemList.OrderBy(s => s.statNm));
+            Random rand = new Random();
+            var shuffled = itemList.OrderBy(o => rand.Next()).ToList();
+
+
+            return new JsonResult(shuffled);
         }
 
 

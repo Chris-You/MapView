@@ -118,53 +118,6 @@ main {
 
 
 
-.burgur {
-    left: 15px;
-    top: 23px;
-    position: absolute;
-    width: 20px;
-    height: 2px;
-    background: #ffffff;
-}
-
-    .burgur .top-line {
-        width: 20px;
-        height: 2px;
-        background-color: #ffffff;
-        bottom: -5px;
-        position: absolute;
-        left: 0;
-        -webkit-transition: -webkit-transform .3s;
-        transition: transform .3s;
-    }
-
-    .burgur .bot-line {
-        width: 20px;
-        height: 2px;
-        background-color: #ffffff;
-        top: -5px;
-        position: absolute;
-        left: 0;
-        -webkit-transition: -webkit-transform .3s;
-        transition: transform .3s;
-    }
-
-
-    .burgur.on {
-        width: 0;
-    }
-
-.burgur.on .bot-line {
-    -webkit-transform: translateY(5px) rotate(135deg);
-    transform: translateY(5px) rotate(135deg);
-}
-
-.burgur.on .top-line {
-    -webkit-transform: translateY(-5px) rotate(-135deg);
-    transform: translateY(-5px) rotate(-135deg);
-}
-
-
 
 * {
     margin: 0;
@@ -204,7 +157,7 @@ main {
 
 .logo {
     text-align:left;
-    font-size: 32px;
+    font-size: 28px;
     font-style: italic;
     font-weight: 800;
     color:#ffffff;
@@ -218,7 +171,7 @@ main {
 .login {
     text-align: right;
     color:#ffffff;
-    margin-right:30px;
+    margin-right:10px;
 }
 
 .glyphicon

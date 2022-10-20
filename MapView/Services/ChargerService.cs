@@ -207,7 +207,7 @@ namespace MapView.Services
                     model.location = i.location;
                     model.lat = i.lat;
                     model.lng = i.lng;
-                    model.addr = i.addr;
+                    model.addr = i.addr.Split("(")[0];
                     model.kind = i.kind;
                     model.kindDetail = i.kindDetail;
 
@@ -519,26 +519,30 @@ namespace MapView.Services
 
             var list = _mongoDB.DataListByUser<ChargerFavor>(docName, userid);
 
-            foreach(var item in list)
+            if(list != null)
             {
-                var path = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CHARGER:CHARGER_LIST_JSON").Value;
-                path = path.Replace("{}", item.zscode.Substring(0,2));
-
-                if (this.ExistFile(path))
+                foreach (var item in list)
                 {
-                    var resp = JsonConvert.DeserializeObject<List<ChargerItem>>(File.ReadAllText(path));
+                    var path = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CHARGER:CHARGER_LIST_JSON").Value;
+                    path = path.Replace("{}", item.zscode.Substring(0, 2));
 
-                    if (resp.Count() > 0)
+                    if (this.ExistFile(path))
                     {
-                        var tmp = resp.Where(w => w.statId == item.statId);
-                        if(tmp != null &&  tmp.Count() > 0)
+                        var resp = JsonConvert.DeserializeObject<List<ChargerItem>>(File.ReadAllText(path));
+
+                        if (resp.Count() > 0)
                         {
-                            item.statNm = tmp.First().statNm;
-                            item.addr = tmp.First().addr;
+                            var tmp = resp.Where(w => w.statId == item.statId);
+                            if (tmp != null && tmp.Count() > 0)
+                            {
+                                item.statNm = tmp.First().statNm;
+                                item.addr = tmp.First().addr;
+                            }
                         }
                     }
                 }
             }
+            
 
             return list;
         }

@@ -4,6 +4,12 @@
 @{
 
     var controller = Context.Request.RouteValues["Controller"].ToString();
+    var path = ViewData["LoginPath"];
+	if(path != null)
+	{
+        controller = path.ToString();
+	}
+
 
 }
 

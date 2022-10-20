@@ -4,6 +4,8 @@
     var title = Helper.GetTitle(controller);
 
 	ViewData["Title"] = "맵뷰:" + title;
+
+
 }
 
 
@@ -15,7 +17,7 @@
 
     <meta name ="google-signin-client_id" content="1061916295015-dcb9sn0767gmk7md8i0hsss0lplbgd4k.apps.googleusercontent.com">
 
-    <title>@ViewData["Title"]</title>
+    <title>@ViewData["Title"] </title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
@@ -40,19 +42,18 @@
 
         $(document).ready(function () {
 
-            $("#burgur").click(function () {  
-                
-                if ($("#burgur").hasClass('on'))
-                { 
-                    $("#burgur").removeClass('on'); 
-                    $("#side-menu").removeClass('on');
-                }
-                else
-                {
-                    $("#burgur").addClass('on');  
-                    $("#side-menu").addClass('on');
-                }
+            $("#menu_on").click(function () {  
+                $("#menu_on").hide();
+                $("#menu_off").show();
+                $("#side-menu").addClass('on');
             });
+
+            $("#menu_off").click(function () {  
+                $("#menu_on").show();
+                $("#menu_off").hide();
+                $("#side-menu").removeClass('on');
+            });
+
         });
 
         function goPage(url) {

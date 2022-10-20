@@ -369,7 +369,7 @@
 
         title += "<div class='gridtitle' >- 기간</div><div> " + itemList.fstvlStartDate + " ~ " + itemList.fstvlEndDate + "</div>";
         title += "<div class='gridtitle' >- 전화번호</div><div><a href='tel:" + itemList.phoneNumber + "'>" + itemList.phoneNumber + "</a></div>";
-        title += "<div class='gridtitle' >- 홈페이지</div><div><a href='" + itemList.homepageUrl + "' target='_blank'> " + itemList.homepageUrl + "</a></div>";
+        title += "<div class='gridtitle' >- 홈페이지</div><div><a href='" + itemList.homepageUrl + "' target='_blank'> " + (itemList.homepageUrl.length > 45 ? itemList.homepageUrl.substr(0,45) : itemList.homepageUrl) + "</a></div>";
         title += "<div class='gridtitle' >- 주관기관</div><div> " + itemList.mnnst + "</div>";
         title += "<div class='gridtitle' >- 주최기관</div><div> " + itemList.auspcInstt + "</div>";
         title += "<div class='gridtitle' >- 후원기관</div><div> " + itemList.suprtInstt + "</div>";

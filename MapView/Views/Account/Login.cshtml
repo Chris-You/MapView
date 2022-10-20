@@ -1,26 +1,8 @@
 ﻿@{
-	var path = ViewBag.LoginPath;
+	var path = ViewData["LoginPath"];
 
 	
-	
-	string layout = "";
-	/*
-	if (path.ToLower() == "camp")
-	{
-		layout = "~/Views/Shared/_Layout.cshtml";
-	}
-	else if (path.ToLower() == "festival")
-	{
-		layout = "~/Views/Shared/_LayoutFestival.cshtml";
-	}
-	else
-	{
-		layout = "~/Views/Shared/_LayoutCharger.cshtml";
-	}
-	*/
-	layout = "~/Views/Shared/_Layout.cshtml";
-	
-	Layout = layout;
+	Layout = "~/Views/Shared/_Layout.cshtml";;
 
 }
 
@@ -67,6 +49,10 @@
 }
 
 
+<div style="text-align:center;font-weight:bold;">
+	<h3>로그인</h3>
+</div>
+
 <div style="margin:50px 0 10px 0;text-align:center;">
     <a href="/Account/NaverLogin?path=@path"><img src="~/img/btn_naver_login.png" style="width:200px;height:40px;"/> </a>
 	
@@ -76,7 +62,18 @@
 	<a href="#" onclick="signOut();">Sign out</a>
 	-->
 </div>
-<div style="margin:0 0 120px 0;text-align:center;">
+<div style="text-align:center;">
     <a href="/Account/KakaoLogin?path=@path"><img src="~/img/kakao_login_medium_narrow.png" style="width:200px;height:40px;"/> </a>
 </div>
+
+<div style="margin-top:12px;margin-bottom:15px;text-align:center;">
+	<span>SNS계정을 이용한 간편 로그인</span>
+</div>
+
+
+
+
+
+
+
 
