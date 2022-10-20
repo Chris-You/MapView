@@ -38,7 +38,7 @@
 
 	.gridmain {
 		display: grid;
-		grid-template-columns: 320px 120px;
+		grid-template-columns: 275px 110px;
 		grid-template-rows: 30px 20px;
 		margin-bottom: 8px;
 		background-color: #d9edf7;
@@ -195,11 +195,13 @@
                 style: naver.maps.ZoomControlStyle.SMALL,
                 position: naver.maps.Position.TOP_RIGHT
             },
+            /*
             mapTypeControl: true,
             mapTypeControlOptions: {
                 style: naver.maps.MapTypeControlStyle.BUTTON,
                 position: naver.maps.Position.TOP_RIGHT
             },
+            */
         };
 
         //console.log(mapOptions);
@@ -476,13 +478,15 @@
             */
         }
         else {
-            if (infoWindow.getMap()) {
+            
+        }
+
+
+        if (infoWindow.getMap()) {
             infoWindow.close();
         } else {
             infoWindow.open(map, marker);
         }
-        }
-        
         
     }
 

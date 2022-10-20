@@ -148,11 +148,12 @@ namespace MapView.Services
             var dt2 = Convert.ToInt32(DateTime.Now.AddMonths(5).ToString("yyyyMMdd"));
 
 
+            // startDb >= today  || endDt <= today
+
 
             foreach (var li in arr)
             {
-                item = item.Union(li.Where(w => Convert.ToInt32(w.fstvlStartDate.Replace("-", "")) >= dt && 
-                                                Convert.ToInt32(w.fstvlStartDate.Replace("-", "")) <= dt2)).ToList();
+                item = item.Union(li.Where(w => Convert.ToInt32(w.fstvlEndDate.Replace("-", "")) >= dt)).ToList();
             }
 
             //Random rand = new Random();
