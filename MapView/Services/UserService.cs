@@ -46,8 +46,10 @@ namespace MapView.Services
                            _configuration.GetSection("REDIS:PORT").Value.ToString(),
                            _configuration.GetSection("REDIS:PASSWORD").Value.ToString());
 
-            _mongoDB = new Mongo(_configuration.GetSection("MONGODB:SERVER").Value.ToString(),
-                            _configuration.GetSection("MONGODB:PORT").Value.ToString(),
+            var host = _configuration.GetSection("MONGODB:SERVER").Value.ToString() + ":" + _configuration.GetSection("MONGODB:PORT").Value.ToString();
+
+            _mongoDB = new Mongo(_configuration.GetSection("MONGODB:USER").Value.ToString(),
+                            host,
                             _configuration.GetSection("MONGODB:DB_NAME").Value.ToString());
         }
 

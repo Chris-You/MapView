@@ -14,9 +14,11 @@ namespace MapView.Database
         private IMongoDatabase db;
         private MongoClient dbClient;
 
-        public Mongo(string host, string port, string dbName)
+        public Mongo(string user, string host, string dbName)
         {
-            dbClient = new MongoClient("mongodb://" + host + ":" + port);
+            dbClient = new MongoClient(string.Format("mongodb://{0}@{1}/{2}",user ,host ,dbName));
+
+
             db = dbClient.GetDatabase(dbName);
         }
 

@@ -75,8 +75,10 @@ namespace MapView.Services
                             _configuration.GetSection("REDIS:CHARGER_DB_IDX").Value.ToString());
 
 
-            _mongoDB = new Mongo(_configuration.GetSection("MONGODB:SERVER").Value.ToString(),
-                            _configuration.GetSection("MONGODB:PORT").Value.ToString(),
+            var host = _configuration.GetSection("MONGODB:SERVER").Value.ToString() + ":" + _configuration.GetSection("MONGODB:PORT").Value.ToString();
+
+            _mongoDB = new Mongo(_configuration.GetSection("MONGODB:USER").Value.ToString(),
+                            host,
                             _configuration.GetSection("MONGODB:DB_NAME").Value.ToString());
 
         }
@@ -154,6 +156,12 @@ namespace MapView.Services
                 var jsonStr = JsonConvert.SerializeObject(itemList);
 
                 var span = DateTime.Now.AddMinutes(Convert.ToInt32(chcheTime)) - DateTime.Now;   // 만료시간 15분
+
+                if(_redis.redisDatabase.KeyExists(redisKey))
+                {
+                    _redis.redisDatabase.KeyDelete(redisKey);
+                }
+
                 _redis.redisDatabase.StringSet(redisKey, jsonStr, span);
             }
             catch (Exception e)
