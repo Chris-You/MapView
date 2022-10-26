@@ -19,7 +19,7 @@
                 @if (User.Claims.Any(x => x.Type == "name"))
 				{
                     <span style="font-size:12px;">
-                    @string.Format("{0}({1})", User.Claims.FirstOrDefault(x => x.Type == "name").Value)
+                    @string.Format("{0}", User.Claims.FirstOrDefault(x => x.Type == "name").Value)
                     </span>
 				}
                     <button type="button" class="btn btn-xs" onclick="javascript:goPage('/Account/Logout?path=@controller');"style="background-color:#b4b9bf;">로그아웃</button>

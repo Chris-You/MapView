@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using System.Text.Json.Serialization;
 
-namespace MapView.Models.Charger
+namespace MapView.Common.Models.Charger
 {
 
     #region /////데이터 리스트 모델

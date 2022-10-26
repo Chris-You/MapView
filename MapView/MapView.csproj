@@ -8,19 +8,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Database\**" />
+    <Compile Remove="Util\**" />
     <Compile Remove="Views\Lotto\**" />
     <Compile Remove="wwwroot\contents\**" />
+    <Content Remove="Database\**" />
+    <Content Remove="Util\**" />
     <Content Remove="Views\Lotto\**" />
     <Content Remove="wwwroot\contents\**" />
+    <EmbeddedResource Remove="Database\**" />
+    <EmbeddedResource Remove="Util\**" />
     <EmbeddedResource Remove="Views\Lotto\**" />
     <EmbeddedResource Remove="wwwroot\contents\**" />
+    <None Remove="Database\**" />
+    <None Remove="Util\**" />
     <None Remove="Views\Lotto\**" />
     <None Remove="wwwroot\contents\**" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="Controllers\LottoController.cs" />
-    <Compile Remove="Services\LottoService.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,8 +38,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.9" />
-    <PackageReference Include="MongoDB.Driver" Version="2.17.1" />
+    <PackageReference Include="MongoDB.Driver" Version="2.18.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
     <PackageReference Include="StackExchange.Redis" Version="2.6.66" />
@@ -40,6 +48,10 @@
 
   <ItemGroup>
     <Folder Include="Views\Shared\Components\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MapView.Models\MapView.Common.csproj" />
   </ItemGroup>
 
 </Project>

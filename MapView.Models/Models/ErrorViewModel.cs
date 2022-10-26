@@ -1,6 +1,6 @@
 using System;
 
-namespace MapView.Models
+namespace MapView.Common.Models
 {
     public class ErrorViewModel
     {

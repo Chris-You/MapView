@@ -5,13 +5,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using MapView.Models.Charger;
-using MapView.Models;
+using MapView.Common.Models.Charger;
 using MapView.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
-using MapView.Models.CustomSettings;
+using MapView.Common.Models.CustomSettings;
 
 namespace MapView.Controllers
 {

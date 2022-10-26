@@ -5,14 +5,19 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Http;
 using System.IO;
-using MapView.Common.Models.Charger;
+using MapView.Models.Charger;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
-using MapView.Common.Util;
+using Newtonsoft.Json.Linq;
+using System.Text;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using MapView.Util;
 using Microsoft.Extensions.Options;
-using MapView.Common.Models.CustomSettings;
-using MapView.Common.Database;
+using MapView.Models.CustomSettings;
+using System.Reflection;
+using MapView.Database;
 
 namespace MapView.Services
 {

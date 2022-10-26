@@ -6,7 +6,7 @@ using MongoDB.Bson;
 using System.Text.Json.Serialization;
 
 
-namespace MapView.Models
+namespace MapView.Common.Models
 {
     #region ////네이버 블로그 검색
     public class SearchResModel

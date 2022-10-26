@@ -12,7 +12,10 @@ using MapView.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 //using StackExchange.Redis;
-using MapView.Models.CustomSettings;
+using MapView.Common.Models.CustomSettings;
+using Microsoft.Extensions.WebEncoders;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 
 namespace MapView
 {
@@ -35,6 +38,8 @@ namespace MapView
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IFestivalService, FestivalService>();
+            
+            
 
             //services.AddScoped<ILottoService, LottoService>();
 
@@ -54,6 +59,12 @@ namespace MapView
             {
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
+
+
+            services.Configure<WebEncoderOptions>(options =>
+            {
+                options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All); // 한글이 인코딩되는 문제 해결
             });
 
             /*

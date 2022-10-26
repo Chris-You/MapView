@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 using MongoDB.Bson;
-using MapView.Models.Charger;
+using MapView.Common.Models.Charger;
 
-namespace MapView.Database
+namespace MapView.Common.Database
 {
     public class Mongo
     {

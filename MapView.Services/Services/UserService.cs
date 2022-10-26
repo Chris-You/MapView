@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
-using MapView.Common.Models;
+using MapView.Models;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
 using StackExchange.Redis;
@@ -15,7 +15,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Hosting;
 using System.Text;
-using MapView.Common.Database;
+using MapView.Database;
 
 namespace MapView.Services
 {

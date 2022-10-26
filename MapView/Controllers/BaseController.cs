@@ -4,10 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using MapView.Models;
-using MapView.Services;
-using Microsoft.Extensions.Configuration;
+
 
 
 namespace MapView.Controllers

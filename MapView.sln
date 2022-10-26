@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapView", "MapView\MapView.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapView.ConsoleApp", "MapView.ConsoleApp\MapView.ConsoleApp.csproj", "{243A6921-2D99-4C05-9075-8ABCE2113F2B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapView.Common", "MapView.Models\MapView.Common.csproj", "{BA4AFE42-AEEF-40F4-B593-A9FCF80F2A57}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{243A6921-2D99-4C05-9075-8ABCE2113F2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{243A6921-2D99-4C05-9075-8ABCE2113F2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{243A6921-2D99-4C05-9075-8ABCE2113F2B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA4AFE42-AEEF-40F4-B593-A9FCF80F2A57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA4AFE42-AEEF-40F4-B593-A9FCF80F2A57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA4AFE42-AEEF-40F4-B593-A9FCF80F2A57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA4AFE42-AEEF-40F4-B593-A9FCF80F2A57}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

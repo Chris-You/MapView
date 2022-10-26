@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Http;
 using System.IO;
-using MapView.Common.Models;
-using MapView.Common.Database;
+using MapView.Models;
+using MapView.Database;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
@@ -14,7 +14,7 @@ using Newtonsoft.Json.Linq;
 using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
-using MapView.Common.Util;
+
 using StackExchange.Redis;
 
 namespace MapView.Services

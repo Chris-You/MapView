@@ -2,22 +2,17 @@
 	var controller = Context.Request.RouteValues["Controller"].ToString();
 
 	string layout = "";
-	/*
-	if (controller.ToLower() == "camp")
+
+	if (controller.ToLower() == "webtoon")
 	{
-		layout = "~/Views/Shared/_Layout.cshtml";
-		
-	}
-	else if (controller.ToLower() == "festival")
-	{
-		layout = "~/Views/Shared/_LayoutFestival.cshtml";
+		layout = "~/Views/Shared/_LayoutWebToon.cshtml";
+
 	}
 	else
 	{
-		layout = "~/Views/Shared/_LayoutCharger.cshtml";
+		layout = "~/Views/Shared/_Layout.cshtml";
 	}
-	*/
-	layout = "~/Views/Shared/_Layout.cshtml";
+
 
 	Layout = layout;
 }
