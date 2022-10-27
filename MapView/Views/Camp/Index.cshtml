@@ -535,7 +535,9 @@
 
         //$("#divCampList").hide();   // 상세 선택시 리스트 비노출
         $("#divCampDtl").show();
-        showDiv("light");
+
+        showDiv("light", 100 * seq);
+        
 
         var title = ""
         title += "<p>■ <b>" + dataList.response.body.items.item[seq].facltNm + "</b> (" + dataList.response.body.items.item[seq].facltDivNm + ")"
@@ -1074,11 +1076,14 @@
 	    }
 
 	    /// 화면의 중앙에 레이어띄움
-	    function showDiv(objId) {
-		    wrapWindowByMask();
-
+	    function showDiv(objId, height) {
+            wrapWindowByMask();
+            var pos = "80";
+            if(height!= undefined && height >0) pos = 400 + height;
+            
 		    $("#" +objId).css("position", "absolute");
-		    $("#" +objId).css("top", "80px");
+            $("#" + objId).css("top", pos + "px");
+            //$("#" +objId).css("top", Math.max(0, (($(window).width() - $("#light").outerWidth()) / 2) + $(window).scrollLeft())  + "px");
 		    $("#" +objId).css("left", Math.max(0, (($(window).width() - $("#light").outerWidth()) / 2) + $(window).scrollLeft())  + "px");
 
 		    $('#fade').show();

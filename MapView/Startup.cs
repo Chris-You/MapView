@@ -87,6 +87,7 @@ namespace MapView
 
             // customSetting.json load
             services.Configure<ChargerCode>(Configuration.GetSection("ChargerCode"));
+            services.Configure<FestivalCode>(Configuration.GetSection("FestivalCode"));
 
 
         }
@@ -131,7 +132,7 @@ namespace MapView
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=charger}/{action=Index}/{id?}");
+                    pattern: "{controller=festival}/{action=Index}/{id?}");
             });
         }
     }

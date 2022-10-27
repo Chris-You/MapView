@@ -20,7 +20,7 @@ namespace MapView.Common.Util
 			}
 			else if (controllerName.ToLower() == "festival")
 			{
-				title = "지역축제";
+				title = "행사";
 			}
 			else if (controllerName.ToLower() == "webtoon")
             {

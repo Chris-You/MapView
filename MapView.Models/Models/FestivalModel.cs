@@ -8,6 +8,7 @@ namespace MapView.Common.Models
 
     #region /////데이터 리스트 모델
 
+    /*
     public class FestivalReqModel
     {
         public string userid { get; set; }
@@ -17,6 +18,7 @@ namespace MapView.Common.Models
         public int pageNo { get; set; }
         public int numOfRows { get; set; }
         
+
         public string latitude { get; set; }
         public string longitude { get; set; }
 
@@ -89,7 +91,7 @@ namespace MapView.Common.Models
         public string insttCode { get; set; }
         
     }
-
+*/
 
 
     #endregion

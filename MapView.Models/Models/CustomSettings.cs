@@ -48,4 +48,20 @@ namespace MapView.Common.Models.CustomSettings
         busid
 
     }
+
+
+    public class FestivalCode
+    {
+        public List<itemValue> areaCode { get; set; }
+
+        public List<itemValue> categoryCode { get; set; }
+    }
+
+    public class itemValue
+    {
+        public string rnum { get; set; }
+        public string code { get; set; }
+        public string name { get; set; }
+        
+    }
 }
