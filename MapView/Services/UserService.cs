@@ -124,7 +124,7 @@ namespace MapView.Services
                     new HashEntry("sns", user.Sns),
                     new HashEntry("id", user.Id),
                     new HashEntry("name", user.Name),
-                    new HashEntry("email", user.Email)
+                    //new HashEntry("email", user.Email)
                 };
 
                 _redis.redisDatabase.HashSet(userKey, hash);
@@ -144,7 +144,7 @@ namespace MapView.Services
             List<Claim> claims = new List<Claim>();
             //claims.Add(new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()));
             claims.Add(new Claim("name", user.Name));
-            claims.Add(new Claim("email", user.Email));
+            //claims.Add(new Claim("email", user.Email));
             claims.Add(new Claim("sns", user.Sns));
             claims.Add(new Claim("id", user.Id));
             return claims;

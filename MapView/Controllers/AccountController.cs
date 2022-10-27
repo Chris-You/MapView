@@ -65,7 +65,7 @@ namespace MapView.Controllers
                         Sns = "naver",
                         Id = profile.response.id,
                         Name = profile.response.name,
-                        Email = profile.response.email,
+                        //Email = profile.response.email,
                         Path = path
                     };
 
@@ -104,7 +104,7 @@ namespace MapView.Controllers
                 Sns = "google",
                 Id = id,
                 Name = name,
-                Email = email
+                //Email = email
 
             };
 
@@ -143,7 +143,7 @@ namespace MapView.Controllers
                         Sns = "kakao",
                         Id = profile.id,
                         Name = profile.kakao_account.name != null ? profile.kakao_account.name : profile.kakao_account.profile.nickname,
-                        Email = profile.kakao_account.email_needs_agreement ? profile.kakao_account.email : "",
+                        //Email = profile.kakao_account.email_needs_agreement ? profile.kakao_account.email : "",
                         Path = state.Split(":")[1]
 
                     };
