@@ -272,24 +272,6 @@ namespace MapView.Controllers
             if (string.IsNullOrEmpty(base.GetUserId()) == false)
             {
                 list = _userService.FavorList(base.GetUserId(), ServiceGubun.camp);
-
-
-                var req = new CampReqModel();
-                req.serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value;
-                req.searchurl = _configuration.GetSection("OPENAPI:CAMP_API_BASE_URL").Value;
-                req.pageNo = 1;
-                req.radius = 20000;
-                req.numOfRows = 1000;
-                req.MobileOS = "ETC";
-                req.MobileApp = "CampView";
-                req.userid = base.GetUserId();
-
-                var camp = _campService.GetCampList(req);
-
-                Parallel.ForEach(list, i => {
-                    i.camp = camp.response.body.items.item.Where(w => w.contentId == i.contentId).FirstOrDefault();
-                });
-
             }
 
             return new JsonResult(list.Where(w => string.IsNullOrEmpty(w.camp.facltNm) == false));
@@ -312,8 +294,27 @@ namespace MapView.Controllers
                 }
                 else
                 {
+                    var req = new CampReqModel();
+                    req.serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value;
+                    req.searchurl = _configuration.GetSection("OPENAPI:CAMP_API_BASE_URL").Value;
+                    req.pageNo = 1;
+                    req.radius = 20000;
+                    req.numOfRows = 1000;
+                    req.MobileOS = "ETC";
+                    req.MobileApp = "CampView";
+                    req.userid = base.GetUserId();
+                    var camp = _campService.GetCampList(req);
+
+                    Favor favor = new Favor();
+                    favor.contentId = contentid;
+                    favor.date = DateTime.Now;
+                    favor.user = base.GetUserId();
+                    favor.service = ServiceGubun.camp;
+                    favor.camp = camp.response.body.items.item.Where(w => w.contentId == contentid).FirstOrDefault();
+
+
                     // 등록
-                    isOk = _userService.InsFavor(base.GetUserId(), ServiceGubun.camp, contentid, "");
+                    isOk = _userService.InsFavor(favor); // base.GetUserId(), ServiceGubun.camp, contentid, "");
 
                 }
                 if (isOk)
@@ -339,7 +340,12 @@ namespace MapView.Controllers
             Dictionary<string, string> dic = new Dictionary<string, string>();
             if (string.IsNullOrEmpty(base.GetUserId()) == false)
             {
-                var isOk = _userService.ChkFavor(base.GetUserId(), ServiceGubun.camp, contentid);
+                var favor = new Favor();
+                favor.user = base.GetUserId();
+                favor.contentId = contentid;
+                favor.service = ServiceGubun.camp;
+
+                var isOk = _userService.ChkFavor(favor);
 
                 dic.Add("result", isOk.ToString());
                 dic.Add("message", "ok");

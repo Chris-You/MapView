@@ -34,10 +34,9 @@ namespace MapView.Services
 
 
         List<Favor> FavorList(string userid, ServiceGubun service);
-        bool InsFavor(string userid, ServiceGubun service, string statId, string zscode);
+        bool InsFavor(Favor favor);
         bool DelFavor(string userid, ServiceGubun service, string statId);
-        bool ChkFavor(string userid, ServiceGubun service, string statId);
-
+        bool ChkFavor(Favor favor);
     }
 
     public class UserService : BaseService, IUserService
@@ -182,63 +181,20 @@ namespace MapView.Services
 
             var list = _mongoDB.DataListByUser<Favor>(docName, userid).Where( w=> w.service == gubun).ToList();
 
-            if (list != null)
-            {
-                foreach (var item in list)
-                {
-                    if (gubun == ServiceGubun.charger)
-                    {
-                        var path = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CHARGER:CHARGER_LIST_JSON").Value;
-                        path = path.Replace("{}", item.zscode.Substring(0, 2));
-
-                        if (base.ExistFile(path))
-                        {
-                            var resp = JsonConvert.DeserializeObject<List<ChargerItem>>(File.ReadAllText(path));
-
-                            if (resp.Count() > 0)
-                            {
-                                var tmp = resp.Where(w => w.statId == item.contentId);
-                                if (tmp != null && tmp.Count() > 0)
-                                {
-                                    item.contentNm = tmp.First().statNm;
-                                    item.addr = tmp.First().addr;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-
             return list;
         }
 
-        /*
-        public List<ChargerFavor> FavorList(string statId)
-        {
-            var docName = _configuration.GetSection("MONGODB:CHARGER_FAVOR").Value;
 
-            return _mongoDB.DataList<ChargerFavor>(docName, statId);
-        }
-        */
-
-        public bool InsFavor(string user, ServiceGubun service, string statId, string zscode)
+        public bool InsFavor(Favor favor) 
         {
             var isOk = false;
             try
             {
                 var docName = _configuration.GetSection("MONGODB:MAPVIEW_FAVOR").Value;
-                var doc = _mongoDB.GetData<Favor>(user, service, statId, docName);
+                var doc = _mongoDB.GetFavor(favor, docName);
 
                 if (doc == null)
                 {
-                    var favor = new Favor();
-                    favor.contentId = statId;
-                    favor.user = user;
-                    favor.service = service;
-                    favor.zscode = zscode;
-                    favor.date = DateTime.Now;
-
                     _mongoDB.InsData<Favor>(favor, docName);
 
                     isOk = true;
@@ -262,12 +218,12 @@ namespace MapView.Services
         }
 
 
-        public bool ChkFavor(string userid, ServiceGubun service, string contentId)
+        public bool ChkFavor(Favor favor)
         {
             var docName = _configuration.GetSection("MONGODB:MAPVIEW_FAVOR").Value;
             bool isOk = false;
 
-            var data = _mongoDB.GetData<Favor>(userid, service, contentId, docName);
+            var data = _mongoDB.GetFavor(favor, docName);
             if (data != null)
             {
                 isOk = true;

@@ -106,7 +106,7 @@ namespace MapView.Common.Models.Festival
         public string sigungucode { get; set; }
         public string tel { get; set; }
         public string title { get; set; }
-
+        public string status { get; set; }
 
     }
 

@@ -23,7 +23,6 @@ namespace MapView.Services
         List<ChargerItem> GetChargerDtlList(ChargerReqModel req);
         List<ChargerStatusItem> GetChargerStatusAPIList(ChargerReqModel req);
 
-
         string GetZcode(ChargerReqModel req);
         string GetZScode(ChargerReqModel req);
 
@@ -33,13 +32,6 @@ namespace MapView.Services
         List<ChargerComment> CommentList(string statId);
         ChargerComment CommentIns(ChargerComment comment);
         bool DelComment(ChargerComment comment);
-
-
-        //List<ChargerFavor> FavorList();
-        //List<ChargerFavor> FavorList(string userid);
-        //bool InsFavor(string userid, string statId, string zscode);
-        //bool DelFavor(string userid, string statId);
-        //bool ChkFavor(string userid, string statId);
 
         void MakeFile(ChargerReqModel req);
         List<ChargerItem> MakeRedisCache(ChargerReqModel req);

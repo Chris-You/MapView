@@ -142,20 +142,22 @@ namespace MapView.Common.Database
         }
 
 
-        public T GetData<T>(string user, ServiceGubun service, string contentId, string collection)
+
+        public Favor GetFavor(Favor favor, string collection) // string user, ServiceGubun service, string contentId, string collection)
         {
-            var doc = db.GetCollection<T>(collection);
-            var builder = Builders<T>.Filter;
-            var filter = builder.Eq("user", user) & builder.Eq("contentId", contentId) & builder.Eq("service", service); 
+            var doc = db.GetCollection<Favor>(collection);
+            var builder = Builders<Favor>.Filter;
+            var filter = builder.Eq("user", favor.user) & builder.Eq("contentId", favor.contentId) & builder.Eq("service", favor.service);
 
             var docs = doc.Find(filter).ToList();
             if (docs.Count > 0)
                 return docs.FirstOrDefault();
 
             else
-                return default(T);
+                return null;
 
         }
+
 
         public void InsData<T>(T data, string collection)
         {

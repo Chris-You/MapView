@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -12,6 +13,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using MapView.Common.Models.CustomSettings;
+using Microsoft.AspNetCore.Hosting;
+using Newtonsoft.Json;
 
 namespace MapView.Controllers
 {
@@ -24,20 +27,24 @@ namespace MapView.Controllers
         private IChargerService _chargerService;
         private IAccountService _accountService;
         private IUserService _userService;
+        private readonly IWebHostEnvironment _hostingEnvironment;
 
         private readonly IOptions<ChargerCode> _chargerConfig;
 
         public ChargerController(ILogger<ChargerController> logger, IConfiguration config,
                       IChargerService chargerService, IAccountService accountService,
                       IUserService userService,
-                      IOptions<ChargerCode> chargerConfig)
+                      IOptions<ChargerCode> chargerConfig,
+                      IWebHostEnvironment hostingEnvironment)
         {
             _logger = logger;
             _configuration = config;
+            _hostingEnvironment = hostingEnvironment;
             _chargerConfig = chargerConfig;
             _chargerService = chargerService;
             _accountService = accountService;
             _userService = userService;
+            
         }
 
 
@@ -325,9 +332,12 @@ namespace MapView.Controllers
                            req.zscode = i.zscode;
 
                            var chgr = _chargerService.GetChargerDtlList(req);
+                           var dtlList = chgr.Where(w => w.statId == i.contentId);
 
-                           i.totalCnt = chgr.Where(w => w.statId == i.contentId).Count();
-                           i.availCnt = chgr.Where(w => w.statId == i.contentId && w.stat == "2" && w.delYn == "N").Count();
+                           i.contentNm = dtlList.FirstOrDefault().statNm;
+                           i.addr     = dtlList.FirstOrDefault().addr;
+                           i.totalCnt = dtlList.Count();
+                           i.availCnt = dtlList.Where(w=>w.stat == "2" && w.delYn == "N").Count();
                        }
                     );
                 });
@@ -354,7 +364,14 @@ namespace MapView.Controllers
                 else
                 {
                     // 등록
-                    isOk = _userService.InsFavor(base.GetUserId(), ServiceGubun.charger, statId, zscode);
+                    Favor favor = new Favor();
+                    favor.contentId = statId;
+                    favor.date = DateTime.Now;
+                    favor.user = base.GetUserId();
+                    favor.service = ServiceGubun.charger;
+                    favor.zscode = zscode;
+
+                    isOk = _userService.InsFavor(favor);
 
                 }
                 if (isOk)
@@ -380,7 +397,12 @@ namespace MapView.Controllers
             Dictionary<string, string> dic = new Dictionary<string, string>();
             if (string.IsNullOrEmpty(base.GetUserId()) == false)
             {
-                var isOk = _userService.ChkFavor(base.GetUserId(), ServiceGubun.charger, statId);
+                var favor = new Favor();
+                favor.user = base.GetUserId();
+                favor.contentId = statId;
+                favor.service = ServiceGubun.camp;
+
+                var isOk = _userService.ChkFavor(favor);
 
                 dic.Add("result", isOk.ToString());
                 dic.Add("message", "ok");

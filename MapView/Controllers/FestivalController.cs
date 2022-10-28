@@ -10,6 +10,7 @@ using MapView.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using MapView.Common.Models.Festival;
+using MapView.Common.Models;
 
 namespace MapView.Controllers
 {
@@ -58,8 +59,14 @@ namespace MapView.Controllers
 
             var response = _fstvlService.GetFestivalList(req);
 
+            var json = this.RetJson(response);
 
-            var json = new
+            return new JsonResult(json);
+        }
+
+        private object RetJson(FestivalResModel response)
+        {
+             var json = new
             {
                 response.response.body.numOfRows,
                 response.response.body.pageNo,
@@ -95,7 +102,7 @@ namespace MapView.Controllers
                 )
             };
 
-            return new JsonResult(json);
+            return json;
         }
 
         private string FestivalStatus(FestivalItem item)
@@ -209,5 +216,117 @@ namespace MapView.Controllers
 
             return new JsonResult(response);
         }
+
+
+        [HttpPost]
+        public IActionResult FavorList()
+        {
+            var list = new List<Favor>();
+            if (string.IsNullOrEmpty(base.GetUserId()) == false)
+            {
+                list = _userService.FavorList(base.GetUserId(), ServiceGubun.festival);
+
+
+                Parallel.ForEach(list, i => {
+
+                    Parallel.Invoke(
+                       () => {
+                           i.festival.cat1 = _fstvlService.GetCustomCode("category", i.festival.cat1);
+                           i.festival.areacode = _fstvlService.GetCustomCode("category", i.festival.areacode);
+                           i.festival.status = this.FestivalStatus(i.festival);
+                       }
+                    );
+                });
+            }
+            
+            return new JsonResult(list);
+        }
+
+
+        [HttpPost]
+        public IActionResult Favor(string contentid, bool isFavor)
+        {
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            if (string.IsNullOrEmpty(base.GetUserId()) == false)
+            {
+                var isOk = false;
+                var msg = "";
+
+                if (isFavor)
+                {
+                    // 삭제
+                    isOk = _userService.DelFavor(base.GetUserId(), ServiceGubun.festival, contentid);
+                }
+                else
+                {
+
+                    FestivalReqModel req = new FestivalReqModel();
+                    req.serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value;
+                    req.searchurl = _configuration.GetSection("OPENAPI:FESTIVAL_API_SEARCH_URL").Value;
+                    req.pageNo = 1;
+                    req.numOfRows = 1000;
+                    req.MobileOS = "ETC";
+                    req.MobileApp = "MapView";
+                    req._type = "json";
+                    req.listYN = "Y";
+                    req.arrange = "A";
+                    req.eventStartDate = DateTime.Now.ToString("yyyyMMdd");
+                    req.userid = base.GetUserId();
+
+                    var response = _fstvlService.GetFestivalList(req);
+
+                    Favor favor = new Favor();
+                    favor.contentId = contentid;
+                    favor.date = DateTime.Now;
+                    favor.user = base.GetUserId();
+                    favor.service = ServiceGubun.festival;
+                    favor.festival = response.response.body.items.item.Where(w => w.contentid == contentid).FirstOrDefault();
+
+                    // 등록
+                    isOk = _userService.InsFavor(favor); // base.GetUserId(), ServiceGubun.camp, contentid, "");
+                    
+                }
+                if (isOk)
+                {
+                    msg = "ok";
+                }
+
+                dic.Add("result", isOk.ToString());
+                dic.Add("message", msg);
+            }
+            else
+            {
+                dic.Add("result", "False");
+                dic.Add("message", "Require Login");
+            }
+
+            return new JsonResult(dic);
+        }
+
+        [HttpPost]
+        public IActionResult IsFavor(string contentid)
+        {
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            if (string.IsNullOrEmpty(base.GetUserId()) == false)
+            {
+                var favor = new Favor();
+                favor.user = base.GetUserId();
+                favor.contentId = contentid;
+                favor.service = ServiceGubun.festival;
+
+                var isOk = _userService.ChkFavor(favor);
+
+                dic.Add("result", isOk.ToString());
+                dic.Add("message", "ok");
+            }
+            else
+            {
+                dic.Add("result", "False");
+                dic.Add("message", "false");
+            }
+
+            return new JsonResult(dic);
+        }
+
     }
 }

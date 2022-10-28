@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using MongoDB.Bson;
 using System.Text.Json.Serialization;
-
+using MapView.Common.Models.Festival;
 
 namespace MapView.Common.Models
 {
@@ -30,8 +30,12 @@ namespace MapView.Common.Models
         public int totalCnt { get; set; }
         public int availCnt { get; set; }
 
+        //public string cat1 { get; set; }
+        //public string areacode { get; set; }
+
 
         public CampItem camp { get; set; }
-        
+        public FestivalItem festival { get; set; }
+
     }
 }

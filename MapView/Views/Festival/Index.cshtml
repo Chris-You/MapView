@@ -169,7 +169,7 @@
         };
 
         //$("#divCampList").empty();
-        var list = "";
+        var list = "<p>■ <b>행사(축제) 목록</b></p>";
 
         $.ajax({
             type: "post",
@@ -193,7 +193,7 @@
                         var lng = data.items[i].mapx;
                         var lat = data.items[i].mapy;
 
-                        setMarker(lat, lng, data.items[i].title, i);
+                        setMarker(lat, lng, data.items[i].title, i, data.items[i].status);
 
 
                         if (i < cnt) {
@@ -252,6 +252,9 @@
                         list += '  <button type="button" class="btn btn-default btn-lg btn-block" onclick="viewMore();">더보기(More)</button>';
                         list += '</div>';
                     }
+
+                    // 즐겨찾기 데이터
+                    favorList();
                     
                    
                 }
@@ -347,17 +350,26 @@
 
 	}
 
-    function setMarker(lat, lng, facltNm, seq) {
+    function setMarker(lat, lng, facltNm, seq, status) {
+
+        var iconUrl = "/img/icon/icon_festival_Y.png";
+
+        if (status == "행사대기") 
+            iconUrl = "/img/icon/icon_festival_A.png";
+        else if (status == "행사중") 
+            iconUrl = "/img/icon/icon_festival_Y.png";
+
+
+
         var marker = new naver.maps.Marker({
             position: new naver.maps.LatLng(lat, lng),
             map: map,
-            /*
+            
             icon: {
-                url: '/img/camp_icon.png',
-                size: new naver.maps.Size(22, 35)
-                
+                url: iconUrl,
+                //size: new naver.maps.Size(22, 35)
             }
-            */
+            
         });
 
         markers.push(marker);
@@ -458,7 +470,7 @@
                     title += "<p>■ <b>" + common.title + "</b>"
 
                     // 회원이면 좋아요 버튼 노출
-                    title += '<img id="btnLike" src="/img/icon/icons8-heart-50.png" data-value="false" alt="like it" style="margin-left:15px;width:25px;" onclick="javascript:like(' + common.contentid + ');"/>';
+                    title += '<img id="btnLike" src="/img/icon/icons8-heart-50.png" data-value="false" alt="like it" style="margin-left:15px;width:25px;" onclick="javascript:favor(' + seq + ');"/>';
                     title += "</p>";
                     title += "<p> - " + common.addr1 + " " + common.addr2 + "</p>";
 
@@ -494,17 +506,25 @@
                 }
                 else {
                     $("#divTitle").html("");
-				}
+                }
+
+
+
+                isFavor(seq);
+
+                detailInfo(seq);
 
             }
         });
 
 
-        detailInfo(seq);
+        
 
         detailImage(seq);
 
         getBlogs(seq);
+
+        
 
     }
 
@@ -525,13 +545,17 @@
 
                     var info = data.response.body.items.item;
 
-                    var desc = '<hr />';
-
                     for (var i = 0; i < info.length; i++) {
 
                         if (info[i].infotext != "") {
                             desc += '<p  style="margin-top:15px;margin-bottom:5px;">■ <b>'+info[i].infoname+'</b></p>';
                             desc += '<div style="margin-bottom:15px;">' + info[i].infotext + '</div>'
+
+
+                            if ($("#divDesc").text() == info[i].infotext) {
+                                $("#divDesc").hide()
+							}
+
                         }
                     }
                     $("#divInfo").html(desc);
@@ -692,6 +716,117 @@
         else {
             closeDiv("options");
 		}
+    }
+
+
+    function favorList() {
+
+        $.ajax({
+            type: "post",
+            url: "/festival/FavorList",
+            data: "",
+            success: function (data) {
+                //script = data.replace(/<script>(.*)<\/script>/, "$1"); // Remove tags
+                //eval(script); // Execute javascript
+                //console.log(data);
+
+                var list = "<p>■ <b>즐겨찾기</b></p>";
+                if (data != null && data.length > 0) {
+                    var seq = markers.length;
+                    var idx = seq;
+
+                    for (var i = 0; i < data.length; i++) {
+                        // 기존 데이터에 push
+                        dataList.items.push(data[i].festival);
+
+
+                        var lng = data[i].festival.mapx;
+                        var lat = data[i].festival.mapy;
+
+                        // 즐겨찾기 마커 추가
+                        setMarker(lat, lng, data[i].festival.title, idx, data[i].festival.status);
+
+                        var imgUrl = data[i].festival.firstimage2 == "" ? "/img/no_image.png" : data[i].festival.firstimage2;
+
+                        list += '<div class="alert alert-info" style="padding:7px 5px 7px 5px;" >';
+                        list += '    <div class="media">';
+                        list += '        <a href="javascript:getClickListItem(' + idx + ', true);" style="text-decoration: none;">';
+                        list += '        <div class="media-left">';
+                        list += '            <img class="media-object" src="' + imgUrl + '" style="width: 80px; height: 60px;">';
+                        list += '        </div>';
+                        list += '        <div class="media-body">';
+                        list += '        <h5 class="media-heading"><b>' + data[i].festival.title + '</b></h5>';
+                        list += '        <p style="font-size:13px;margin-bottom:5px;">' + data[i].festival.addr1 + " " + data[i].festival.addr2 + "&nbsp;&nbsp;";
+
+                        if (data[i].festival.status == "행사대기") list += '<span class="label label-info">' + data[i].festival.status + '</span>';
+                        else if (data[i].festival.status == "행사중") list += '<span class="label label-success">' + data[i].festival.status + '</span>';
+                        else if (data[i].festival.status == "행사종료") list += '<span class="label label-default">' + data[i].festival.status + '</span>';
+
+                        list += '        </p>';
+                        list += '        </div>';
+                        list += '        </a>';
+                        list += '    </div>';
+                        list += '</div>';
+
+                        idx = idx + 1;
+                    }
+
+                    $("#divFavorList").html(list);
+				}
+            },
+            error: function (data) {
+                //alert("error: " + data.responseText);
+            },
+        });
+
+    }
+
+
+    function favor(seq) {
+
+        var likeVal = $("#btnLike").attr("data-value");
+        // 현재 좋아요 이면 true, 아니면 false
+
+        
+        
+        $.ajax({
+            type: "post",
+            url: "/festival/favor",
+            data: "contentid=" + dataList.items[seq].contentid + "&isFavor="+ likeVal,
+            success: function (data) {
+                if (data != null) {
+                    if (data.result == "True") {
+                        if (likeVal == "true") {
+                            $("#btnLike").attr("src", "/img/icon/icons8-heart-50.png")
+                            $("#btnLike").attr("data-value", "false");
+                        }
+                        else {
+                            $("#btnLike").attr("src", "/img/icon/icons8-heartfull-50.png")
+                            $("#btnLike").attr("data-value", "true");
+		                }
+					}
+				}
+            }
+        });
+    }
+
+    function isFavor(seq) {
+
+        $.ajax({
+            type: "post",
+            url: "/festival/IsFavor",
+            data: "contentid=" + dataList.items[seq].contentid,
+            success: function (data) {
+
+                if (data != null) {
+                    if (data.result == "True") {
+                        // 등록 성공
+                        $("#btnLike").attr("src", "/img/icon/icons8-heartfull-50.png")
+                        $("#btnLike").attr("data-value", "true");
+					}
+				}
+            }
+        });
 	}
 
 
@@ -714,6 +849,8 @@
     </div>
 
     <div id="divMap" style="width:100%;height:370px;"></div>
+
+    <div id="divFavorList" style="margin-top: 25px;"></div>
     
     <div id="divList" style="margin-top: 25px;"></div>
 
@@ -737,9 +874,9 @@
 
                 <div id="divImage" style="width:100%;margin-top:5px;"></div>
 
-				<div id="divDesc" style="width:100%;margin-top:15px;display:none;"></div>
-
                 <div id="divInfo" style="width:100%;margin-top:15px;"></div>
+
+                <div id="divDesc" style="width:100%;margin-top:15px;display:none;"></div>
 				
                 <div id="divBlogs" style="width:100%;margin-top:15px;"></div>
 
