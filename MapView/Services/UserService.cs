@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using MapView.Common.Models;
+using MapView.Common.Models.Charger;
+using MapView.Common.Models.Festival;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
 using StackExchange.Redis;
@@ -16,6 +18,7 @@ using Newtonsoft.Json;
 using Microsoft.AspNetCore.Hosting;
 using System.Text;
 using MapView.Common.Database;
+using System;
 
 namespace MapView.Services
 {
@@ -29,17 +32,25 @@ namespace MapView.Services
 
         Faq RegFaq(Faq faq);
 
+
+        List<Favor> FavorList(string userid, ServiceGubun service);
+        bool InsFavor(string userid, ServiceGubun service, string statId, string zscode);
+        bool DelFavor(string userid, ServiceGubun service, string statId);
+        bool ChkFavor(string userid, ServiceGubun service, string statId);
+
     }
 
-    public class UserService : IUserService
+    public class UserService : BaseService, IUserService
     {
         private readonly IConfiguration _configuration;
+        private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly Redis _redis;
         private readonly Mongo _mongoDB;
 
-        public UserService(IConfiguration configuration)
+        public UserService(IConfiguration configuration, IWebHostEnvironment hostingEnvironment)
         {
             _configuration = configuration;
+            _hostingEnvironment = hostingEnvironment;
 
             _redis = new Redis(
                            _configuration.GetSection("REDIS:SERVER").Value.ToString(),
@@ -162,5 +173,109 @@ namespace MapView.Services
 
             return newFaq;
         }
+
+
+
+        public List<Favor> FavorList(string userid, ServiceGubun gubun)
+        {
+            var docName = _configuration.GetSection("MONGODB:MAPVIEW_FAVOR").Value;
+
+            var list = _mongoDB.DataListByUser<Favor>(docName, userid).Where( w=> w.service == gubun).ToList();
+
+            if (list != null)
+            {
+                foreach (var item in list)
+                {
+                    if (gubun == ServiceGubun.charger)
+                    {
+                        var path = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CHARGER:CHARGER_LIST_JSON").Value;
+                        path = path.Replace("{}", item.zscode.Substring(0, 2));
+
+                        if (base.ExistFile(path))
+                        {
+                            var resp = JsonConvert.DeserializeObject<List<ChargerItem>>(File.ReadAllText(path));
+
+                            if (resp.Count() > 0)
+                            {
+                                var tmp = resp.Where(w => w.statId == item.contentId);
+                                if (tmp != null && tmp.Count() > 0)
+                                {
+                                    item.contentNm = tmp.First().statNm;
+                                    item.addr = tmp.First().addr;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            return list;
+        }
+
+        /*
+        public List<ChargerFavor> FavorList(string statId)
+        {
+            var docName = _configuration.GetSection("MONGODB:CHARGER_FAVOR").Value;
+
+            return _mongoDB.DataList<ChargerFavor>(docName, statId);
+        }
+        */
+
+        public bool InsFavor(string user, ServiceGubun service, string statId, string zscode)
+        {
+            var isOk = false;
+            try
+            {
+                var docName = _configuration.GetSection("MONGODB:MAPVIEW_FAVOR").Value;
+                var doc = _mongoDB.GetData<Favor>(user, service, statId, docName);
+
+                if (doc == null)
+                {
+                    var favor = new Favor();
+                    favor.contentId = statId;
+                    favor.user = user;
+                    favor.service = service;
+                    favor.zscode = zscode;
+                    favor.date = DateTime.Now;
+
+                    _mongoDB.InsData<Favor>(favor, docName);
+
+                    isOk = true;
+                }
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+
+            return isOk;
+
+        }
+
+        public bool DelFavor(string user, ServiceGubun service, string contentId)
+        {
+            var docName = _configuration.GetSection("MONGODB:MAPVIEW_FAVOR").Value;
+
+            return _mongoDB.DelData<Favor>(user, service, contentId, docName);
+        }
+
+
+        public bool ChkFavor(string userid, ServiceGubun service, string contentId)
+        {
+            var docName = _configuration.GetSection("MONGODB:MAPVIEW_FAVOR").Value;
+            bool isOk = false;
+
+            var data = _mongoDB.GetData<Favor>(userid, service, contentId, docName);
+            if (data != null)
+            {
+                isOk = true;
+            }
+
+
+            return isOk;
+        }
+
     }
 }

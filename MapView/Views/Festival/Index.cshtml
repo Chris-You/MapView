@@ -370,7 +370,7 @@
         infoWindows.push(infoWindow);
 
         markers[seq].setMap(map);
-        naver.maps.Event.addListener(markers[seq], 'click', getClickHandler(seq));
+        naver.maps.Event.addListener(markers[seq], 'click', getClickHandler(seq, true));
 
     }
 
@@ -386,16 +386,16 @@
 	}
 
     // 해당 마커의 인덱스를 seq라는 클로저 변수로 저장하는 이벤트 핸들러를 반환합니다.
-    function getClickHandler(seq) {
+    function getClickHandler(seq, isMap) {
 
         return function (e) {
 
-            getClickListItem(seq);
+            getClickListItem(seq, isMap);
             
         }
     }
 
-    function getClickListItem(seq) {
+    function getClickListItem(seq, isMap) {
 
         var marker = markers[seq],
         infoWindow = infoWindows[seq];
@@ -406,7 +406,7 @@
             infoWindow.open(map, marker);
         }
 
-        setDetail(seq);
+        setDetail(seq, isMap);
 	}
 
     
@@ -429,11 +429,16 @@
 
 
 
-    function setDetail(seq) {
+    function setDetail(seq, isMap) {
 
         map.setCenter(new naver.maps.LatLng(dataList.items[seq].mapY, dataList.items[seq].mapX));
-        
-        showDiv("light", 100 * seq);
+
+        var height = 100 * seq;
+        if (isMap) {
+            height = 0;
+		}
+
+        showDiv("light", height);
 
         $("#divFestivalDtl").show();
         $("#divTitle").empty();

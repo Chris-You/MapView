@@ -42,7 +42,7 @@ namespace MapView.Services
         SearchResModel GetBlogList(string query);
     }
 
-    public class CampService : ICampService
+    public class CampService : BaseService, ICampService
     {
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _hostingEnvironment;
@@ -53,6 +53,7 @@ namespace MapView.Services
         private string _searechBlogUrl = string.Empty;
 
         private readonly Redis _redis;
+        private readonly Mongo _mongoDB;
 
         public CampService(IConfiguration configuration, IWebHostEnvironment hostingEnvironment, IHttpClientFactory clientFactory)
         {
@@ -68,6 +69,11 @@ namespace MapView.Services
                             _configuration.GetSection("REDIS:SERVER").Value.ToString(),
                             _configuration.GetSection("REDIS:PORT").Value.ToString(),
                             _configuration.GetSection("REDIS:PASSWORD").Value.ToString());
+
+            
+            _mongoDB = new Mongo(_configuration.GetSection("MONGODB:USER").Value.ToString(),
+                            _configuration.GetSection("MONGODB:SERVER").Value.ToString() + ":" + _configuration.GetSection("MONGODB:PORT").Value.ToString(), 
+                            _configuration.GetSection("MONGODB:DB_NAME").Value.ToString());
         }
 
 
@@ -107,7 +113,7 @@ namespace MapView.Services
             var path = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CAMP:CAMP_LIST_JSON").Value;
             path = path.Replace("{}", req.pageNo.ToString());
 
-            if (this.ExistFile(path) == false)
+            if (base.ExistFile(path) == false)
             {
                 var res = this.CampMakeFileByAPI(req);
 
@@ -166,19 +172,27 @@ namespace MapView.Services
             }
             else
             {
-                var radius = Convert.ToInt16(_configuration.GetSection("CAMP:SEARCH_RADIUS").Value);
+                if (req.radius > 0)
+                {
+                    item2 = item;
+                }
+                else
+                {
+                    var radius = Convert.ToInt16(_configuration.GetSection("CAMP:SEARCH_RADIUS").Value);
 
-                // 거리 계산
-                Parallel.ForEach(item, i => {
-                    var distance = CommonUtils.DistanceTo(Convert.ToDouble(req.mapY),
-                                            Convert.ToDouble(req.mapX),
-                                            Convert.ToDouble(i.mapY),
-                                            Convert.ToDouble(i.mapX));
-                    if (distance < radius)
+                    // 거리 계산
+                    Parallel.ForEach(item, i =>
                     {
-                        item2.Add(i);
-                    }
-                });
+                        var distance = CommonUtils.DistanceTo(Convert.ToDouble(req.mapY),
+                                                Convert.ToDouble(req.mapX),
+                                                Convert.ToDouble(i.mapY),
+                                                Convert.ToDouble(i.mapX));
+                        if (distance < radius)
+                        {
+                            item2.Add(i);
+                        }
+                    });
+                }
             }
             
 
@@ -205,7 +219,7 @@ namespace MapView.Services
             var pathThum = pathOrigin + "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_THUM").Value;
             var imgUrl = "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_BASE_PATH").Value + "/" + req.contentId + "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_THUM").Value;
 
-            if (this.ExistDirectoryFile(pathThum) == false)
+            if (base.ExistDirectoryFile(pathThum) == false)
             {
                 // 이미지 폴더가 없거나, 이미지가 없으면 썸네일 파일 생성
                 DirectoryInfo di = Directory.CreateDirectory(pathThum);
@@ -665,7 +679,7 @@ namespace MapView.Services
                 var pathOrigin = _hostingEnvironment.WebRootPath + "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_BASE_PATH").Value + "/" + camp.contentId;
                 var pathThum = pathOrigin + "/" + _configuration.GetSection("CAMP:CAMP_IMAGE_THUM").Value;
 
-                if (this.ExistDirectoryFile(pathThum) == false)
+                if (base.ExistDirectoryFile(pathThum) == false)
                 {
                     // 이미지 폴더가 없거나, 이미지가 없으면 썸네일 파일 생성
                     DirectoryInfo di2 = Directory.CreateDirectory(pathThum);
@@ -765,36 +779,6 @@ namespace MapView.Services
             }
         }
 
-
-        private bool ExistFile(string path)
-        {
-            //todo 한달마다 파일을 갱신한다.
-
-            // 캠프 리스트카 파일에 존재하는지 체크
-            if (!File.Exists(path))
-            {
-                // 없으면 API 호출 후  json 파일 생성
-                return false;
-            }
-            else
-            {
-                // 있으면 파일을 읽어들여 로드 (API 호출을 최소화)
-                return true;
-            }
-        }
-
-
-        private bool ExistDirectoryFile(string path)
-        {
-            if (Directory.Exists(path) == false)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-        }
 
         private void ImageDownload(string url, string targetOrigin)
         {

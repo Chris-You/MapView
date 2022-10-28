@@ -60,7 +60,6 @@ namespace MapView.Controllers
             req.serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value;
             req.searchurl = _configuration.GetSection("OPENAPI:CAMP_API_BASE_URL").Value;
             req.pageNo = 1;
-            req.radius = 20000;
             req.numOfRows = 1000;
             req.MobileOS = "ETC";
             req.MobileApp = "CampView";
@@ -70,6 +69,35 @@ namespace MapView.Controllers
 
             //todo  filter
             response = _campService.CampFilter(req, response);
+
+            return new JsonResult(response);
+        }
+
+
+        [HttpPost]
+        public IActionResult SearchDtl(CampReqModel req)
+        {
+            req.serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value;
+            req.searchurl = _configuration.GetSection("OPENAPI:CAMP_API_BASE_URL").Value;
+            req.pageNo = 1;
+            req.radius = 20000;
+            req.numOfRows = 1000;
+            req.MobileOS = "ETC";
+            req.MobileApp = "CampView";
+            req.userid = base.GetUserId();
+
+            var response = _campService.GetCampList(req);
+
+            foreach(var i in response.response.body.items.item)
+            {
+                if(i.contentId == req.contentId)
+                {
+                    response.response.body.items.item = new List<CampItem>();
+                    response.response.body.items.item.Add(i);
+                    break;
+                }
+            }
+
 
             return new JsonResult(response);
         }
@@ -234,8 +262,42 @@ namespace MapView.Controllers
         }
 
 
+        
+
+
         [HttpPost]
-        public IActionResult Like( string contentid, bool isLike)
+        public IActionResult FavorList()
+        {
+            var list = new List<Favor>();
+            if (string.IsNullOrEmpty(base.GetUserId()) == false)
+            {
+                list = _userService.FavorList(base.GetUserId(), ServiceGubun.camp);
+
+
+                var req = new CampReqModel();
+                req.serviceKey = _configuration.GetSection("OPENAPI:PUBLIC_API_KEY").Value;
+                req.searchurl = _configuration.GetSection("OPENAPI:CAMP_API_BASE_URL").Value;
+                req.pageNo = 1;
+                req.radius = 20000;
+                req.numOfRows = 1000;
+                req.MobileOS = "ETC";
+                req.MobileApp = "CampView";
+                req.userid = base.GetUserId();
+
+                var camp = _campService.GetCampList(req);
+
+                Parallel.ForEach(list, i => {
+                    i.camp = camp.response.body.items.item.Where(w => w.contentId == i.contentId).FirstOrDefault();
+                });
+
+            }
+
+            return new JsonResult(list.Where(w => string.IsNullOrEmpty(w.camp.facltNm) == false));
+        }
+
+
+        [HttpPost]
+        public IActionResult Favor(string contentid, bool isFavor)
         {
             Dictionary<string, string> dic = new Dictionary<string, string>();
             if (string.IsNullOrEmpty(base.GetUserId()) == false)
@@ -243,16 +305,16 @@ namespace MapView.Controllers
                 var isOk = false;
                 var msg = "";
 
-                if (isLike)
+                if (isFavor)
                 {
-                    // 좋아요 삭제
-                    isOk = _campService.DelLike(base.GetUserId(), contentid);
+                    // 삭제
+                    isOk = _userService.DelFavor(base.GetUserId(), ServiceGubun.camp, contentid);
                 }
                 else
                 {
-                    // 좋아요 등록
-                    isOk = _campService.SetLike(base.GetUserId(), contentid);
-                    
+                    // 등록
+                    isOk = _userService.InsFavor(base.GetUserId(), ServiceGubun.camp, contentid, "");
+
                 }
                 if (isOk)
                 {
@@ -272,12 +334,12 @@ namespace MapView.Controllers
         }
 
         [HttpPost]
-        public IActionResult IsLike(string contentid)
+        public IActionResult IsFavor(string contentid)
         {
             Dictionary<string, string> dic = new Dictionary<string, string>();
             if (string.IsNullOrEmpty(base.GetUserId()) == false)
             {
-                var isOk = _campService.ChkLike(base.GetUserId(), contentid);
+                var isOk = _userService.ChkFavor(base.GetUserId(), ServiceGubun.camp, contentid);
 
                 dic.Add("result", isOk.ToString());
                 dic.Add("message", "ok");

@@ -878,8 +878,8 @@
                 if (data != null && data.length > 0) {
 
                     for (var i = 0; i < data.length; i++) {
-                        list += "<div class='gridmain' onclick='chargerDtl(\""+ data[i].statId +"\", \""+ data[i].zscode +"\");'>";
-                        list += "   <div class='gridmain_addr'>"+ data[i].statNm +"</div><div>충전기전체 "+ data[i].totalCnt +"개</div>";
+                        list += "<div class='gridmain' onclick='chargerDtl(\""+ data[i].contentId +"\", \""+ data[i].zscode +"\");'>";
+                        list += "   <div class='gridmain_addr'>"+ data[i].contentNm +"</div><div>충전기전체 "+ data[i].totalCnt +"개</div>";
                         list += "   <div>"+ data[i].addr +"</div><div>충전가능 <span class='gridmain_avail'>"+data[i].availCnt+"</span>개</div>";
                         list += "</div>";
 

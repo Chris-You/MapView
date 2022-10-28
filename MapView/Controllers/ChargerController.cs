@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using MapView.Common.Models;
 using MapView.Common.Models.Charger;
 using MapView.Services;
 using Microsoft.Extensions.Configuration;
@@ -164,17 +165,7 @@ namespace MapView.Controllers
             i.avail = i.chgr.Where(w => w.stat == "2" && w.delYn == "N").Count() > 0 ? "Y" :
                                    (i.chgr.Where(w => w.stat == "3").Count() == i.chgr.Count()? "U" : "N");
 
-
-
-
-
-
-
             });
-
-
-
-
 
             //todo  filter
             //response = _chargerService.CampFilter(req, response);
@@ -315,10 +306,10 @@ namespace MapView.Controllers
         [HttpPost]
         public IActionResult FavorList()
         {
-            var list = new List<ChargerFavor>();
+            var list = new List<Favor>();
             if (string.IsNullOrEmpty(base.GetUserId()) == false)
             {
-                list = _chargerService.FavorList(base.GetUserId());
+                list = _userService.FavorList(base.GetUserId(), ServiceGubun.charger);
 
                 Parallel.ForEach(list, i => {
 
@@ -335,18 +326,18 @@ namespace MapView.Controllers
 
                            var chgr = _chargerService.GetChargerDtlList(req);
 
-                           i.totalCnt = chgr.Where(w => w.statId == i.statId).Count();
-                           i.availCnt = chgr.Where(w => w.statId == i.statId && w.stat == "2" && w.delYn == "N").Count();
+                           i.totalCnt = chgr.Where(w => w.statId == i.contentId).Count();
+                           i.availCnt = chgr.Where(w => w.statId == i.contentId && w.stat == "2" && w.delYn == "N").Count();
                        }
                     );
                 });
             }
 
-            return new JsonResult(list.Where(w => string.IsNullOrEmpty(w.statNm) == false));
+            return new JsonResult(list.Where(w => string.IsNullOrEmpty(w.contentNm) == false));
         }
 
 
-            [HttpPost]
+        [HttpPost]
         public IActionResult Favor(string statId, string zscode, bool isFavor)
         {
             Dictionary<string, string> dic = new Dictionary<string, string>();
@@ -358,12 +349,12 @@ namespace MapView.Controllers
                 if (isFavor)
                 {
                     // 삭제
-                    isOk = _chargerService.DelFavor(base.GetUserId(), statId);
+                    isOk = _userService.DelFavor(base.GetUserId(), ServiceGubun.charger, statId);
                 }
                 else
                 {
                     // 등록
-                    isOk = _chargerService.InsFavor(base.GetUserId(), statId, zscode);
+                    isOk = _userService.InsFavor(base.GetUserId(), ServiceGubun.charger, statId, zscode);
 
                 }
                 if (isOk)
@@ -389,7 +380,7 @@ namespace MapView.Controllers
             Dictionary<string, string> dic = new Dictionary<string, string>();
             if (string.IsNullOrEmpty(base.GetUserId()) == false)
             {
-                var isOk = _chargerService.ChkFavor(base.GetUserId(), statId);
+                var isOk = _userService.ChkFavor(base.GetUserId(), ServiceGubun.charger, statId);
 
                 dic.Add("result", isOk.ToString());
                 dic.Add("message", "ok");

@@ -4,6 +4,7 @@ using System.Linq;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using MapView.Common.Models.Charger;
+using MapView.Common.Models;
 
 namespace MapView.Common.Database
 {
@@ -110,12 +111,12 @@ namespace MapView.Common.Database
                 return null;
         }
 
-        public List<T> DataListByStatId<T>(string collection, string statId)
+        public List<T> DataListById<T>(string collection, string contentId)
         {
             var comments = db.GetCollection<T>(collection);
 
             var builder = Builders<T>.Filter;
-            var filter = builder.Eq("statId", statId);
+            var filter = builder.Eq("contentId", contentId);
 
             var docs = comments.Find(filter).ToList();
             if (docs.Count > 0)
@@ -130,7 +131,7 @@ namespace MapView.Common.Database
             var doc = db.GetCollection<T>(collection);
 
             var builder = Builders<T>.Filter;
-            var filter = builder.Eq("user", userid);
+            var filter = builder.Eq("user", userid) ;
 
             var docs = doc.Find(filter).ToList();
             if (docs.Count > 0)
@@ -141,11 +142,11 @@ namespace MapView.Common.Database
         }
 
 
-        public T GetData<T>(string user, string statId, string collection)
+        public T GetData<T>(string user, ServiceGubun service, string contentId, string collection)
         {
             var doc = db.GetCollection<T>(collection);
             var builder = Builders<T>.Filter;
-            var filter = builder.Eq("user", user) & builder.Eq("statId", statId);
+            var filter = builder.Eq("user", user) & builder.Eq("contentId", contentId) & builder.Eq("service", service); 
 
             var docs = doc.Find(filter).ToList();
             if (docs.Count > 0)
@@ -162,11 +163,11 @@ namespace MapView.Common.Database
             document.InsertOne(data);
         }
 
-        public bool DelData<T>(string user, string statId, string collection)
+        public bool DelData<T>(string user, ServiceGubun service, string contentId, string collection)
         {
             var doc = db.GetCollection<T>(collection);
             var builder = Builders<T>.Filter;
-            var filter = builder.Eq("user", user) & builder.Eq("statId", statId);
+            var filter = builder.Eq("user", user) & builder.Eq("contentId", contentId) & builder.Eq("service", service);
 
             var del = doc.DeleteOne(filter);
 

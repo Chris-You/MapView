@@ -36,10 +36,10 @@ namespace MapView.Services
 
 
         //List<ChargerFavor> FavorList();
-        List<ChargerFavor> FavorList(string userid);
-        bool InsFavor(string userid, string statId, string zscode);
-        bool DelFavor(string userid, string statId);
-        bool ChkFavor(string userid, string statId);
+        //List<ChargerFavor> FavorList(string userid);
+        //bool InsFavor(string userid, string statId, string zscode);
+        //bool DelFavor(string userid, string statId);
+        //bool ChkFavor(string userid, string statId);
 
         void MakeFile(ChargerReqModel req);
         List<ChargerItem> MakeRedisCache(ChargerReqModel req);
@@ -70,10 +70,8 @@ namespace MapView.Services
                             _configuration.GetSection("REDIS:CHARGER_DB_IDX").Value.ToString());
 
 
-            var host = _configuration.GetSection("MONGODB:SERVER").Value.ToString() + ":" + _configuration.GetSection("MONGODB:PORT").Value.ToString();
-
             _mongoDB = new Mongo(_configuration.GetSection("MONGODB:USER").Value.ToString(),
-                            host,
+                            _configuration.GetSection("MONGODB:SERVER").Value.ToString() + ":" + _configuration.GetSection("MONGODB:PORT").Value.ToString(),
                             _configuration.GetSection("MONGODB:DB_NAME").Value.ToString());
 
         }
@@ -515,7 +513,7 @@ namespace MapView.Services
 
 
 
-        
+        /*
         public List<ChargerFavor> FavorList(string userid)
         {
             var docName = _configuration.GetSection("MONGODB:CHARGER_FAVOR").Value;
@@ -550,15 +548,6 @@ namespace MapView.Services
             return list;
         }
         
-        /*
-        public List<ChargerFavor> FavorList(string statId)
-        {
-            var docName = _configuration.GetSection("MONGODB:CHARGER_FAVOR").Value;
-
-            return _mongoDB.DataList<ChargerFavor>(docName, statId);
-        }
-        */
-
         public bool InsFavor(string user, string statId, string zscode)
         {
             var isOk = false;
@@ -596,7 +585,6 @@ namespace MapView.Services
             return _mongoDB.DelData<ChargerFavor>(user, statId, docName);
         }
 
-
         public bool ChkFavor(string userid, string statId)
         {
             var docName = _configuration.GetSection("MONGODB:CHARGER_FAVOR").Value;
@@ -612,6 +600,7 @@ namespace MapView.Services
             return isOk;
         }
 
+        */
     }    
 }
 
